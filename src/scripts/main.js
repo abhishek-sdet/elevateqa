@@ -301,15 +301,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ELITE SMOOTH SCROLL CONTROLLER
+  const menuToggle = document.querySelector('.menu-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  
   const handleSmoothScroll = (targetId, e) => {
     const target = document.querySelector(targetId);
     if (!target) return;
     
     if (e) e.preventDefault();
     
+    // Mobile menu cleanup
+    if (menuToggle && navLinks && navLinks.classList.contains('active')) {
+      menuToggle.classList.remove('open');
+      navLinks.classList.remove('active');
+      document.body.style.overflow = '';
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+
     const headerOffset = nav ? nav.offsetHeight : 80;
     const elementPosition = target.getBoundingClientRect().top;
-    const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 20; // 20px extra breathing room
+    const offsetPosition = elementPosition + window.scrollY - headerOffset - 20;
 
     window.scrollTo({
       top: offsetPosition,
@@ -334,7 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // MOBILE NAVIGATION CONTROLLER - Elite Full-Screen Overlay
-  const menuToggle = document.querySelector('.menu-toggle');
   const navLinks = document.querySelector('.nav-links');
   
   if (menuToggle && navLinks) {
