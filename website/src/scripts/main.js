@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const org = document.getElementById('reg-org').value.trim();
-    const ticketId = Math.random().toString(36).substr(2, 9).toUpperCase();
+    const ticketId = `E-QA-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     try {
       const { error } = await supabase

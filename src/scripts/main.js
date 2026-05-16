@@ -195,7 +195,7 @@ window.generateTicket = async (e) => {
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const org = document.getElementById('reg-org').value.trim();
-  const ticketId = Math.random().toString(36).substr(2, 9).toUpperCase();
+  let ticketId = Math.random().toString(36).substr(2, 9).toUpperCase();
 
   try {
     console.log('[ElevateQA] Persisting to Supabase:', { name, email, org });
@@ -212,7 +212,7 @@ window.generateTicket = async (e) => {
     console.log('[ElevateQA] Registration Success, Generating QR');
       document.getElementById('ticket-name').textContent = name;
       document.getElementById('ticket-org').textContent = org;
-      const ticketId = `E-QA-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      ticketId = `E-QA-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       document.getElementById('ticket-id-val').textContent = ticketId;
       
       // Generate QR
@@ -250,7 +250,6 @@ window.generateTicket = async (e) => {
         console.warn('[ElevateQA] QRCode library not loaded yet!');
         qrContainer.innerHTML = '<p style="font-size:10px; color:red;">QR Error - Please refresh</p>';
       }
-    }
 
     document.getElementById('form-view').style.display = 'none';
     document.getElementById('ticket-view').style.display = 'block';
@@ -392,6 +391,7 @@ window.shareOnLinkedIn = () => {
   window.open(shareUrl, '_blank', 'width=600,height=600');
 };
 
+document.addEventListener('DOMContentLoaded', () => {
   const stamp = document.querySelector('.floating-stamp');
   const heroImg = document.querySelector('.hero-ambient img');
 

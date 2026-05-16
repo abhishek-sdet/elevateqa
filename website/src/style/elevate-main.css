@@ -9,7 +9,9 @@
 @import './sections/hero.css';
 @import './sections/content.css';
 @import './sections/agenda-speakers.css';
+@import './sections/prizes.css';
 @import './sections/modals.css';
+@import './sections/footer.css';
 
 /* GLOBAL ANIMATIONS & UTILITIES */
 .fade-in { opacity: 0; animation: fadeUp 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
