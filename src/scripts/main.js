@@ -345,14 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // MOBILE NAVIGATION CONTROLLER - Elite Full-Screen Overlay
-  const navLinks = document.querySelector('.nav-links');
-  
   if (menuToggle && navLinks) {
     menuToggle.addEventListener('click', () => {
-      const isOpen = menuToggle.classList.toggle('open');
-      navLinks.classList.toggle('active', isOpen);
+      menuToggle.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      
+      const isOpen = navLinks.classList.contains('active');
       document.body.style.overflow = isOpen ? 'hidden' : '';
-      menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      menuToggle.setAttribute('aria-expanded', isOpen);
     });
 
     // Close on link click
