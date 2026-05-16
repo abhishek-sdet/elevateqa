@@ -10,11 +10,6 @@
   
   <!-- SUPABASE SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- SUPABASE CONFIG -->
-  <script type="module">
-    import { supabase } from './src/scripts/supabase-config.js';
-    window.supabase = supabase;
-  </script>
   
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
@@ -280,8 +275,8 @@
     <div class="result-card" id="result-card">
       <div class="result-icon" id="res-icon">✓</div>
       <div class="res-label" id="res-label">SUCCESS</div>
-      <div class="res-name" id="res-name">Abhishek Johri</div>
-      <div class="res-org" id="res-org">SDET TECH</div>
+      <div class="res-name" id="res-name">Attendee Name</div>
+      <div class="res-org" id="res-org">Organization</div>
       <div class="res-badge" id="res-badge">ADMITTED</div>
       <button class="next-btn" onclick="resetScanner()">NEXT ATTENDEE</button>
     </div>
@@ -289,13 +284,25 @@
 </div>
 
 <script>
+  // SUPABASE INITIALIZATION (Direct CDN approach for reliability)
+  const SUPABASE_URL = 'https://wbgxcadajmdjxfhsgose.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
+  let supabaseClient = null;
+
+  try {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supabaseInstance = supabaseClient;
+  } catch (e) {
+    console.error("Supabase Init Error:", e);
+  }
+
   let html5QrCode = null;
   let isScanning = false;
   let isProcessing = false;
   let torchOn = false;
   let lastScanned = '';
   let lastScannedTime = 0;
-  const COOLDOWN = 5000;
+  const COOLDOWN = 3000;
 
   // 1. ACCESS CONTROL
   function unlock() {
@@ -319,14 +326,11 @@
 
   function initApp() {
     const status = document.getElementById('conn-status');
-    const check = setInterval(() => {
-      if (window.supabase) {
-        clearInterval(check);
-        status.innerHTML = '<div class="status-dot"></div> ONLINE';
-        status.style.color = 'var(--accent-green)';
-        status.querySelector('.status-dot').style.background = 'var(--accent-green)';
-      }
-    }, 100);
+    if (supabaseClient) {
+      status.innerHTML = '<div class="status-dot"></div> ONLINE';
+      status.style.color = 'var(--accent-green)';
+      status.querySelector('.status-dot').style.background = 'var(--accent-green)';
+    }
   }
 
   // 2. SCANNER LOGIC
@@ -340,8 +344,11 @@
       if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
       
       const config = { 
-        fps: 20, 
-        qrbox: { width: 250, height: 250 },
+        fps: 30, // Increased FPS for faster response
+        qrbox: (viewWidth, viewHeight) => {
+            const size = Math.min(viewWidth, viewHeight) * 0.7;
+            return { width: size, height: size };
+        },
         aspectRatio: 1.0
       };
 
@@ -403,15 +410,22 @@
   }
 
   async function processTicket(raw) {
+    console.log("Processing:", raw);
+    
     if (!raw.startsWith('ELEVATE-QA:')) {
       renderResult('error', 'INVALID FORMAT', 'Unrecognized Ticket', 'Please contact support', 'REJECTED');
       return;
     }
 
+    if (!supabaseClient) {
+        renderResult('error', 'ERROR', 'Database Error', 'Supabase client not initialized', 'ERROR');
+        return;
+    }
+
     const ticketId = raw.replace('ELEVATE-QA:', '').split('|')[0].trim();
     
     try {
-      const { data: user, error } = await window.supabase
+      const { data: user, error } = await supabaseClient
         .from('registrations')
         .select('*')
         .eq('id', ticketId)
@@ -427,7 +441,7 @@
         return;
       }
 
-      const { error: upErr } = await window.supabase
+      const { error: upErr } = await supabaseClient
         .from('registrations')
         .update({ status: 'PRESENT' })
         .eq('id', ticketId);
@@ -438,6 +452,7 @@
       playBeep('success');
 
     } catch (e) {
+      console.error("Process Error:", e);
       renderResult('error', 'SYSTEM ERROR', 'Sync Failed', e.message, 'TRY AGAIN');
     }
   }
