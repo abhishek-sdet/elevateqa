@@ -415,12 +415,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // WORLD CLASS ELITE BRANDED CURSOR
+  // WORLD CLASS ELITE BRANDED CURSOR - Desktop Only (>1024px)
   const brandedCursor = document.querySelector('.cursor-branded');
+  const isMobile = window.innerWidth <= 1024;
   
-  if (brandedCursor) {
+  if (brandedCursor && !isMobile) {
+    brandedCursor.style.display = 'block'; // Force visible on desktop
     document.addEventListener('mousemove', (e) => {
-      // 1:1 tracking for professional feel (no lag)
       brandedCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
     }, { passive: true });
 
@@ -431,6 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('mouseout', (e) => {
       if (e.target.closest(interactive)) document.body.classList.remove('cursor-hover');
     });
+  } else if (brandedCursor) {
+    brandedCursor.style.display = 'none';
   }
 
   // Magnetic effect disabled for buttons — only apply to floating decorative stamp
