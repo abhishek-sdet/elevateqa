@@ -133,6 +133,36 @@ window.closeModal = () => {
   if (modal) {
     modal.classList.remove('active');
     document.body.style.overflow = '';
+    
+    // RESET FORM FOR NEXT USER
+    setTimeout(() => {
+      // 1. Clear text inputs
+      const form = document.getElementById('registration-form');
+      if (form) form.reset();
+      
+      // 2. Reset Button State
+      const submitBtn = document.getElementById('generate-btn') || document.querySelector('#registration-form button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'CONFIRM & GENERATE TICKET';
+      }
+      
+      // 3. Reset View Hierarchy
+      const priceView = document.getElementById('price-view');
+      const formView = document.getElementById('form-view');
+      const ticketView = document.getElementById('ticket-view');
+      
+      if (priceView) priceView.style.display = 'block';
+      if (formView) formView.style.display = 'none';
+      if (ticketView) ticketView.style.display = 'none';
+      
+      // 4. Clear status messages
+      const status = document.getElementById('email-status');
+      if (status) {
+        status.innerHTML = '';
+        status.className = 'email-status';
+      }
+    }, 400); // Wait for modal fade-out
   }
 };
 
