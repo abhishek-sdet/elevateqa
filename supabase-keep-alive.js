@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 async function keepAlive() {
   const url = process.env.SUPABASE_URL;
