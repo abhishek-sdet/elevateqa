@@ -210,19 +210,34 @@ window.generateTicket = async (e) => {
     }
 
     console.log('[ElevateQA] Registration Success, Generating QR');
-    document.getElementById('ticket-name').textContent = name;
-    document.getElementById('ticket-org').textContent = org;
-    
-    // QR Generation (Must match scanner format: ELEVATE-QA: uuid | email)
-    const qrContainer = document.getElementById('qrcode');
-    if (qrContainer) {
+      document.getElementById('ticket-name').textContent = name;
+      document.getElementById('ticket-org').textContent = org;
+      const ticketId = `E-QA-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      document.getElementById('ticket-id-val').textContent = ticketId;
+      
+      // Generate QR
+      const qrContainer = document.getElementById('qrcode');
       qrContainer.innerHTML = '';
+      
+      // Also update the hidden visual-side ticket-qr for canvas
+      const ticketQr = document.getElementById('ticket-qr');
+      if (ticketQr) {
+        ticketQr.innerHTML = '';
+      }
+      
       if (typeof QRCode !== 'undefined') {
         const qrText = `ELEVATE-QA: ${ticketId} | ${email}`;
         new QRCode(qrContainer, {
           text: qrText,
           width: 160, height: 160, colorDark: "#0b0b10", colorLight: "#ffffff"
         });
+        
+        if (ticketQr) {
+           new QRCode(ticketQr, {
+            text: qrText,
+            width: 300, height: 300, colorDark: "#0b0b10", colorLight: "#ffffff"
+          });
+        }
         
         // Add LinkedIn Share Link
         const shareMsg = encodeURIComponent(`Excited to attend Elevate QA 2026! 🚀 \n\nLooking forward to deep-diving into the proof of value and shipping quality at scale. Catch me there! \n\n#ElevateQA #QualityEngineering #Testing #SDET`);
@@ -277,32 +292,111 @@ window.generateTicket = async (e) => {
   } catch (err) {
     console.error('[ElevateQA] Full Registration Failure:', err);
     alert('Registration failed. ' + (err.message || 'Please try again.'));
-    btn.textContent = originalText;
+            btn.textContent = originalText;
     btn.disabled = false;
   }
 };
 
-window.downloadTicketQR = () => {
-  const canvas = document.querySelector('#qrcode canvas');
-  if (!canvas) return;
+// --- PREMIUM TICKET GENERATION & DOWNLOAD ---
+window.downloadPremiumTicket = () => {
+  const name = document.getElementById('ticket-name').textContent;
+  const org = document.getElementById('ticket-org').textContent;
+  const qrImg = document.querySelector('#ticket-qr img');
+  const ticketId = document.getElementById('ticket-id-val').textContent;
+
+  if (!qrImg) return;
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Set Canvas Dimensions (Vertical Pass Style)
+  canvas.width = 800;
+  canvas.height = 1200;
+
+  // 1. Background
+  ctx.fillStyle = '#0a0a0c';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 2. Accents & Borders
+  ctx.strokeStyle = '#d4ff3a';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(40, 40, 720, 1120);
+
+  // 3. Header Text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '300 32px Fraunces, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('ELEVATE QA 2026', canvas.width/2, 120);
+
+  // 4. Branding Line
+  ctx.fillStyle = '#d4ff3a';
+  ctx.font = '800 24px Manrope, sans-serif';
+  ctx.fillText('THE AI-LED QE SUMMIT', canvas.width/2, 160);
+
+  // 5. Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(100, 220);
+  ctx.lineTo(700, 220);
+  ctx.stroke();
+
+  // 6. Attendee Info
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '400 20px Manrope, sans-serif';
+  ctx.fillText('OFFICIAL DELEGATE PASS', canvas.width/2, 280);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 64px Fraunces, serif';
+  ctx.fillText(name.toUpperCase(), canvas.width/2, 360);
+
+  ctx.fillStyle = '#d4ff3a';
+  ctx.font = '600 28px Manrope, sans-serif';
+  ctx.fillText(org.toUpperCase(), canvas.width/2, 410);
+
+  // 7. QR Code (Centered)
+  // Draw QR on a white rounded rect for visibility
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(canvas.width/2 - 180, 480, 360, 360, 30);
+  ctx.fill();
+  ctx.drawImage(qrImg, canvas.width/2 - 150, 510, 300, 300);
+
+  // 8. Event Footer Meta
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 32px Manrope, sans-serif';
+  ctx.fillText('8 AUG 2026 • DELHI NCR', canvas.width/2, 950);
+  
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '400 18px JetBrains Mono, monospace';
+  ctx.fillText(`ID: ${ticketId}`, canvas.width/2, 1000);
+
+  // 9. Download Trigger
   const link = document.createElement('a');
-  link.download = `ElevateQA26-Ticket.png`;
-  link.href = canvas.toDataURL();
+  link.download = `ElevateQA26_Pass_${name.replace(/\s+/g, '_')}.png`;
+  link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
 };
 
-// 2. CORE INITIALIZATION
-document.addEventListener('DOMContentLoaded', () => {
-  initAnimations();
+// --- LINKEDIN SHARING ---
+window.shareOnLinkedIn = () => {
+  const name = document.getElementById('ticket-name').textContent;
+  const url = window.location.origin;
+  const text = encodeURIComponent(
+    `I'm excited to announce that I've secured my spot at Elevate QA 2026 — The AI-Led Quality Engineering Tech Summit in Delhi NCR! 🚀\n\n` +
+    `Looking forward to deep-diving into the future of QE with industry leaders. See you there!\n\n` +
+    `#ElevateQA #QualityEngineering #AIinTesting #TechSummit2026`
+  );
+  
+  const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${text}`;
+  window.open(shareUrl, '_blank', 'width=600,height=600');
+};
 
-  const nav = document.querySelector('nav');
-  const progressBar = document.getElementById('scroll-progress');
   const stamp = document.querySelector('.floating-stamp');
   const heroImg = document.querySelector('.hero-ambient img');
 
   const backToTop = document.getElementById('backToTop');
 
-  // WORLD CLASS PASSIVE SCROLL ENGINE
   let ticking = false;
   let lastScrollY = window.scrollY;
 

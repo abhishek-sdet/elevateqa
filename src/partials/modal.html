@@ -46,7 +46,7 @@
       <div class="ticket-visual-side">
         <div class="ticket-box">
           <div class="ticket-info">Pass Holder<strong id="ticket-name">...</strong></div>
-          <div class="ticket-id-label" id="ticket-id-display"></div>
+          <div class="ticket-id-label" id="ticket-id-val"></div>
           <div class="qrcode-container" id="qrcode"></div>
           <div class="ticket-info">Organization<strong id="ticket-org">...</strong></div>
           <div class="ticket-footer">ELEVATE QA 2026 &middot; 8 AUG 2026 &middot; NOIDA</div>
@@ -70,8 +70,8 @@
         </div>
         
         <div class="ticket-actions">
-          <button class="btn btn-secondary" onclick="downloadTicketQR()" id="btn-download-ticket">&#8595; Download QR</button>
-          <a class="btn btn-primary" id="linkedin-share-btn" target="_blank" style="background: #0077b5; color: #fff; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center;">Share on LinkedIn</a>
+          <button class="btn btn-secondary" onclick="downloadPremiumTicket()" id="btn-download-ticket">&#8595; Download Official Pass</button>
+          <button class="btn btn-primary" onclick="shareOnLinkedIn()" id="linkedin-share-btn" style="background: #0077b5; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">Share on LinkedIn</button>
         </div>
         <button class="btn btn-secondary" onclick="closeModal()" style="width: 100%; margin-top: 12px; background: transparent; border: 1px solid var(--line); color: var(--ink-dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;">Close Portal</button>
       </div>
