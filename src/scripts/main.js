@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const headerOffset = nav ? nav.offsetHeight : 80;
     const elementPosition = target.getBoundingClientRect().top;
-    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 20; // 20px extra breathing room
 
     window.scrollTo({
       top: offsetPosition,
