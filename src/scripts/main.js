@@ -192,7 +192,22 @@ window.generateTicket = async (e) => {
     document.getElementById('form-view').style.display = 'none';
     document.getElementById('ticket-view').style.display = 'block';
     
-    // Simulate Email Send (Integration ready)
+    // EMAILJS INTEGRATION (Setup ready)
+    if (window.emailjs) {
+      const templateParams = {
+        to_name: name,
+        to_email: email,
+        ticket_id: ticketId,
+        qr_data: qrText,
+        company: org
+      };
+
+      // EmailJS details to be filled by user
+      // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+      //   .then(() => console.log('[ElevateQA] Email Sent Successfully'))
+      //   .catch((err) => console.error('[ElevateQA] Email Failed:', err));
+    }
+
     console.log('[ElevateQA] Preparing to send confirmation email to:', email);
   } catch (err) {
     console.error('[ElevateQA] Full Registration Failure:', err);
@@ -200,6 +215,15 @@ window.generateTicket = async (e) => {
     btn.textContent = originalText;
     btn.disabled = false;
   }
+};
+
+window.downloadTicketQR = () => {
+  const canvas = document.querySelector('#qrcode canvas');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = `ElevateQA26-Ticket.png`;
+  link.href = canvas.toDataURL();
+  link.click();
 };
 
 // 2. CORE INITIALIZATION
