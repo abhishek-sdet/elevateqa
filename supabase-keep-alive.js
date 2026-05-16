@@ -9,7 +9,10 @@ async function keepAlive() {
     process.exit(1);
   }
 
-  const supabase = createClient(url, key);
+  const supabase = createClient(url, key, {
+    auth: { persistSession: false },
+    realtime: { enabled: false }
+  });
 
   console.log('--- SUPABASE KEEP ALIVE ---');
   try {
