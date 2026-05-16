@@ -344,12 +344,13 @@
       if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
       
       const config = { 
-        fps: 30, // Increased FPS for faster response
+        fps: 60, // Turbo FPS
         qrbox: (viewWidth, viewHeight) => {
-            const size = Math.min(viewWidth, viewHeight) * 0.7;
+            const size = Math.min(viewWidth, viewHeight) * 0.65;
             return { width: size, height: size };
         },
-        aspectRatio: 1.0
+        aspectRatio: 1.0,
+        disableFlip: true // Speed boost
       };
 
       const devices = await Html5Qrcode.getCameras();

@@ -251,7 +251,7 @@ window.renderAttendees = (registrations) => {
         <td>${p.company || '—'}</td>
         <td>${p.email || '—'}</td>
         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '—'}</td>
-        <td>${p.status === 'PRESENT' ? '<span class="badge" style="background:var(--accent); color:#000;">Present</span>' : '<span class="badge">Verified</span>'}</td>
+        <td>${(p.status && p.status.toUpperCase() === 'PRESENT') ? '<span class="badge" style="background:var(--accent); color:#000;">Present</span>' : '<span class="badge">Verified</span>'}</td>
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
         <td style="text-align: right;">
           <button class="btn-mini" onclick="deleteAttendee('${p.id}')" title="Delete Registration" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2);">✕</button>
