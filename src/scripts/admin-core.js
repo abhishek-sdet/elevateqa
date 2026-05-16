@@ -2,6 +2,7 @@
  * ELEVATE QA 2026 - ADMIN CORE ENGINE (SUPABASE MODULE)
  */
 import { supabase } from './supabase-config.js';
+import './admin-auth.js'; 
 import { 
   loadAllData, saveBranding, saveSiteContent, saveManifesto, saveSpeaker, saveAgendaItem, 
   saveMaturityStage, savePillar, deleteItem, uploadImageToStorage, syncTableDeletes

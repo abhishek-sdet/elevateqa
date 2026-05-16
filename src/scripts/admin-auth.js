@@ -1,4 +1,5 @@
 import { supabase } from './supabase-config.js';
+import './admin-auth.js'; // Initialize Official Security Guard
 
 // ─── AUTH STATE OBSERVER ───────────────────────────────────────────────────
 supabase.auth.onAuthStateChange((event, session) => {
@@ -60,7 +61,44 @@ async function sendOTP(e) {
   }
 }
 
-// 2. Logout Function
+// 2. OTP Verification (Official Supabase)
+async function verifyOTP() {
+  const inputs = document.querySelectorAll('.otp-input');
+  const code = Array.from(inputs).map(i => i.value).join('');
+  const emailInput = document.getElementById('login-number');
+  const email = emailInput ? emailInput.value.trim() : '';
+
+  if (code.length === 6 && email) {
+    const btn = document.getElementById('btn-verify-otp');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Verifying Identity...';
+    btn.disabled = true;
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: 'magiclink' // Supabase uses 'magiclink' type for email OTP by default
+    });
+
+    if (error) {
+      console.error('[ElevateAuth] Verify Error:', error.message);
+      const errEl = document.getElementById('otp-error-msg');
+      if (errEl) {
+        errEl.textContent = 'Invalid code or expired. Please check your email and try again.';
+        errEl.style.display = 'block';
+      }
+      btn.innerHTML = 'Try Again';
+      btn.disabled = false;
+      inputs.forEach(i => { i.value = ''; });
+      inputs[0].focus();
+    } else {
+      console.log('[ElevateAuth] Successfully authenticated!');
+      // State observer will handle the UI transition automatically
+    }
+  }
+}
+
+// 3. Logout Function
 async function handleLogout() {
   const { error } = await supabase.auth.signOut();
   if (!error) window.location.reload();
@@ -79,8 +117,36 @@ async function checkSession() {
 
 // Export for global access
 window.sendOTP = sendOTP;
+window.verifyOTP = verifyOTP;
 window.handleLogout = handleLogout;
 window.checkSession = checkSession;
+
+// 4. Input Helpers (Robust index-based focus)
+window.moveFocus = (el) => {
+  if (el.value.length >= 1) {
+    const inputs = Array.from(document.querySelectorAll('.otp-input'));
+    const nextIndex = inputs.indexOf(el) + 1;
+    if (nextIndex < inputs.length) {
+      inputs[nextIndex].focus();
+    }
+  }
+  
+  // Auto-verify if all filled
+  const code = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
+  if (code.length === 6) {
+    verifyOTP();
+  }
+};
+
+window.handleBackspace = (el, e) => {
+  if (e.key === 'Backspace' && !el.value) {
+    const inputs = Array.from(document.querySelectorAll('.otp-input'));
+    const prevIndex = inputs.indexOf(el) - 1;
+    if (prevIndex >= 0) {
+      inputs[prevIndex].focus();
+    }
+  }
+};
 
 // 4. Input Helpers (Robust index-based focus)
 function moveFocus(el) {
