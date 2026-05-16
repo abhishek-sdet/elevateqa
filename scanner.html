@@ -85,7 +85,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     .scan-guide {
-      width: 260px; height: 260px; position: relative;
+      width: 220px; height: 220px; position: relative;
       border: 1px solid rgba(255,255,255,0.05); border-radius: 48px;
       transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
     }
@@ -302,7 +302,7 @@
   let torchOn = false;
   let lastScanned = '';
   let lastScannedTime = 0;
-  const COOLDOWN = 3000;
+  const COOLDOWN = 1500; // Aggressive reset for high throughput
 
   // 1. ACCESS CONTROL
   function unlock() {
@@ -344,13 +344,15 @@
       if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
       
       const config = { 
-        fps: 60, // Turbo FPS
+        fps: 60,
         qrbox: (viewWidth, viewHeight) => {
-            const size = Math.min(viewWidth, viewHeight) * 0.65;
+            // Smaller box = faster processing
+            const size = Math.min(viewWidth, viewHeight) * 0.6;
             return { width: size, height: size };
         },
         aspectRatio: 1.0,
-        disableFlip: true // Speed boost
+        disableFlip: true,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
       };
 
       const devices = await Html5Qrcode.getCameras();
