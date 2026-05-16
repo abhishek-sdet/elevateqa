@@ -1,0 +1,135 @@
+<!-- ELEVATE ADMIN v1.1.1 (Cache Buster) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elevate Admin — Command Center</title>
+
+  <!-- SECURITY HEADERS -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://cdn.jsdelivr.net https://*.supabase.co wss://*.supabase.co; worker-src 'self' blob:; base-uri 'self'; form-action 'self';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#0b0b10">
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style/admin.css">
+
+  <!-- SUPABASE & CORE -->
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <!-- AUTH GUARDIAN (Prevents Login Flash) -->
+  <script>
+    (function() {
+      const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
+      const root = document.documentElement;
+      if (isLoggedIn) {
+        root.classList.add('is-logged-in');
+        root.classList.remove('not-logged-in');
+        
+        try {
+          const sc = JSON.parse(localStorage.getItem('elevate_site_content') || '{}');
+          const logoUrl = sc.logoUrl;
+          if (logoUrl) {
+            const checkAndSwap = () => {
+              const pLogo = document.getElementById('admin-preloader-logo');
+              const sLogo = document.getElementById('admin-sidebar-logo');
+              if (pLogo) pLogo.src = logoUrl;
+              if (sLogo) sLogo.src = logoUrl;
+              if (!pLogo || !sLogo) requestAnimationFrame(checkAndSwap);
+            };
+            requestAnimationFrame(checkAndSwap);
+          }
+        } catch(e) {}
+      } else {
+        root.classList.add('not-logged-in');
+        root.classList.remove('is-logged-in');
+        document.write('<style>#admin-preloader { display: none !important; }</style>');
+        try {
+          const sc = JSON.parse(localStorage.getItem('elevate_site_content') || '{}');
+          if (sc.logoUrl) {
+            const checkAndSwapLogin = () => {
+              const lLogo = document.getElementById('login-logo-img');
+              if (lLogo) lLogo.src = sc.logoUrl;
+              else requestAnimationFrame(checkAndSwapLogin);
+            };
+            requestAnimationFrame(checkAndSwapLogin);
+          }
+        } catch(e) {}
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ADMIN PRELOADER (Cyber-Luxe Design) -->
+  <div id="admin-preloader" class="admin-preloader">
+    <div class="preloader-content">
+      <div class="preloader-visuals">
+        <div class="orbital-ring"></div>
+        <div class="orbital-ring-outer"></div>
+        <div class="preloader-logo">
+          <img id="admin-preloader-logo" src="" alt="Elevate QA" style="display: none;">
+        </div>
+      </div>
+      <div class="preloader-status">
+        <div class="status-text">INITIALIZING COMMAND CENTER</div>
+        <div class="status-bar-bg">
+          <div class="status-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{> admin-auth }}
+
+  <!-- MOBILE HAMBURGER -->
+  <button id="admin-menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- SIDEBAR BACKDROP (tap outside to close on mobile) -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
+  {{> admin-sidebar }}
+
+  <!-- LIVE REGION FOR TOAST/FEEDBACK -->
+  <div id="admin-live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+  <!-- MAIN VIEW -->
+  <div class="main-content">
+    {{> admin-header }}
+
+    <div id="protected-content">
+      <main>
+        {{> admin-attendance }}
+        {{> admin-identity }}
+        {{> admin-intelligence }}
+        {{> admin-agenda }}
+        {{> admin-speakers }}
+        {{> admin-visuals }}
+        {{> admin-settings }}
+      </main>
+    </div>
+
+    <!-- FLOATING ACTION BAR -->
+    <div class="admin-actions" role="toolbar" aria-label="Admin actions">
+      <button class="btn-reset" onclick="location.reload()" aria-label="Discard unsaved changes and reload">Reset Changes</button>
+      <button class="btn-save-all" id="btn-publish" onclick="saveAll()" aria-label="Sync and publish all changes">
+        <span aria-hidden="true">🚀</span> SYNC &amp; PUBLISH
+      </button>
+    </div>
+  </div>
+
+  {{> admin-modals }}
+
+  <!-- MODULAR ADMIN ENGINE -->
+  <script type="module" src="src/scripts/admin-core.js?v=20260515_v4"></script>
+</body>
+</html>

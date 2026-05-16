@@ -1,0 +1,27 @@
+        <!-- SECTION: AGENDA -->
+        <section id="sec-agenda" style="display:none;">
+          <div class="manager-card">
+            <div class="section-title">Agenda <em>Section Heading</em></div>
+            <p class="section-desc">The section number label and headline shown above the day-flow timeline.</p>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Section Num <span class="label-hint">(e.g. 04 / Day Flow)</span></label>
+                <input type="text" id="agenda-section-num" placeholder="04 / Day Flow">
+              </div>
+              <div class="form-group">
+                <label>Section Title <span class="label-hint">(Use [[text]] or &lt;em&gt;text&lt;/em&gt; for accent)</span></label>
+                <input type="text" id="agenda-section-title" placeholder="The day, at a glance.">
+              </div>
+            </div>
+          </div>
+
+          <div class="manager-card">
+            <div class="section-title">
+              Event <em>Schedule</em>
+              <button class="btn-add" onclick="addAgendaItem()">+ ADD SESSION</button>
+            </div>
+            <div id="agenda-list">
+              <!-- Dynamic -->
+            </div>
+          </div>
+        </section>

@@ -1,0 +1,83 @@
+:root {
+  --bg: #050508; /* Deeper, more cinematic background */
+  --bg-2: #0b0b10;
+  --bg-3: #121218;
+  --paper: #f4f1ea;
+  --paper-2: #ebe7dd;
+  --ink: #f4f1ea;
+  --ink-dim: #aaa7b4;
+  --ink-darker: #7a7784;
+  --accent: #d4ff3a;
+  --accent-rgb: 212, 255, 58;
+  --accent-2: #ff5a36;
+  --accent-3: #6b9eff;
+  --accent-4: #f7b733;
+  --line: rgba(212, 255, 58, 0.06); /* Accent-tinted lines */
+  --line-strong: rgba(212, 255, 58, 0.15);
+  --line-paper: rgba(11, 11, 16, 0.1);
+  
+  --display: 'Fraunces', serif;
+  --body: 'Manrope', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  /* PADDING */
+  --pad-x: clamp(1.25rem, 5vw, 8rem);
+  --pad-y: clamp(3rem, 8vw, 8rem);
+  --pad-mobile: 1.25rem;
+  --section-gap: clamp(4rem, 10vw, 12rem);
+  --section-gap-mobile: 3.5rem;
+
+  /* FLUID TYPOGRAPHY - ELITE FLUID SCALE */
+  --font-display-lg: clamp(2.5rem, 8vw, 7.5rem);
+  --font-display-md: clamp(1.8rem, 5vw, 4.5rem);
+  --font-display-sm: clamp(1.5rem, 3.5vw, 2.8rem);
+  --font-h1: var(--font-display-lg);
+  --font-h2: var(--font-display-md);
+  --font-h3: var(--font-display-sm);
+  --font-body: clamp(0.9rem, 1vw, 1.1rem);
+  --font-base: clamp(1rem, 1.5vw, 1.4rem);
+  --font-mono: clamp(0.65rem, 0.75vw, 0.8rem);
+
+  /* DESIGN SCALE */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 32px;
+  --space-lg: 64px;
+  --space-xl: 128px;
+  
+  /* MOBILE SPECIFIC OVERRIDES (WORLD CLASS FLOW) */
+  --space-md-mobile: 24px;
+  --space-lg-mobile: 48px;
+  --space-xl-mobile: 80px;
+
+  /* PREMIUM ADDITIONS */
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-heavy: rgba(0, 0, 0, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur: blur(12px);
+  
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.2);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-lg: 0 24px 64px rgba(0,0,0,0.4);
+  
+  /* MOTION TOKENS - ELITE SPRING PHYSICS */
+  --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --spring: cubic-bezier(0.43, 0.13, 0.23, 0.96);
+  --spring-bouncy: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --transition-smooth: all 0.6s var(--spring);
+  --transition-fast: all 0.3s var(--ease-out);
+  --transition-magnetic: transform 0.2s linear;
+  
+  --focus-ring: 0 0 0 3px var(--accent);
+
+  /* ADMIN PALETTE */
+  --accent-soft: rgba(212, 255, 58, 0.08);
+  --accent-dim:  rgba(212, 255, 58, 0.25);
+  --accent-red:  #ff5a36;
+  --ink-deep:    rgba(244, 241, 234, 0.32);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

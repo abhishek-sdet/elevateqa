@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elevate QA 2026 — AI-Led Quality Engineering: The Proof of Value</title>
+  <meta name="description" content="Elevate QA 2026 — The AI-Led Quality Engineering Tech Summit. A one-day symposium for QE leaders. Delhi NCR, India, August 2026.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style/elevate-main.css">
+
+  <!-- CRITICAL: Immediate Logo Resolution to prevent Flash -->
+  <script>
+    (function() {
+      const branding = JSON.parse(localStorage.getItem('elevate_branding') || '[]');
+      if (branding && branding[0] && branding[0].logo_url) {
+        const logoUrl = branding[0].logo_url;
+        // Apply to CSS variable for any dynamic use
+        document.documentElement.style.setProperty('--cached-logo', `url(${logoUrl})`);
+        
+        // Inline style injection to force logo update before render
+        const style = document.createElement('style');
+        style.innerHTML = `.logo img, .preloader-logo { content: url("${logoUrl}") !important; }`;
+        document.head.appendChild(style);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- CINEMATIC LOGO PRELOADER -->
+  <div id="page-preloader">
+    <div class="preloader-content">
+      <div class="logo-aura"></div>
+      <img src="public/logo-elevate-clean.svg" class="preloader-logo" alt="Elevate QA">
+      <div class="loader-bar-wrap">
+        <div class="loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scroll-progress"></div>
+  <div class="cursor-glow"></div>
+
+  {{> ticker }}
+  {{> header }}
+
+  {{> hero }}
+  {{> proof-bar }}
+  {{> manifesto }}
+  {{> map }}
+  {{> experience }}
+  {{> agenda }}
+  {{> speakers }}
+  {{> prizes }}
+  {{> coming }}
+  {{> involve }}
+  {{> modal }}
+  {{> footer }}
+
+  <!-- App Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="src/scripts/main.js"></script>
+</body>
+</html>

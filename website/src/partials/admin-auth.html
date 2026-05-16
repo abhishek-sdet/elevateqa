@@ -1,0 +1,29 @@
+  <!-- AUTH OVERLAY -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <div class="logo" style="display: flex; justify-content: center;">
+        <img id="login-logo-img" src="/logo-brand.png" alt="Admin Logo" style="height: 48px; width: auto; display: block;">
+      </div>
+      <div id="auth-step-1">
+        <h2>Welcome back, <em>Admin</em></h2>
+        <p>Enter your administrative email to receive a secure access code.</p>
+        <form class="login-form" onsubmit="sendOTP(event)">
+          <input type="email" id="login-number" placeholder="admin@example.com" required>
+          <button type="submit" class="btn-login" id="btn-send-otp">Send Access Code</button>
+        </form>
+      </div>
+      <div id="auth-step-2" style="display:none;">
+        <h2>Verify <em>Identity</em></h2>
+        <p>We've sent a 6-digit secure code to <strong id="otp-target-email">...</strong>. It expires in 10 minutes.</p>
+        <div class="otp-wrap">
+          <input type="text" maxlength="1" class="otp-input" oninput="moveFocus(this)" onkeydown="handleBackspace(this, event)">
+          <input type="text" maxlength="1" class="otp-input" oninput="moveFocus(this)" onkeydown="handleBackspace(this, event)">
+          <input type="text" maxlength="1" class="otp-input" oninput="moveFocus(this)" onkeydown="handleBackspace(this, event)">
+          <input type="text" maxlength="1" class="otp-input" oninput="moveFocus(this)" onkeydown="handleBackspace(this, event)">
+          <input type="text" maxlength="1" class="otp-input" oninput="moveFocus(this)" onkeydown="handleBackspace(this, event)">
+          <input type="text" maxlength="1" class="otp-input" oninput="moveFocus(this)" onkeydown="handleBackspace(this, event)">
+        </div>
+        <button onclick="verifyOTP()" class="btn-login">Verify & Enter</button>
+      </div>
+    </div>
+  </div>

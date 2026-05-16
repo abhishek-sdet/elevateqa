@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Elevate Scanner — Premium Check-in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- SUPABASE SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SUPABASE CONFIG -->
+  <script type="module">
+    import { supabase } from './src/scripts/supabase-config.js';
+    window.supabase = supabase;
+  </script>
+  
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #050508;
+      --bg-card: #0f0f15;
+      --accent: #d4ff3a;
+      --accent-red: #ff5a36;
+      --accent-green: #3affb0;
+      --ink: #f4f1ea;
+      --ink-dim: #8a8794;
+      --line: rgba(244,241,234,0.06);
+      --glass: rgba(15,15,21,0.7);
+      
+      --display: 'Fraunces', serif;
+      --body: 'Manrope', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      background: var(--bg); color: var(--ink); font-family: var(--body); 
+      overflow: hidden; height: 100vh; width: 100vw;
+    }
+
+    /* APP SHELL */
+    .app-container {
+      display: flex; flex-direction: column; height: 100%; position: relative;
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(to bottom, rgba(5,5,8,0.9), transparent);
+      position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+    }
+    .brand { font-family: var(--display); font-size: 20px; font-style: italic; }
+    .brand span { color: var(--accent); font-style: normal; }
+    
+    .stats-group { display: flex; gap: 8px; }
+    .stat-pill { 
+      background: var(--glass); backdrop-filter: blur(10px);
+      border: 1px solid var(--line); border-radius: 100px;
+      padding: 6px 12px; font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.05em; color: var(--ink-dim);
+    }
+    .stat-pill strong { color: var(--accent); }
+
+    /* CAMERA SECTION (FULL SCREEN) */
+    .scanner-viewport {
+      flex: 1; position: relative; background: #000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #qr-reader { width: 100% !important; height: 100% !important; }
+    #qr-reader video { object-fit: cover !important; }
+    #qr-reader__scan_region { padding: 0 !important; }
+    #qr-reader__dashboard { display: none !important; }
+    #qr-reader img { display: none !important; }
+
+    /* SCAN OVERLAY */
+    .scan-guide {
+      position: absolute; width: 280px; height: 280px;
+      border: 2px solid rgba(255,255,255,0.1); border-radius: 40px;
+      z-index: 10; pointer-events: none;
+    }
+    .guide-corner {
+      position: absolute; width: 40px; height: 40px;
+      border-color: var(--accent); border-style: solid;
+      transition: 0.3s;
+    }
+    .guide-corner.tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-radius: 40px 0 0 0; }
+    .guide-corner.tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-radius: 0 40px 0 0; }
+    .guide-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-radius: 0 0 0 40px; }
+    .guide-corner.br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-radius: 0 0 40px 0; }
+
+    .scan-line {
+      position: absolute; top: 0; left: 20px; right: 20px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 20px var(--accent);
+      animation: scanAnim 2.5s ease-in-out infinite;
+      display: none;
+    }
+    @keyframes scanAnim { 0%, 100% { top: 10%; opacity: 0.3; } 50% { top: 90%; opacity: 1; } }
+
+    /* CONTROLS OVERLAY */
+    .scanner-controls {
+      position: absolute; bottom: 40px; left: 0; right: 0;
+      display: flex; justify-content: center; gap: 20px; z-index: 50;
+    }
+    .ctrl-btn {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--glass); backdrop-filter: blur(12px);
+      border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: 0.3s; color: var(--ink);
+    }
+    .ctrl-btn:active { transform: scale(0.9); background: var(--accent); color: var(--bg); }
+    .ctrl-btn.primary { width: 180px; border-radius: 100px; font-weight: 700; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; }
+    .ctrl-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    /* BOTTOM SHEET RESULT */
+    .result-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--bg-card); border-radius: 32px 32px 0 0;
+      padding: 40px 32px; transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+      z-index: 200; border: 1px solid var(--line);
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.8);
+    }
+    .result-sheet.active { transform: translateY(0); }
+    .sheet-handle {
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 4px; background: var(--line); border-radius: 2px;
+    }
+
+    .res-status-icon { font-size: 64px; margin-bottom: 24px; text-align: center; }
+    .res-message { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--ink-dim); letter-spacing: 0.2em; text-align: center; margin-bottom: 12px; }
+    .res-name { font-family: var(--display); font-size: 36px; line-height: 1; text-align: center; margin-bottom: 8px; }
+    .res-org { font-family: var(--body); font-size: 14px; color: var(--ink-dim); text-align: center; margin-bottom: 32px; }
+    
+    .res-badge {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 18px; border-radius: 16px; font-weight: 800; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .success .res-badge { background: var(--accent-green); color: #000; }
+    .already .res-badge { background: var(--accent); color: #000; }
+    .error .res-badge { background: var(--accent-red); color: #fff; }
+
+    /* FLASH EFFECT */
+    .flash-overlay {
+      position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 1000;
+    }
+    .flash-active { animation: flashEffect 0.4s ease-out; }
+    @keyframes flashEffect { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
+    /* ACCESS CODE OVERLAY */
+    .access-overlay {
+      position: fixed; inset: 0; background: var(--bg); z-index: 2000;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      transition: opacity 0.5s;
+    }
+    .access-box {
+      background: var(--bg-card); padding: 40px; border-radius: 24px;
+      border: 1px solid var(--line); text-align: center; max-width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .access-box h2 { font-family: var(--display); font-style: italic; margin-bottom: 12px; font-size: 28px;}
+    .access-box p { color: var(--ink-dim); font-size: 14px; margin-bottom: 32px;}
+    .access-box input {
+      width: 100%; padding: 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--line);
+      border-radius: 12px; color: var(--ink); font-family: var(--mono); font-size: 18px;
+      text-align: center; margin-bottom: 24px; letter-spacing: 0.1em;
+    }
+    .access-box input:focus { outline: none; border-color: var(--accent); }
+    .access-box button {
+      width: 100%; padding: 16px; background: var(--accent); color: #000;
+      border: none; border-radius: 12px; font-family: var(--mono); font-weight: 700;
+      font-size: 14px; cursor: pointer; transition: 0.3s;
+    }
+    .access-box button:hover { opacity: 0.9; transform: translateY(-2px); }
+    #access-error { color: var(--accent-red); font-size: 12px; margin-top: 12px; display: none; }
+  </style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flash"></div>
+
+<!-- ACCESS CODE LOCK -->
+<div class="access-overlay" id="access-overlay">
+  <div class="access-box">
+    <h2>Scanner Access</h2>
+    <p>Please enter your event staff code.</p>
+    <input type="password" id="access-code-input" placeholder="Enter Code">
+    <button onclick="checkAccess()">UNLOCK SCANNER</button>
+    <div id="access-error">Invalid access code</div>
+  </div>
+</div>
+
+<div class="app-container">
+  
+  <header class="top-bar">
+    <div class="brand">Elevate <span>Scanner</span></div>
+    <div class="stats-group">
+      <div id="cloud-status" class="stat-pill" style="border-color: rgba(255,90,54,0.3);">☁ WAIT</div>
+    </div>
+  </header>
+
+  <main class="scanner-viewport">
+    <div id="qr-reader"></div>
+    <div class="scan-guide">
+      <div class="guide-corner tl"></div>
+      <div class="guide-corner tr"></div>
+      <div class="guide-corner bl"></div>
+      <div class="guide-corner br"></div>
+      <div class="scan-line" id="scan-line"></div>
+    </div>
+  </main>
+
+  <div class="scanner-controls">
+    <button class="ctrl-btn" onclick="toggleTorch()" id="torch-btn" title="Toggle Flash">🔦</button>
+    <button class="ctrl-btn primary" onclick="toggleScanner()" id="scan-toggle">START SCANNING</button>
+  </div>
+
+  <!-- RESULT BOTTOM SHEET -->
+  <div class="result-sheet" id="result-sheet" onclick="hideResult()">
+    <div class="sheet-handle"></div>
+    <div id="result-content">
+      <div class="res-status-icon">✅</div>
+      <div class="res-message">Check-in Successful</div>
+      <div class="res-name">Loading...</div>
+      <div class="res-org">Loading...</div>
+      <div class="res-badge">✓ ADMITTED</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let html5QrCode = null;
+  let isScanning = false;
+  let lastScanned = '';
+  let lastScannedTime = 0;
+  let torchOn = false;
+  const COOLDOWN = 3000; // Prevent spamming same ticket
+  let isProcessing = false;
+
+  // Access Control
+  function checkAccess() {
+    const code = document.getElementById('access-code-input').value;
+    if (code === 'Sdet@2026') {
+      sessionStorage.setItem('scanner_unlocked', 'true');
+      document.getElementById('access-overlay').style.opacity = '0';
+      setTimeout(() => document.getElementById('access-overlay').style.display = 'none', 500);
+      initSupabaseConnection();
+    } else {
+      const err = document.getElementById('access-error');
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 2000);
+    }
+  }
+
+  // Auto-unlock if previously unlocked in session
+  if (sessionStorage.getItem('scanner_unlocked') === 'true') {
+    document.getElementById('access-overlay').style.display = 'none';
+    initSupabaseConnection();
+  }
+
+  function initSupabaseConnection() {
+    // Wait for supabase script to load and set window.supabase
+    const checkSupa = setInterval(() => {
+      if (window.supabase) {
+        clearInterval(checkSupa);
+        const el = document.getElementById('cloud-status');
+        el.textContent = "☁ ONLINE";
+        el.style.borderColor = "var(--accent-green)";
+        el.style.color = "var(--accent-green)";
+      }
+    }, 100);
+  }
+
+  function toggleScanner() {
+    if (isScanning) stopScanner();
+    else startScanner();
+  }
+
+  async function startScanner() {
+    try {
+      if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
+      
+      const config = { 
+        fps: 10,
+        qrbox: (viewWidth, viewHeight) => {
+          const min = Math.min(viewWidth, viewHeight);
+          return { width: min * 0.8, height: min * 0.8 };
+        },
+        aspectRatio: 1.0,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      };
+
+      await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+      
+      isScanning = true;
+      document.getElementById('scan-toggle').textContent = 'STOP';
+      document.getElementById('scan-toggle').classList.add('active');
+      document.getElementById('scan-line').style.display = 'block';
+      document.querySelectorAll('.guide-corner').forEach(c => c.style.borderColor = 'var(--accent)');
+    } catch (err) {
+      console.error("Camera error:", err);
+      alert("Camera permission denied or camera in use.");
+    }
+  }
+
+  async function stopScanner() {
+    if (html5QrCode && isScanning) {
+      await html5QrCode.stop();
+      isScanning = false;
+      document.getElementById('scan-toggle').textContent = 'START SCANNING';
+      document.getElementById('scan-toggle').classList.remove('active');
+      document.getElementById('scan-line').style.display = 'none';
+    }
+  }
+
+  async function toggleTorch() {
+    if (!isScanning) return;
+    try {
+      torchOn = !torchOn;
+      await html5QrCode.applyVideoConstraints({
+        advanced: [{ torch: torchOn }]
+      });
+      document.getElementById('torch-btn').classList.toggle('active', torchOn);
+    } catch(e) { console.warn("Torch not supported on this device"); }
+  }
+
+  async function onScanSuccess(decodedText) {
+    if (isProcessing) return;
+    const now = Date.now();
+    if (decodedText === lastScanned && now - lastScannedTime < COOLDOWN) return;
+    
+    lastScanned = decodedText;
+    lastScannedTime = now;
+    isProcessing = true;
+    
+    if (navigator.vibrate) navigator.vibrate(80);
+    triggerFlash();
+
+    await processTicket(decodedText);
+    isProcessing = false;
+  }
+
+  async function processTicket(raw) {
+    // Expected format: "ELEVATE-QA: uuid | email"
+    if (!raw.startsWith('ELEVATE-QA:')) {
+      showResult('error', { name: 'Invalid Ticket', org: 'Unrecognized Format' }, 'Rejected');
+      playPremiumBeep('error');
+      return;
+    }
+
+    const payload = raw.replace('ELEVATE-QA:', '').trim();
+    const parts = payload.split('|');
+    const ticketId = parts[0] ? parts[0].trim() : null;
+
+    if (!ticketId) {
+      showResult('error', { name: 'Invalid QR', org: 'No ID Found' }, 'Rejected');
+      playPremiumBeep('error');
+      return;
+    }
+
+    if (!window.supabase) {
+      alert("Database disconnected. Please reload.");
+      return;
+    }
+
+    // 1. Fetch user to verify and check status
+    const { data: user, error: fetchErr } = await window.supabase
+      .from('registrations')
+      .select('id, name, company, email, status')
+      .eq('id', ticketId)
+      .single();
+
+    if (fetchErr || !user) {
+      showResult('error', { name: 'Not Registered', org: 'No match in DB' }, 'Ticket Not Found');
+      playPremiumBeep('error');
+      return;
+    }
+
+    if (user.status === 'PRESENT') {
+      showResult('already', { name: user.name, org: user.company || user.email }, 'Duplicate Scan');
+      playPremiumBeep('error');
+      return;
+    }
+
+    // 2. Mark as present
+    const { error: updateErr } = await window.supabase
+      .from('registrations')
+      .update({ status: 'PRESENT' })
+      .eq('id', ticketId);
+
+    if (updateErr) {
+      showResult('error', { name: 'Sync Error', org: updateErr.message }, 'Check-in Failed');
+      playPremiumBeep('error');
+      return;
+    }
+
+    showResult('success', { name: user.name, org: user.company || user.email }, 'Success');
+    playPremiumBeep('success');
+  }
+
+  function showResult(type, attendee, label) {
+    const sheet = document.getElementById('result-sheet');
+    const content = document.getElementById('result-content');
+    
+    const icons = { success: '✅', already: '⚠️', error: '❌' };
+    const badgeText = { success: '✓ ADMITTED', already: '⚠ ALREADY IN', error: '✗ REJECTED' };
+    
+    content.className = type;
+    content.innerHTML = `
+      <div class="res-status-icon">${icons[type]}</div>
+      <div class="res-message">${label}</div>
+      <div class="res-name">${attendee.name || 'Unknown'}</div>
+      <div class="res-org">${attendee.org || ''}</div>
+      <div class="res-badge">${badgeText[type]}</div>
+    `;
+
+    sheet.classList.add('active');
+    
+    clearTimeout(window.hideTimeout);
+    window.hideTimeout = setTimeout(hideResult, 4000);
+  }
+
+  function hideResult() {
+    document.getElementById('result-sheet').classList.remove('active');
+  }
+
+  function triggerFlash() {
+    const flash = document.getElementById('flash');
+    flash.classList.remove('flash-active');
+    void flash.offsetWidth;
+    flash.classList.add('flash-active');
+  }
+
+  function playPremiumBeep(type) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = 'sine';
+      if (type === 'success') {
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+      } else {
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+      }
+
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+    } catch(e) {}
+  }
+</script>
+
+</body>
+</html>

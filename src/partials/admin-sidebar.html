@@ -1,0 +1,34 @@
+  <aside class="sidebar" id="admin-sidebar">
+    <div class="logo">
+      <img id="admin-sidebar-logo" src="" alt="Elevate Admin" style="display: none;">
+    </div>
+    <nav aria-label="Admin sections">
+      <a onclick="showSection('attendance')" class="nav-item active" id="nav-attendance" role="link" tabindex="0" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">👥</span> ATTENDANCE
+      </a>
+      <a onclick="showSection('identity')" class="nav-item" id="nav-identity" role="link" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🏷️</span> SITE IDENTITY
+      </a>
+      <a onclick="showSection('agenda')" class="nav-item" id="nav-agenda" role="link" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">📅</span> EVENT AGENDA
+      </a>
+      <a onclick="showSection('speakers')" class="nav-item" id="nav-speakers" role="link" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🎙️</span> THE LINEUP
+      </a>
+      <a onclick="showSection('visuals')" class="nav-item" id="nav-visuals" role="link" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🖼️</span> VISUAL ASSETS
+      </a>
+      <a onclick="showSection('intelligence')" class="nav-item" id="nav-intelligence" role="link" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🧠</span> AI INTELLIGENCE
+      </a>
+      <a onclick="showSection('settings')" class="nav-item" id="nav-settings" role="link" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">⚙️</span> PLATFORM SETTINGS
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" aria-label="Log out of admin">
+        LOGOUT <span aria-hidden="true">🔒</span>
+      </button>
+    </div>
+  </aside>

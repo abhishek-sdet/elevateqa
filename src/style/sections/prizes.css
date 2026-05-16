@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400..700&display=swap');
+
+/* PRIZES & RECOGNITION - LIGHT THEME STRIP (AS PER ORIGINAL DESIGN) */
+.prizes-strip { 
+  background: #f4f1ea !important; /* Original Paper/Off-white background */
+  color: #0b0b10 !important; 
+  padding: 100px var(--pad-x) !important; 
+  text-align: center !important; 
+  border: none !important; 
+  position: relative !important; 
+  overflow: hidden !important; 
+}
+
+.prizes-strip::before, .prizes-strip::after { 
+  content: '✦ PRIZES ✦ AWARDS ✦ RECOGNITION ✦ PRIZES ✦ AWARDS ✦ RECOGNITION ✦ PRIZES ✦ AWARDS ✦' !important; 
+  position: absolute !important; 
+  white-space: nowrap !important; 
+  font-family: var(--mono) !important; 
+  font-size: 14px !important; 
+  letter-spacing: 0.3em !important; 
+  color: #0b0b10 !important; 
+  opacity: 0.12 !important; 
+}
+
+.prizes-strip::before { top: 24px !important; left: 0 !important; right: 0 !important; }
+.prizes-strip::after { bottom: 24px !important; left: 0 !important; right: 0 !important; }
+
+.prizes-strip h2 { 
+  font-family: var(--display) !important; 
+  font-size: clamp(40px, 7vw, 96px) !important; 
+  font-weight: 300 !important; 
+  line-height: 0.95 !important; 
+  letter-spacing: -0.03em !important; 
+  max-width: 1100px !important; 
+  margin: 0 auto 24px !important; 
+  color: #0b0b10 !important;
+}
+
+.prizes-strip h2 em { 
+  font-style: italic !important; 
+  color: #ff3a3a !important; /* High-contrast Red/Orange accent */
+}
+
+.prizes-stats { 
+  display: flex !important; 
+  justify-content: center !important; 
+  gap: 80px !important; 
+  margin-top: 60px !important; 
+  flex-wrap: wrap !important; 
+  opacity: 1 !important;
+}
+
+.prizes-stats > span, .prizes-stats .stat-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  font-family: var(--mono) !important; 
+  font-size: 12px !important; 
+  letter-spacing: 0.1em !important; 
+  text-transform: uppercase !important; 
+  color: rgba(11, 11, 16, 0.7) !important; 
+}
+
+.prizes-stats strong, .prizes-stats .num { 
+  display: block !important; 
+  font-family: var(--display) !important; 
+  font-size: 36px !important; 
+  font-style: italic !important; 
+  font-weight: 400 !important;
+  color: #f7b733 !important; /* Gold/Orange accent for numbers */
+  margin: 0px 0px 8px !important; 
+  letter-spacing: -0.02em !important; 
+}
+
+@media (max-width: 768px) {
+  .prizes-stats { gap: 40px !important; }
+  .prizes-strip h2 { font-size: 40px !important; }
+}

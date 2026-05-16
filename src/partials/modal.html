@@ -1,0 +1,80 @@
+<div class="modal-overlay" id="regModal" role="dialog" aria-modal="true" aria-labelledby="modal-form-title">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close registration dialog"></button>
+
+    <!-- STEP 0: PRICE ANIMATION -->
+    <div id="price-view">
+      <div class="price-anim-container" id="priceAnim">
+        <div class="scarcity-label" id="modal-price-scarcity">Special 2nd Edition Access</div>
+        <div class="price-slash-wrap">
+          <span class="old-price" id="modal-price-old">₹499<span class="slash-line"></span></span>
+          <span class="new-price" id="modal-price-new">₹0</span>
+        </div>
+        <div class="price-caption" id="modal-price-caption">Unlocked for the first 300 registered practitioners.</div>
+        <button onclick="proceedToForm()" class="btn btn-primary" id="modal-price-btn" style="margin-top: 32px; width: 100%;">Claim my free spot →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1: FORM -->
+    <div id="form-view" style="display:none;">
+      <h2 id="modal-form-title">Confirm your <em>Access</em></h2>
+      <p id="modal-form-desc" style="color:var(--ink-dim);font-size:13px;margin-bottom:24px;line-height:1.5;">Since this is a free pass, please provide your professional details to confirm your seat.</p>
+      <form class="reg-form" onsubmit="generateTicket(event)">
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" name="name" autocomplete="name" required placeholder="Abhishek Johri">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Professional Email</label>
+          <input type="email" id="reg-email" name="email" autocomplete="email" required placeholder="abhishek@company.com">
+        </div>
+        <div class="form-group">
+          <label for="reg-org">Company / Organization</label>
+          <input type="text" id="reg-org" name="organization" autocomplete="organization" required placeholder="SDET Tech">
+        </div>
+        <!-- Honeypot field to deter bots -->
+        <div class="form-group" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
+          <label for="reg-website">Website (leave empty)</label>
+          <input type="text" id="reg-website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:10px;">Register & Generate Pass &rarr;</button>
+      </form>
+    </div>
+
+    <!-- STEP 2: TICKET -->
+    <div id="ticket-view" style="display:none;">
+      <div class="ticket-visual-side">
+        <div class="ticket-box">
+          <div class="ticket-info">Pass Holder<strong id="ticket-name">...</strong></div>
+          <div class="ticket-id-label" id="ticket-id-display"></div>
+          <div class="qrcode-container" id="qrcode"></div>
+          <div class="ticket-info">Organization<strong id="ticket-org">...</strong></div>
+          <div class="ticket-footer">ELEVATE QA 2026 &middot; 8 AUG 2026 &middot; NOIDA</div>
+        </div>
+      </div>
+
+      <div class="ticket-data-side">
+        <h2>Your <em>Pass</em> is ready.</h2>
+        
+        <!-- Venue Notice Banner -->
+        <div class="venue-notice">
+          <span class="venue-icon">📍</span>
+          <span>When you arrive at the venue, <strong>show this QR code</strong> at the entrance for check-in.</span>
+        </div>
+
+        <!-- Email Status -->
+        <div class="email-status-wrap" id="email-status-wrap" style="margin: 0;">
+          <div class="email-status sending" id="email-status">
+            <span class="email-spinner"></span> Sending ticket...
+          </div>
+        </div>
+        
+        <div class="ticket-actions">
+          <button class="btn btn-secondary" onclick="downloadTicketQR()" id="btn-download-ticket">&#8595; Download QR</button>
+          <button class="btn btn-primary" id="btn-share-ticket" style="background: #0077b5; color: #fff; border: none;">Share on LinkedIn</button>
+        </div>
+        <button class="btn btn-secondary" onclick="closeModal()" style="width: 100%; margin-top: 12px; background: transparent; border: 1px solid var(--line); color: var(--ink-dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;">Close Portal</button>
+      </div>
+    </div>
+  </div>
+</div>

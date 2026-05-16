@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elevate QA 2026 — AI-Led Quality Engineering: The Proof of Value</title>
+  <meta name="description" content="Elevate QA 2026 — The AI-Led Quality Engineering Tech Summit. A one-day symposium for QE leaders. Delhi NCR, India, August 2026.">
+
+  <!-- SECURITY HEADERS -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://images.unsplash.com; connect-src 'self' https://cdn.jsdelivr.net https://*.supabase.co wss://*.supabase.co; worker-src 'self' blob:; base-uri 'self'; form-action 'self';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- SEO / SOCIAL -->
+  <meta name="theme-color" content="#0b0b10">
+  <link rel="canonical" href="https://elevateqa.sdettech.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Elevate QA 2026 — AI-Led Quality Engineering: The Proof of Value">
+  <meta property="og:description" content="A one-day symposium for QE leaders. Delhi NCR, India, August 2026.">
+  <meta property="og:image" content="https://elevateqa.sdettech.com/og-image.png">
+  <meta property="og:url" content="https://elevateqa.sdettech.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Elevate QA 2026 — AI-Led Quality Engineering">
+  <meta name="twitter:description" content="A one-day symposium for QE leaders. Delhi NCR, India, August 2026.">
+  <meta name="twitter:image" content="https://elevateqa.sdettech.com/og-image.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style/elevate-main.css">
+  <link rel="stylesheet" href="src/style/sections/footer.css">
+
+  <!-- CRITICAL: Brand Color — applied immediately, hardcoded to ensure it always renders -->
+  <style>
+    :root { --accent: #d4ff3a; }
+    /* Force the accent color on all emphasized and accent-labeled elements */
+    :not(.prizes-strip) em,
+    :not(.prizes-strip) .accent,
+    :not(.prizes-strip) span.accent,
+    .accent,
+    span.accent { 
+      color: var(--accent) !important; 
+    }
+    /* Hard-lock Black Background for Maturity Map */
+    .infographic-section { background: #000000 !important; color: #ffffff !important; }
+    .infographic-section .section-title { color: #ffffff !important; }
+    .infographic-section .section-title em { color: var(--accent) !important; }
+  </style>
+
+  <!-- CRITICAL: Logo preload from localStorage to prevent flash -->
+  <script>
+    (function() {
+      try {
+        const visuals = JSON.parse(localStorage.getItem('elevate_visuals') || '{}');
+        const logoUrl = visuals.logo || '/logo-elevate-clean.svg';
+        if (logoUrl) {
+          const logoStyle = document.createElement('style');
+          logoStyle.innerHTML = `.logo img, .preloader-logo { content: url("${logoUrl}") !important; }`;
+          document.head.appendChild(logoStyle);
+        }
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+  <div class="ambient-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+  <!-- CINEMATIC LOGO PRELOADER -->
+  <div id="page-preloader">
+    <div class="preloader-content">
+      <div class="logo-aura"></div>
+      <img src="/logo-elevate-clean.svg" class="preloader-logo" alt="Elevate QA Logo" style="display: block; height: 120px; width: auto; margin: 0 auto 30px;">
+      <div class="loader-bar-wrap">
+        <div class="loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scroll-progress"></div>
+  <div class="cursor-branded">
+    <svg class="cursor-arrow" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5.5 3.5L18.5 12L5.5 20.5V3.5Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  {{> ticker }}
+  {{> header }}
+
+  <main id="main">
+    {{> hero }}
+    {{> proof-bar }}
+    {{> manifesto }}
+    {{> map }}
+    {{> experience }}
+    {{> agenda }}
+    {{> speakers }}
+    {{> prizes }}
+    {{> coming }}
+    {{> involve }}
+  </main>
+  {{> modal }}
+  {{> footer }}
+
+  <!-- App Scripts -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="src/scripts/main.js"></script>
+</body>
+</html>

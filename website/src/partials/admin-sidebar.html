@@ -1,0 +1,37 @@
+  <aside class="sidebar">
+    <div class="logo">
+      <img id="admin-sidebar-logo" src="/logo-brand.png" alt="Admin Logo" style="height: 32px; width: auto; display: block;">
+    </div>
+    <nav>
+      <a onclick="showSection('attendance')" class="nav-item active" id="nav-attendance">
+        <span class="nav-icon">👥</span> ATTENDANCE
+      </a>
+      <a onclick="showSection('identity')" class="nav-item" id="nav-identity">
+        <span class="nav-icon">🏷️</span> SITE IDENTITY
+      </a>
+      <a onclick="showSection('agenda')" class="nav-item" id="nav-agenda">
+        <span class="nav-icon">📅</span> EVENT AGENDA
+      </a>
+      <a onclick="showSection('speakers')" class="nav-item" id="nav-speakers">
+        <span class="nav-icon">🎙️</span> SPEAKER ROSTER
+      </a>
+      <a onclick="showSection('visuals')" class="nav-item" id="nav-visuals">
+        <span class="nav-icon">🖼️</span> VISUAL ASSETS
+      </a>
+      <a onclick="showSection('intelligence')" class="nav-item" id="nav-intelligence">
+        <span class="nav-icon">🧠</span> AI INTELLIGENCE
+      </a>
+      <a onclick="showSection('settings')" class="nav-item" id="nav-settings">
+        <span class="nav-icon">⚙️</span> PLATFORM SETTINGS
+      </a>
+      <a href="scanner.html" class="nav-item" target="_blank">
+        <span class="nav-icon">📸</span> SCAN ATTENDANCE
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">
+        LOGOUT <span>🔒</span>
+      </button>
+    </div>
+  </aside>
