@@ -109,12 +109,30 @@ window.openModal = (e) => {
   if (e) e.preventDefault();
   const modal = document.getElementById('regModal');
   if (modal) {
+    // Proactive Reset every time we open
+    const form = document.getElementById('registration-form');
+    if (form) form.reset();
+    
+    const submitBtn = document.getElementById('generate-btn') || document.querySelector('#registration-form button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'CONFIRM & GENERATE TICKET';
+    }
+
     modal.classList.add('active');
     document.getElementById('price-view').style.display = 'block';
     document.getElementById('form-view').style.display = 'none';
     document.getElementById('ticket-view').style.display = 'none';
     document.body.style.overflow = 'hidden';
-    console.log('[ElevateQA] Modal Opened');
+    
+    // Clear status messages
+    const status = document.getElementById('email-status');
+    if (status) {
+      status.innerHTML = '';
+      status.className = 'email-status';
+    }
+    
+    console.log('[ElevateQA] Modal Opened & State Reset');
   }
 };
 
