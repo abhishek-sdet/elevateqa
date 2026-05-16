@@ -194,18 +194,35 @@ window.generateTicket = async (e) => {
     
     // EMAILJS INTEGRATION (Setup ready)
     if (window.emailjs) {
+      // Initialize with Public Key
+      emailjs.init('ZzPD0nx75Ms7J2ntS');
+
       const templateParams = {
         to_name: name,
         to_email: email,
         ticket_id: ticketId,
-        qr_data: qrText,
+        qr_data: `ELEVATE-QA: ${ticketId} | ${email}`,
         company: org
       };
 
-      // EmailJS details to be filled by user
-      // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-      //   .then(() => console.log('[ElevateQA] Email Sent Successfully'))
-      //   .catch((err) => console.error('[ElevateQA] Email Failed:', err));
+      // Sending using the service ID from your screenshot and the template I created
+      emailjs.send('service_5za1p9c', 'template_0wi7mv9', templateParams)
+        .then(() => {
+          console.log('[ElevateQA] Ticket Email Sent Successfully to:', email);
+          const status = document.getElementById('email-status');
+          if (status) {
+            status.className = 'email-status success';
+            status.innerHTML = '✓ Ticket sent to your email';
+          }
+        })
+        .catch((err) => {
+          console.error('[ElevateQA] Email Failed:', err);
+          const status = document.getElementById('email-status');
+          if (status) {
+            status.className = 'email-status error';
+            status.innerHTML = '✕ Email failed, please download QR below';
+          }
+        });
     }
 
     console.log('[ElevateQA] Preparing to send confirmation email to:', email);
