@@ -318,9 +318,10 @@ document.addEventListener('DOMContentLoaded', () => {
       menuToggle.setAttribute('aria-expanded', 'false');
     }
 
-    const headerOffset = nav ? nav.offsetHeight : 80;
+    const headerHeight = nav ? nav.offsetHeight : 80;
     const elementPosition = target.getBoundingClientRect().top;
-    const offsetPosition = elementPosition + window.scrollY - headerOffset - 20;
+    // Increase offset to 40px for better visibility of section titles
+    const offsetPosition = elementPosition + window.scrollY - headerHeight - 40;
 
     window.scrollTo({
       top: offsetPosition,
