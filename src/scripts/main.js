@@ -165,15 +165,24 @@ window.generateTicket = async (e) => {
     document.getElementById('ticket-name').textContent = name;
     document.getElementById('ticket-org').textContent = org;
     
-    // QR Generation
+    // QR Generation (Must match scanner format: ELEVATE-QA: uuid | email)
     const qrContainer = document.getElementById('qrcode');
     if (qrContainer) {
       qrContainer.innerHTML = '';
       if (typeof QRCode !== 'undefined') {
+        const qrText = `ELEVATE-QA: ${ticketId} | ${email}`;
         new QRCode(qrContainer, {
-          text: `ELEVATEQA26|${ticketId}|${name}|${email}|${org}`,
+          text: qrText,
           width: 160, height: 160, colorDark: "#0b0b10", colorLight: "#ffffff"
         });
+        
+        // Add LinkedIn Share Link
+        const shareMsg = encodeURIComponent(`Excited to attend Elevate QA 2026! 🚀 \n\nLooking forward to deep-diving into the proof of value and shipping quality at scale. Catch me there! \n\n#ElevateQA #QualityEngineering #Testing #SDET`);
+        const shareUrl = encodeURIComponent('https://elevateqa.netlify.app');
+        const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}&summary=${shareMsg}`;
+        
+        const shareBtn = document.getElementById('linkedin-share-btn');
+        if (shareBtn) shareBtn.setAttribute('href', linkedinUrl);
       } else {
         console.warn('[ElevateQA] QRCode library not loaded yet!');
         qrContainer.innerHTML = '<p style="font-size:10px; color:red;">QR Error - Please refresh</p>';
@@ -182,6 +191,9 @@ window.generateTicket = async (e) => {
 
     document.getElementById('form-view').style.display = 'none';
     document.getElementById('ticket-view').style.display = 'block';
+    
+    // Simulate Email Send (Integration ready)
+    console.log('[ElevateQA] Preparing to send confirmation email to:', email);
   } catch (err) {
     console.error('[ElevateQA] Full Registration Failure:', err);
     alert('Registration failed. ' + (err.message || 'Please try again.'));
