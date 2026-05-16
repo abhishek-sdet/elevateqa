@@ -1,0 +1,159 @@
+<!-- ELEVATE ADMIN v1.1.0 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elevate Admin — Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style/admin.css">
+  <link rel="stylesheet" href="src/style/admin-premium.css">
+  
+  <!-- SUPABASE & CORE -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <!-- AUTH GUARDIAN (Prevents Login Flash & Injects Logos) -->
+  <script>
+    (function() {
+      const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
+      const root = document.documentElement;
+      
+      const swapLogos = (ids, url) => {
+        const check = () => {
+          let pending = false;
+          ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.src !== url) el.src = url;
+            else if (!el) pending = true;
+          });
+          if (pending) requestAnimationFrame(check);
+        };
+        requestAnimationFrame(check);
+      };
+
+      if (isLoggedIn) {
+        root.classList.add('is-logged-in');
+        root.classList.remove('not-logged-in');
+        try {
+          const sc = JSON.parse(localStorage.getItem('elevate_site_content') || '{}');
+          if (sc.logoUrl) swapLogos(['admin-preloader-logo', 'admin-sidebar-logo'], sc.logoUrl);
+        } catch(e) {}
+      } else {
+        root.classList.add('not-logged-in');
+        root.classList.remove('is-logged-in');
+        document.write('<style>#admin-preloader { display: none !important; }</style>');
+        try {
+          const sc = JSON.parse(localStorage.getItem('elevate_site_content') || '{}');
+          if (sc.logoUrl) swapLogos(['login-logo-img'], sc.logoUrl);
+        } catch(e) {}
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ADMIN PRELOADER (Cyber-Luxe Design) -->
+  <div id="admin-preloader" class="admin-preloader">
+    <div class="preloader-content">
+      <div class="preloader-visuals">
+        <div class="orbital-ring"></div>
+        <div class="orbital-ring-outer"></div>
+        <div class="preloader-logo">
+          <img id="admin-preloader-logo" src="/logo-elevate-clean.svg" alt="Elevate QA">
+        </div>
+      </div>
+      <div class="preloader-status">
+        <div class="status-text">INITIALIZING COMMAND CENTER</div>
+        <div class="status-bar-bg">
+          <div class="status-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{> admin-auth }}
+  {{> admin-sidebar }}
+
+  <!-- MOBILE HAMBURGER -->
+  <button id="admin-menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- SIDEBAR BACKDROP (tap to close on mobile) -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+  <!-- MAIN VIEW -->
+  <div class="main-content">
+    {{> admin-header }}
+
+    <div id="protected-content">
+      <main>
+        {{> admin-attendance }}
+        {{> admin-identity }}
+        {{> admin-intelligence }}
+        {{> admin-agenda }}
+        {{> admin-speakers }}
+        {{> admin-visuals }}
+        {{> admin-settings }}
+      </main>
+    </div>
+
+    <!-- FLOATING ACTION BAR -->
+    <div class="admin-actions">
+      <button class="btn-reset" onclick="location.reload()">Reset Changes</button>
+      <button class="btn-save-all" id="btn-publish" onclick="saveAll()">
+        🚀 SYNC & PUBLISH
+      </button>
+    </div>
+  </div>
+
+  {{> admin-modals }}
+
+  <!-- MODULAR ADMIN ENGINE -->
+  <script src="src/scripts/admin-auth.js"></script>
+  <script type="module" src="src/scripts/admin-core.js"></script>
+
+  <!-- HAMBURGER BOOTSTRAP (non-module, runs immediately) -->
+  <script>
+    // Wire hamburger toggle as soon as DOM is ready (before module scripts fire)
+    document.addEventListener('DOMContentLoaded', function () {
+      var toggle = document.getElementById('admin-menu-toggle');
+      var backdrop = document.getElementById('sidebar-backdrop');
+
+      function openSidebar() {
+        document.body.classList.add('sidebar-active');
+        if (backdrop) backdrop.classList.add('active');
+        if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeSidebar() {
+        document.body.classList.remove('sidebar-active');
+        if (backdrop) backdrop.classList.remove('active');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }
+
+      if (toggle) {
+        toggle.addEventListener('click', function (e) {
+          e.stopPropagation();
+          document.body.classList.contains('sidebar-active') ? closeSidebar() : openSidebar();
+        });
+      }
+
+      if (backdrop) {
+        backdrop.addEventListener('click', closeSidebar);
+      }
+
+      // Also patch nav-items to close sidebar on mobile after tap
+      document.querySelectorAll('.nav-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+          if (window.innerWidth <= 1024) closeSidebar();
+        });
+      });
+    });
+  </script>
+</body>
+</html>

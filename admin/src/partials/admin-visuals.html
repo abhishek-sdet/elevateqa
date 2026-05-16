@@ -1,0 +1,81 @@
+        <!-- SECTION: VISUALS -->
+        <section id="sec-visuals" style="display:none;">
+          <div class="manager-card">
+            <div class="section-title">Brand <em>Identity</em></div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Site Logo <span class="label-hint">(Transparent PNG or SVG recommended)</span></label>
+                <div class="img-upload-wrap" onclick="triggerVisualUpload('logo')">
+                  <img id="preview-logo" src="" style="display:none;">
+                  <div class="placeholder" id="placeholder-logo">📸 LOGO UPLOAD</div>
+                  <input type="file" id="upload-logo" hidden onchange="handleVisualUpload(this, 'logo')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Logo Height <span class="label-hint">(Current: <span id="logo-height-val">48</span>px)</span></label>
+                <input type="range" id="visual-logo-height" min="20" max="120" value="48" oninput="document.getElementById('logo-height-val').textContent = this.value">
+                <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--ink-dim); margin-top:8px;">
+                  <span>20px</span>
+                  <span>120px</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="manager-card">
+            <div class="section-title">Hero <em>Atmosphere</em></div>
+            <div class="form-group">
+              <label>Hero Background Image <span class="label-hint">(1920x1080 Recommended)</span></label>
+              <div class="img-upload-wrap" onclick="triggerVisualUpload('hero-bg')">
+                <img id="preview-hero-bg" src="" style="display:none;">
+                <div class="placeholder" id="placeholder-hero-bg">📸 CLICK TO UPLOAD</div>
+                <input type="file" id="upload-hero-bg" hidden onchange="handleVisualUpload(this, 'hero-bg')">
+              </div>
+            </div>
+          </div>
+
+          <div class="manager-card">
+            <div class="section-title">Experience <em>Gallery</em></div>
+            <div class="asset-grid">
+              <!-- Strip 1 -->
+              <div class="asset-card">
+                <label>Gallery Image 01</label>
+                <div class="img-upload-wrap" onclick="triggerVisualUpload('strip-01')">
+                  <img id="preview-strip-01" src="" style="display:none;">
+                  <div class="placeholder" id="placeholder-strip-01">📸</div>
+                  <input type="file" id="upload-strip-01" hidden onchange="handleVisualUpload(this, 'strip-01')">
+                </div>
+                <div class="form-group" style="margin-top:16px; margin-bottom:0;">
+                  <label>Caption</label>
+                  <input type="text" id="strip-01-caption" placeholder="Image caption...">
+                </div>
+              </div>
+              <!-- Strip 2 -->
+              <div class="asset-card">
+                <label>Gallery Image 02</label>
+                <div class="img-upload-wrap" onclick="triggerVisualUpload('strip-02')">
+                  <img id="preview-strip-02" src="" style="display:none;">
+                  <div class="placeholder" id="placeholder-strip-02">📸</div>
+                  <input type="file" id="upload-strip-02" hidden onchange="handleVisualUpload(this, 'strip-02')">
+                </div>
+                <div class="form-group" style="margin-top:16px; margin-bottom:0;">
+                  <label>Caption</label>
+                  <input type="text" id="strip-02-caption" placeholder="Image caption...">
+                </div>
+              </div>
+              <!-- Strip 3 -->
+              <div class="asset-card">
+                <label>Gallery Image 03</label>
+                <div class="img-upload-wrap" onclick="triggerVisualUpload('strip-03')">
+                  <img id="preview-strip-03" src="" style="display:none;">
+                  <div class="placeholder" id="placeholder-strip-03">📸</div>
+                  <input type="file" id="upload-strip-03" hidden onchange="handleVisualUpload(this, 'strip-03')">
+                </div>
+                <div class="form-group" style="margin-top:16px; margin-bottom:0;">
+                  <label>Caption</label>
+                  <input type="text" id="strip-03-caption" placeholder="Image caption...">
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>

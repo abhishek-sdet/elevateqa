@@ -1,0 +1,88 @@
+/* AGENDA, SPEAKERS, PRIZES, INVOLVE */
+
+/* IMAGE STRIP */
+.image-strip { display: grid; grid-template-columns: 2fr 1fr 1.4fr; gap: 1px; background: var(--line); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.image-strip .img-cell { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--bg-2); }
+.image-strip .img-cell img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(1.1); transition: filter 0.6s, transform 0.6s; }
+.image-strip .img-cell:hover img { filter: grayscale(0%) contrast(1); transform: scale(1.02); }
+.image-strip .img-cell .caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, rgba(11,11,16,0.95), transparent); font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); }
+.image-strip .img-cell .caption .num { color: var(--accent); margin-right: 8px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding: 20px 0; }
+.timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 80px; width: 1px; background: var(--line-strong); }
+.timeline-row {
+  display: grid; grid-template-columns: 80px 1fr; gap: var(--space-lg); padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--line); position: relative; align-items: start;
+  border-left: 3px solid transparent;
+  transition: background 0.3s, border-left-color 0.3s;
+  padding-left: 6px;
+}
+.timeline-row:hover { background: var(--bg-2); border-left-color: var(--accent); }
+.timeline-row.featured:hover { border-left-color: var(--accent-2); }
+.timeline-row:last-child { border-bottom: none; }
+.timeline-row::before { content: ''; position: absolute; left: 76px; top: 36px; width: 9px; height: 9px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px var(--bg); z-index: 1; }
+.timeline-row.featured::before { background: var(--accent-2); width: 12px; height: 12px; left: 74px; }
+.timeline-row.break::before { background: var(--accent-4); }
+.timeline-time { font-family: var(--mono); font-size: 14px; color: var(--ink-dim); letter-spacing: 0.05em; padding-top: 4px; }
+.timeline-content { padding-left: 40px; }
+.timeline-content .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 100px; margin-bottom: 12px; }
+.timeline-row.featured .timeline-content .tag { color: var(--accent-2); border-color: var(--accent-2); }
+.timeline-row.break .timeline-content .tag { color: var(--accent-4); border-color: var(--accent-4); }
+.timeline-content h4 { font-family: var(--display); font-size: clamp(28px, 3vw, 40px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px; }
+.timeline-content h4 em { font-style: italic; }
+.timeline-content p { font-size: 16px; color: var(--ink-dim); line-height: 1.55; max-width: 700px; }
+
+/* RESPONSIVE TIMELINE */
+@media (max-width: 640px) {
+  .timeline::before { left: 24px; }
+  .timeline-row { 
+    grid-template-columns: 1fr; 
+    gap: 12px; 
+    padding-left: 24px; 
+    padding-bottom: 32px;
+  }
+  .timeline-row::before { left: 20px; top: 38px; }
+  .timeline-row.featured::before { left: 18px; }
+  .timeline-time { font-size: 12px; padding-top: 0; }
+  .timeline-content { padding-left: 20px; }
+  .timeline-content h4 { font-size: 24px; }
+}
+
+/* SPEAKERS */
+.speakers-intro { font-family: var(--display); font-size: clamp(24px, 2.5vw, 36px); font-weight: 300; font-style: italic; color: var(--ink-dim); max-width: 800px; margin-bottom: 60px; line-height: 1.4; }
+.speakers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.speaker-card { background: var(--bg); padding: var(--space-md); aspect-ratio: 3 / 4; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.speaker-card .silhouette { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 200px; font-style: italic; color: var(--line-strong); font-weight: 300; pointer-events: none; user-select: none; }
+.speaker-card .top { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-dim); display: flex; justify-content: space-between; position: relative; z-index: 2; }
+.speaker-card .name { font-family: var(--display); font-size: 28px; font-weight: 400; font-style: italic; letter-spacing: -0.02em; position: relative; z-index: 2; }
+.speaker-card .name em { color: var(--accent); }
+.speaker-photo-wrap { position: absolute; inset: 0; overflow: hidden; }
+.speaker-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: grayscale(100%) contrast(1.1); transition: filter 0.6s ease, transform 0.6s ease; display: block; }
+.speaker-card:hover .speaker-photo { filter: grayscale(0%) contrast(1); transform: scale(1.04); }
+.speaker-has-photo .top, .speaker-has-photo .name { text-shadow: 0 1px 8px rgba(0,0,0,0.8); }
+.speaker-card:hover .speaker-photo { filter: grayscale(0%) contrast(1); transform: scale(1.04); }
+.speaker-has-photo .top, .speaker-has-photo .name { text-shadow: 0 1px 8px rgba(0,0,0,0.8); }
+.speaker-cta-card { background: var(--accent); color: var(--bg); }
+.speaker-cta-card .silhouette { color: rgba(11,11,16,0.1); }
+.speaker-cta-card .top { color: rgba(11,11,16,0.6); }
+.speaker-cta-card .pitch { font-family: var(--display); font-size: 24px; font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; position: relative; z-index: 2; }
+.speaker-cta-card .pitch em { font-style: italic; }
+.speaker-cta-card a { color: var(--bg); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; font-weight: 600; }
+
+/* PRIZES */
+.prizes-strip { background: var(--ink); color: var(--bg); padding: 80px var(--pad-x); text-align: center; border: none; position: relative; overflow: hidden; }
+.prizes-strip h2 { font-family: var(--display); font-size: clamp(50px, 8vw, 120px); font-weight: 300; line-height: 0.95; letter-spacing: -0.03em; max-width: 1200px; margin: 0 auto 24px; }
+.prizes-stats span strong { display: block; font-family: var(--display); font-size: 36px; font-style: italic; color: var(--accent-4); margin-bottom: 4px; letter-spacing: -0.02em; }
+
+/* INVOLVE */
+.involve { background: var(--bg-2); padding: var(--pad-y) var(--pad-x); text-align: center; border: none; }
+.involve-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1500px; margin: 60px auto 0; }
+.involve-card { text-align: left; padding: 40px 32px; background: var(--bg); border: 1px solid var(--line); position: relative; transition: transform 0.4s cubic-bezier(0.7,0,0.3,1), border-color 0.4s, background 0.4s; }
+.involve-card:hover { transform: translateY(-4px); border-color: var(--accent); background: var(--bg-2); }
+.involve-card .num { font-family: var(--display); font-size: 80px; font-style: italic; font-weight: 300; color: var(--accent); line-height: 0.8; letter-spacing: -0.04em; margin-bottom: 32px; display: block; }
+.involve-card h3 { font-family: var(--display); font-size: 26px; font-weight: 400; letter-spacing: -0.02em; margin-bottom: 12px; }
+.involve-card p { color: var(--ink-dim); font-size: 15px; line-height: 1.55; margin-bottom: 24px; }
+.involve-card .link { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 4px; display: inline-block; }
+
+/* REMOVING DUPLICATE FINALE/FOOTER - HANDLED IN CONTENT.CSS */

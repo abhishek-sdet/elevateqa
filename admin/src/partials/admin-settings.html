@@ -1,0 +1,72 @@
+        <!-- SECTION: SETTINGS -->
+        <section id="sec-settings" style="display:none;">
+          <div class="manager-card">
+            <div class="section-title">Authorized <em>Admins</em></div>
+            <p style="color:var(--ink-dim); font-size:13px; margin-bottom:20px;">Only the emails listed here will be allowed to log in and receive OTP codes.</p>
+            <div id="admin-emails-list">
+              <!-- Dynamic list of emails -->
+            </div>
+            <button class="btn-add" onclick="addAdminEmail()" style="margin-top:16px;">+ ADD ADMINISTRATOR</button>
+          </div>
+
+          <div class="manager-card">
+            <div class="section-title">Branding & <em>Identity</em></div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Primary Brand Color</label>
+                <div class="color-swatch-wrap" onclick="document.getElementById('set-color-primary').click()">
+                  <div id="preview-primary" class="color-preview" style="background:#d4ff3a;"></div>
+                  <input type="color" id="set-color-primary" style="display:none;">
+                  <input type="text" id="set-color-primary-hex" placeholder="#d4ff3a">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Background Color</label>
+                <div class="color-swatch-wrap" onclick="document.getElementById('set-color-bg').click()">
+                  <div id="preview-bg" class="color-preview" style="background:#0b0b10;"></div>
+                  <input type="color" id="set-color-bg" style="display:none;">
+                  <input type="text" id="set-color-bg-hex" placeholder="#0b0b10">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Accent Tone</label>
+                <div class="color-swatch-wrap" onclick="document.getElementById('set-color-accent').click()">
+                  <div id="preview-accent" class="color-preview" style="background:#ff5a36;"></div>
+                  <input type="color" id="set-color-accent" style="display:none;">
+                  <input type="text" id="set-color-accent-hex" placeholder="#ff5a36">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Official Event Domain</label>
+                <input type="text" id="set-domain" placeholder="https://elevateqa.com">
+              </div>
+            </div>
+          </div>
+
+          <div class="manager-card">
+            <div class="section-title">Support & <em>Comms</em></div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Attendee Registration Email</label>
+                <input type="email" id="set-email-attendee" placeholder="elevateqa@sdettech.com">
+              </div>
+              <div class="form-group">
+                <label>Presenter / Speaker Support</label>
+                <input type="email" id="set-email-presenter" placeholder="elevateqa@sdettech.com">
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Customer Support / Help Desk</label>
+                <input type="email" id="set-email-support" placeholder="elevateqa@sdettech.com">
+              </div>
+            </div>
+          </div>
+
+          <div class="manager-card">
+            <div class="section-title">Data <em>Management</em></div>
+            <p style="color:var(--ink-dim); font-size:13px; margin-bottom:20px;">Use these controls to reset the system state or purge attendee records. <strong>Action cannot be undone.</strong></p>
+            <div style="display:flex; gap:16px;">
+              <button class="btn-mini" onclick="resetToDefaults()" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2);">Purge Site Content</button>
+              <button class="btn-mini" onclick="purgeAttendees()" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2);">Clear Attendee List</button>
+            </div>
+          </div>
+        </section>

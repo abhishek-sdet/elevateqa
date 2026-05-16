@@ -1,0 +1,24 @@
+/* ADMIN MAIN ENTRY POINT */
+
+@import './variables.css';
+@import './admin/admin-auth.css';
+@import './admin/admin-layout.css';
+@import './admin/admin-components.css';
+@import './admin/admin-notifications.css';
+
+/* ADMIN SPECIFIC VARIABLES OVERRIDE IF NEEDED */
+:root {
+  --radius-luxe: 32px;
+  --shadow-luxe: 0 30px 100px rgba(0,0,0,0.6);
+}
+
+* { 
+  margin: 0; padding: 0; box-sizing: border-box; 
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-deep); }

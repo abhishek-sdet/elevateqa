@@ -1,0 +1,194 @@
+/* ELEVATE QA - WORLD CLASS NOTIFICATIONS */
+.toast-container {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 400px;
+  background: #111116;
+  border: 1px solid rgba(212, 255, 58, 0.2);
+  border-radius: 20px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(255,255,255,0.03);
+  animation: toastEntrance 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  transition: all 0.4s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.toast.removing {
+  animation: toastExit 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.toast-icon-wrap {
+  width: 48px;
+  height: 48px;
+  background: rgba(212, 255, 58, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  border: 1px solid rgba(212, 255, 58, 0.1);
+}
+
+.toast-body {
+  flex: 1;
+  padding-right: 20px;
+}
+
+.toast-title {
+  font-family: var(--body, 'Manrope');
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--accent, #d4ff3a);
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+
+.toast-msg {
+  font-family: var(--body, 'Manrope');
+  font-size: 13px;
+  color: var(--ink-dim, #a1a1a1);
+  line-height: 1.4;
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent, #d4ff3a);
+  width: 100%;
+  transform-origin: left;
+  animation: toastProgress 4s linear forwards;
+}
+
+@keyframes toastEntrance {
+  from { transform: translateY(-40px) scale(0.9); opacity: 0; filter: blur(10px); }
+  to { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+}
+
+@keyframes toastExit {
+  from { transform: translateY(0) scale(1); opacity: 1; }
+  to { transform: translateY(-20px) scale(0.95); opacity: 0; filter: blur(5px); }
+}
+
+@keyframes toastProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* ERROR THEME */
+.toast.error {
+  border-color: rgba(255, 58, 58, 0.3);
+}
+.toast.error .toast-icon-wrap {
+  background: rgba(255, 58, 58, 0.1);
+  border-color: rgba(255, 58, 58, 0.2);
+}
+.toast.error .toast-title {
+  color: #ff3a3a;
+}
+.toast.error .toast-progress {
+  background: #ff3a3a;
+}
+
+/* MODAL SYSTEM OVERHAUL */
+.premium-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  z-index: 100005;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.premium-modal-overlay.active { opacity: 1; }
+
+.premium-modal {
+  background: #0b0b10;
+  width: 100%;
+  max-width: 440px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.premium-modal-overlay.active .premium-modal {
+  transform: scale(1) translateY(0);
+}
+
+.modal-icon {
+  font-size: 40px;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-family: var(--display, 'Fraunces');
+  font-size: 28px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.modal-text {
+  font-family: var(--body, 'Manrope');
+  font-size: 15px;
+  color: var(--ink-dim, #a1a1a1);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-btns button {
+  flex: 1;
+  padding: 16px;
+  border-radius: 16px;
+  font-family: var(--body, 'Manrope');
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel {
+  background: #1a1a24;
+  color: #fff;
+}
+
+.btn-confirm {
+  background: var(--accent, #d4ff3a);
+  color: #000;
+}
+
+.btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(212, 255, 58, 0.2); }
