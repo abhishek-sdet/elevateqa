@@ -66,10 +66,11 @@ function addAgendaItem(data = { time: '', tag: '', title: '', desc: '' }) {
 }
 
 // 3. Maturity Stages
-function addMaturityStage(data = { label: '', name: '', pct: '', desc: '' }) {
+function addMaturityStage(data = { id: null, label: '', name: '', pct: '', desc: '' }) {
   const container = document.getElementById('maturity-stages-admin');
   const div = document.createElement('div');
   div.className = 'dynamic-item';
+  if (data.id) div.setAttribute('data-id', data.id);
   div.innerHTML = `
     <div class="form-grid-2">
       <div class="form-group">
@@ -91,10 +92,11 @@ function addMaturityStage(data = { label: '', name: '', pct: '', desc: '' }) {
 }
 
 // 4. Pillar Items
-function addPillarItem(data = { title: '', desc: '' }) {
+function addPillarItem(data = { id: null, title: '', desc: '' }) {
   const container = document.getElementById('pillars-admin');
   const div = document.createElement('div');
   div.className = 'dynamic-item';
+  if (data.id) div.setAttribute('data-id', data.id);
   div.innerHTML = `
     <div class="form-group">
       <label>Pillar Title</label>

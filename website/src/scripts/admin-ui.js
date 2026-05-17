@@ -50,28 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
           item.removeAttribute('aria-current');
         });
         const active = document.getElementById(`nav-${target}`);
-        if (active) active.setAttribute('aria-current', 'page');
-      };
-      window.showSection.__ariaWrapped = true;
-    } else {
-      setTimeout(tryWrap, 100);
-    }
-  };
-  tryWrap();
-})();
-
-// 1. Speakers
-function addSpeakerItem(data = { name: '', role: '', img: '', status: '' }) {
+        if (active) active.setAt// 1. Speakers
+function addSpeakerItem(data = { id: null, name: '', role: '', img: '', status: '', title: '' }) {
   const container = document.getElementById('speaker-list');
   const div = document.createElement('div');
   div.className = 'dynamic-item';
+  if (data.id) div.setAttribute('data-id', data.id);
   const esc = window.escapeHtml;
   const safeImg = esc(data.img || '');
   div.innerHTML = `
     <div class="dynamic-header">
        <div class="badge">Speaker Node</div>
        <button class="btn-del" onclick="this.parentElement.parentElement.remove()" aria-label="Remove speaker">&times;</button>
-    </div>
+     </div>
     <div class="form-grid-2">
       <div class="speaker-img-column">
         <label>Speaker Photo</label>
@@ -107,10 +98,11 @@ function handleSpeakerImg(input) {
 }
 
 // 2. Agenda
-function addAgendaItem(data = { time: '', tag: '', title: '', desc: '' }) {
+function addAgendaItem(data = { id: null, time: '', tag: '', title: '', desc: '' }) {
   const container = document.getElementById('agenda-list');
   const div = document.createElement('div');
   div.className = 'dynamic-item';
+  if (data.id) div.setAttribute('data-id', data.id);
   const esc = window.escapeHtml;
   div.innerHTML = `
     <div class="form-grid-2">
@@ -125,10 +117,11 @@ function addAgendaItem(data = { time: '', tag: '', title: '', desc: '' }) {
 }
 
 // 3. Maturity Stages
-function addMaturityStage(data = { label: '', name: '', pct: '', desc: '' }) {
+function addMaturityStage(data = { id: null, label: '', name: '', pct: '', desc: '' }) {
   const container = document.getElementById('maturity-stages-admin');
   const div = document.createElement('div');
   div.className = 'dynamic-item';
+  if (data.id) div.setAttribute('data-id', data.id);
   const esc = window.escapeHtml;
   div.innerHTML = `
     <div class="form-grid-2">
@@ -151,10 +144,11 @@ function addMaturityStage(data = { label: '', name: '', pct: '', desc: '' }) {
 }
 
 // 4. Pillar Items
-function addPillarItem(data = { title: '', desc: '' }) {
+function addPillarItem(data = { id: null, title: '', desc: '' }) {
   const container = document.getElementById('pillars-admin');
   const div = document.createElement('div');
   div.className = 'dynamic-item';
+  if (data.id) div.setAttribute('data-id', data.id);
   const esc = window.escapeHtml;
   div.innerHTML = `
     <div class="form-group">

@@ -534,10 +534,10 @@ function populateUI(data) {
   if (maturityContainer) {
     maturityContainer.innerHTML = '';
     const stages = (Array.isArray(data.maturity_stages) && data.maturity_stages.length > 0) ? data.maturity_stages : [
-      { label: 'STAGE 01', name: 'Manual-first', pct: '25%', desc: 'Test cases authored by hand. Automation islands. AI is "interesting," not yet operational.' },
-      { label: 'STAGE 02', name: 'Assisted', pct: '50%', desc: 'AI helps generate test cases and data. Engineers stay in the loop. Early wins, mixed signals.' },
-      { label: 'STAGE 03', name: 'Augmented', pct: '18%', desc: 'Self-healing automation, intelligent triage, AI-driven coverage gap analysis. Measurable lift.' },
-      { label: 'STAGE 04', name: 'Autonomous', pct: '7%', desc: 'Quality agents reason about risk, prioritize, and adapt. Humans set strategy. The future, already here in pockets.' }
+      { id: 1, label: 'STAGE 01', name: 'Manual-first', pct: '25%', desc: 'Test cases authored by hand. Automation islands. AI is "interesting," not yet operational.' },
+      { id: 2, label: 'STAGE 02', name: 'Assisted', pct: '50%', desc: 'AI helps generate test cases and data. Engineers stay in the loop. Early wins, mixed signals.' },
+      { id: 3, label: 'STAGE 03', name: 'Augmented', pct: '18%', desc: 'Self-healing automation, intelligent triage, AI-driven coverage gap analysis. Measurable lift.' },
+      { id: 4, label: 'STAGE 04', name: 'Autonomous', pct: '7%', desc: 'Quality agents reason about risk, prioritize, and adapt. Humans set strategy. The future, already here in pockets.' }
     ];
     stages.forEach(s => window.addMaturityStage(s));
   }
@@ -547,12 +547,12 @@ function populateUI(data) {
   if (pillarsContainer) {
     pillarsContainer.innerHTML = '';
     const pills = (Array.isArray(data.pillars) && data.pillars.length > 0) ? data.pillars : [
-      { title: 'Keynotes from people doing the work', desc: 'Industry voices and engineering leaders sharing concrete case studies — what AI changed, what it cost, what it delivered. Real numbers, not roadmaps.' },
-      { title: 'Practitioner deep-dives', desc: 'Hands-on breakouts from engineers who\'ve shipped AI-augmented test suites, self-healing automation, and intelligent quality pipelines at scale.' },
-      { title: 'The community table', desc: 'Curated roundtables where 200–500 quality engineering leaders connect, debate, and forge the relationships that move careers and companies forward.' },
-      { title: 'Live demos, not slideware', desc: 'See AI-led QE tooling in action on real codebases, real bugs, real flaky tests. Working software is the only honest demo.' },
-      { title: 'The candid panels', desc: 'The unfiltered conversations: what AI in QE is overhyped, what\'s underrated, where the field goes from here. Speakers who\'ll say it plainly.' },
-      { title: 'Recognition & prizes', desc: 'Speaker of the event, audience awards, and surprises throughout the day. We celebrate the people pushing the field — loudly.' }
+      { id: 1, title: 'Keynotes from people doing the work', desc: 'Industry voices and engineering leaders sharing concrete case studies — what AI changed, what it cost, what it delivered. Real numbers, not roadmaps.' },
+      { id: 2, title: 'Practitioner deep-dives', desc: 'Hands-on breakouts from engineers who\'ve shipped AI-augmented test suites, self-healing automation, and intelligent quality pipelines at scale.' },
+      { id: 3, title: 'The community table', desc: 'Curated roundtables where 200–500 quality engineering leaders connect, debate, and forge the relationships that move careers and companies forward.' },
+      { id: 4, title: 'Live demos, not slideware', desc: 'See AI-led QE tooling in action on real codebases, real bugs, real flaky tests. Working software is the only honest demo.' },
+      { id: 5, title: 'The candid panels', desc: 'The unfiltered conversations: what AI in QE is overhyped, what\'s underrated, where the field goes from here. Speakers who\'ll say it plainly.' },
+      { id: 6, title: 'Recognition & prizes', desc: 'Speaker of the event, audience awards, and surprises throughout the day. We celebrate the people pushing the field — loudly.' }
     ];
     pills.forEach(p => window.addPillarItem(p));
   }
@@ -815,10 +815,10 @@ window.showIdentitySubSection = (subId) => {
       const stages = (cached && Array.isArray(cached.maturity_stages) && cached.maturity_stages.length > 0) 
         ? cached.maturity_stages
         : [
-          { label: 'STAGE 01', name: 'Manual-first', pct: '25%', desc: 'Test cases authored by hand. Automation islands. AI is "interesting," not yet operational.' },
-          { label: 'STAGE 02', name: 'Assisted', pct: '50%', desc: 'AI helps generate test cases and data. Engineers stay in the loop. Early wins, mixed signals.' },
-          { label: 'STAGE 03', name: 'Augmented', pct: '18%', desc: 'Self-healing automation, intelligent triage, AI-driven coverage gap analysis. Measurable lift.' },
-          { label: 'STAGE 04', name: 'Autonomous', pct: '7%', desc: 'Quality agents reason about risk, prioritize, and adapt. Humans set strategy. The future, already here in pockets.' }
+          { id: 1, label: 'STAGE 01', name: 'Manual-first', pct: '25%', desc: 'Test cases authored by hand. Automation islands. AI is "interesting," not yet operational.' },
+          { id: 2, label: 'STAGE 02', name: 'Assisted', pct: '50%', desc: 'AI helps generate test cases and data. Engineers stay in the loop. Early wins, mixed signals.' },
+          { id: 3, label: 'STAGE 03', name: 'Augmented', pct: '18%', desc: 'Self-healing automation, intelligent triage, AI-driven coverage gap analysis. Measurable lift.' },
+          { id: 4, label: 'STAGE 04', name: 'Autonomous', pct: '7%', desc: 'Quality agents reason about risk, prioritize, and adapt. Humans set strategy. The future, already here in pockets.' }
         ];
       stages.forEach(s => window.addMaturityStage(s));
     }
@@ -837,12 +837,12 @@ window.showIdentitySubSection = (subId) => {
       const pills = (cached && Array.isArray(cached.pillars) && cached.pillars.length > 0) 
         ? cached.pillars
         : [
-          { title: 'Keynotes from people doing the work', desc: 'Industry voices and engineering leaders sharing concrete case studies — what AI changed, what it cost, what it delivered. Real numbers, not roadmaps.' },
-          { title: 'Practitioner deep-dives', desc: 'Hands-on breakouts from engineers who\'ve shipped AI-augmented test suites, self-healing automation, and intelligent quality pipelines at scale.' },
-          { title: 'The community table', desc: 'Curated roundtables where 200–500 quality engineering leaders connect, debate, and forge the relationships that move careers and companies forward.' },
-          { title: 'Live demos, not slideware', desc: 'See AI-led QE tooling in action on real codebases, real bugs, real flaky tests. Working software is the only honest demo.' },
-          { title: 'The candid panels', desc: 'The unfiltered conversations: what AI in QE is overhyped, what\'s underrated, where the field goes from here. Speakers who\'ll say it plainly.' },
-          { title: 'Recognition & prizes', desc: 'Speaker of the event, audience awards, and surprises throughout the day. We celebrate the people pushing the field — loudly.' }
+          { id: 1, title: 'Keynotes from people doing the work', desc: 'Industry voices and engineering leaders sharing concrete case studies — what AI changed, what it cost, what it delivered. Real numbers, not roadmaps.' },
+          { id: 2, title: 'Practitioner deep-dives', desc: 'Hands-on breakouts from engineers who\'ve shipped AI-augmented test suites, self-healing automation, and intelligent quality pipelines at scale.' },
+          { id: 3, title: 'The community table', desc: 'Curated roundtables where 200–500 quality engineering leaders connect, debate, and forge the relationships that move careers and companies forward.' },
+          { id: 4, title: 'Live demos, not slideware', desc: 'See AI-led QE tooling in action on real codebases, real bugs, real flaky tests. Working software is the only honest demo.' },
+          { id: 5, title: 'The candid panels', desc: 'The unfiltered conversations: what AI in QE is overhyped, what\'s underrated, where the field goes from here. Speakers who\'ll say it plainly.' },
+          { id: 6, title: 'Recognition & prizes', desc: 'Speaker of the event, audience awards, and surprises throughout the day. We celebrate the people pushing the field — loudly.' }
         ];
       pills.forEach(p => window.addPillarItem(p));
     }
