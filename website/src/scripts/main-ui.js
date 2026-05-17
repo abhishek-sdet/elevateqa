@@ -321,9 +321,23 @@ function syncEverything() {
 function initNav() {
   const menuBtn = document.getElementById('menu-toggle');
   const navLinks = document.getElementById('nav-links');
-  menuBtn?.addEventListener('click', () => {
-    menuBtn.classList.toggle('active');
-    navLinks?.classList.toggle('active');
+  if (!menuBtn || !navLinks) return;
+
+  menuBtn.addEventListener('click', () => {
+    const isOpen = menuBtn.classList.toggle('open');   // CSS uses .open
+    navLinks.classList.toggle('active', isOpen);       // CSS uses .active
+    document.body.style.overflow = isOpen ? 'hidden' : ''; // lock scroll
+    menuBtn.setAttribute('aria-expanded', isOpen);
+  });
+
+  // Close menu when any nav link is clicked
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      menuBtn.classList.remove('open');
+      navLinks.classList.remove('active');
+      document.body.style.overflow = '';
+      menuBtn.setAttribute('aria-expanded', 'false');
+    });
   });
 }
 

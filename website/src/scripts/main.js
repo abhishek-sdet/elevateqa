@@ -1,5 +1,8 @@
 import { initCloudSync } from './main-sync.js';
 import { supabase } from './supabase-config.js';
+import { sendAttendeeEmail } from './email-service.js';
+import './main-ui.js';
+
 
 // ─── UTIL: HTML ESCAPE ──────────────────────────────────────────────────────
 window.escapeHtml = window.escapeHtml || function(value) {
@@ -297,7 +300,14 @@ window.syncEverything = () => {
 window.openModal = (e) => {
   if (e) e.preventDefault();
   const modal = document.getElementById('regModal');
+  const priceView = document.getElementById('price-view');
+  const formView = document.getElementById('form-view');
+  const ticketView = document.getElementById('ticket-view');
+
   if (modal) {
+    if (priceView) priceView.style.display = 'block';
+    if (formView) formView.style.display = 'none';
+    if (ticketView) ticketView.style.display = 'none';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -309,6 +319,123 @@ window.closeModal = () => {
     modal.classList.remove('active');
     document.body.style.overflow = '';
   }
+};
+
+window.proceedToForm = function() {
+  const priceView = document.getElementById('price-view');
+  const formView = document.getElementById('form-view');
+  if (priceView) priceView.style.display = 'none';
+  if (formView) formView.style.display = 'block';
+};
+
+window.generateTicket = async function(event) {
+  if (event) event.preventDefault();
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const org = document.getElementById('reg-org').value;
+
+  // Show loading state
+  const btn = document.querySelector('#form-view button[type="submit"]');
+  const originalBtnText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Generating...';
+  }
+
+  let dbId = null;
+  let shortId = null;
+
+  // Save to Supabase FIRST to get the UUID
+  try {
+    const { data, error } = await supabase.from('registrations').insert([
+      { name, email, company: org, status: 'confirmed' }
+    ]).select();
+
+    if (error) {
+      console.error('[ElevateQA] Error saving registration:', error);
+      alert('Failed to register. Please try again.');
+      if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
+      return;
+    }
+    
+    if (data && data.length > 0) {
+      dbId = data[0].id;
+      // Make a nice short ID for display (first 8 chars of UUID)
+      shortId = 'EQ26-' + dbId.split('-')[0].toUpperCase();
+    }
+  } catch(e) {
+    console.error('[ElevateQA] Registration exception:', e);
+    alert('An unexpected error occurred. Please try again.');
+    if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
+    return;
+  }
+
+  // Restore button just in case
+  if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
+
+  // Update UI with the confirmed ID
+  document.getElementById('ticket-name').textContent = name;
+  document.getElementById('ticket-org').textContent = org;
+  
+  const idDisplay = document.getElementById('ticket-id-val') || document.getElementById('ticket-id-display');
+  if (idDisplay) idDisplay.textContent = `PASS ID: ${shortId}`;
+
+  const qrEl = document.getElementById('qrcode');
+  if (qrEl) {
+    qrEl.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(qrEl, {
+        text: `ELEVATE-QA:${dbId}|${name}|${org}`,
+        width: 160,
+        height: 160,
+        colorDark: "#0b0b10",
+        colorLight: "#ffffff"
+      });
+    }
+  }
+
+  document.getElementById('form-view').style.display = 'none';
+  document.getElementById('ticket-view').style.display = 'block';
+
+  // SEND ACTUAL EMAIL VIA EMAILJS
+  try {
+    await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId });
+    const statusWrap = document.getElementById('email-status-wrap');
+    if (statusWrap) {
+      statusWrap.innerHTML = '<div class="email-status success">✓ Ticket sent to ' + escapeHtml(email) + '</div>';
+    }
+  } catch(e) {
+    console.error('Failed to send email:', e);
+    const statusWrap = document.getElementById('email-status-wrap');
+    if (statusWrap) {
+      statusWrap.innerHTML = '<div class="email-status error" style="color:var(--accent-red)">⚠ Error sending email</div>';
+    }
+  }
+};
+
+window.downloadPremiumTicket = function() {
+  const qrImg = document.querySelector('#qrcode img');
+  if (qrImg) {
+    const link = document.createElement('a');
+    link.href = qrImg.src;
+    link.download = 'ElevateQA26-Pass.png';
+    link.click();
+  } else {
+    // Fallback for canvas-based QRCode
+    const qrCanvas = document.querySelector('#qrcode canvas');
+    if (qrCanvas) {
+      const link = document.createElement('a');
+      link.href = qrCanvas.toDataURL();
+      link.download = 'ElevateQA26-Pass.png';
+      link.click();
+    }
+  }
+};
+
+window.shareOnLinkedIn = function() {
+  const url = encodeURIComponent('https://elevateqa.sdettech.com/');
+  const title = encodeURIComponent('I just claimed my free pass for Elevate QA 2026!');
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=600');
 };
 
 document.addEventListener('DOMContentLoaded', () => {

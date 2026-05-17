@@ -149,6 +149,12 @@ body::before {
   animation: preloaderLogoPulse 3s ease-in-out infinite;
 }
 
+@media (max-width: 768px) {
+  .preloader-logo {
+    height: 100px;
+  }
+}
+
 @keyframes preloaderLogoPulse {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(var(--accent-rgb), 0.2)); }
   50% { transform: scale(1.05); filter: drop-shadow(0 0 60px rgba(var(--accent-rgb), 0.5)); }

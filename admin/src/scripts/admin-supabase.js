@@ -284,3 +284,24 @@ export async function deleteItem(table, id) {
   const { error } = await supabase.from(table).delete().eq('id', id);
   return !error;
 }
+
+export function getLocalData() {
+  const safeParse = (key, defaultVal) => {
+    try {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : defaultVal;
+    } catch(e) {
+      return defaultVal;
+    }
+  };
+
+  return {
+    siteContent: safeParse('elevate_site_content', {}),
+    speakers: safeParse('elevate_speakers', []),
+    agenda: safeParse('elevate_agenda', []),
+    maturity: safeParse('elevate_maturity_stages', []),
+    pillars: safeParse('elevate_experience_pillars', []),
+    manifesto: safeParse('elevate_manifesto', [{ content: '' }])[0] || {},
+    registrations: safeParse('elevate_registrations', [])
+  };
+}

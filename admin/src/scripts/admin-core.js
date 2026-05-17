@@ -4,6 +4,7 @@
  */
 import { 
   loadAllData, 
+  getLocalData,
   saveSiteContent, 
   saveBranding, 
   saveManifesto,
@@ -226,15 +227,32 @@ window.exportAttendees = () => {
 };
 
 async function initData() {
-  // Show loading overlay while fetching from Supabase
-  const overlay = _showLoadingOverlay();
+  let isCacheEmpty = true;
+  try {
+    const cached = getLocalData();
+    // Check if siteContent has any meaningful keys
+    if (cached && Object.keys(cached.siteContent || {}).length > 0) {
+      isCacheEmpty = false;
+      populateUI(cached);
+    }
+  } catch(e) {
+    console.warn('[ElevateAdmin] Cache read failed', e);
+  }
+  
+  let overlay = null;
+  if (isCacheEmpty) {
+    overlay = _showLoadingOverlay();
+  }
+
   try {
     const data = await loadAllData();
-    populateUI(data);
+    populateUI(data); // Silently update the UI with fresh data
   } catch(e) {
     console.error('[ElevateAdmin] initData error:', e);
   } finally {
-    _hideLoadingOverlay(overlay);
+    if (overlay) {
+      _hideLoadingOverlay(overlay);
+    }
   }
 }
 

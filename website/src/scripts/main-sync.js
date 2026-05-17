@@ -55,25 +55,35 @@ function transformBranding(rows) {
   };
 }
 
-export function initCloudSync() {
+// Global debouncer for real-time syncing
+let syncTimeout = null;
+const debouncedSyncEverything = () => {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    if (typeof window.syncEverything === 'function') {
+      window.syncEverything();
+    }
+  }, 150); // 150ms debounce
+};
+
+export async function initCloudSync() {
   console.log('[ElevateQA] ⚡ Supabase Sync Engine Starting...');
   
-  // 1. Initial Data Fetch starts immediately
+  // 1. Initial Data Fetch
   const orderedTables   = ['speakers', 'agenda', 'maturity_stages', 'pillars'];
   const unorderedTables = ['branding', 'site_content', 'manifesto'];
   const allTables       = [...orderedTables, ...unorderedTables];
   
-  allTables.forEach(async (table) => {
+  const fetchPromises = allTables.map(async (table) => {
     let query = supabase.from(table).select('*');
     if (orderedTables.includes(table)) {
       query = query.order('display_order', { ascending: true, nullsFirst: false });
     }
 
     const { data, error } = await query;
-
     if (error) {
       console.error(`[ElevateQA] Error fetching ${table}:`, error);
-      return;
+      return { table, success: false };
     }
 
     if (data) {
@@ -86,9 +96,16 @@ export function initCloudSync() {
       } else {
         localStorage.setItem(`elevate_${table}`, JSON.stringify(data));
       }
-      if (typeof window.syncEverything === 'function') window.syncEverything();
+      return { table, success: true };
     }
+    return { table, success: false };
   });
+
+  // Wait for all initial fetches to complete
+  await Promise.allSettled(fetchPromises);
+  
+  // Only sync once after all tables are loaded
+  if (typeof window.syncEverything === 'function') window.syncEverything();
 
   // 2. Real-time Subscriptions setup after initial cleanup
   supabase.removeAllChannels().then(() => {
@@ -122,6 +139,7 @@ async function fetchAndSync(table, ordered = false) {
     } else {
       localStorage.setItem(`elevate_${table}`, JSON.stringify(data));
     }
-    if (typeof window.syncEverything === 'function') window.syncEverything();
+    
+    debouncedSyncEverything();
   }
 }

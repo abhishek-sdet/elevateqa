@@ -12,7 +12,7 @@ const DEFAULT_SITE_CONTENT = {
   heroCtaText: "Be part of it",
   heroEyebrow: "QE × AI — The Proof of Value",
   heroMeta: "A SYMPOSIUM BY SDET TECHNOLOGIES / INDIA / 2026",
-  heroEdition: "EDITION 01 — INAUGURAL",
+  heroEdition: "EDITION 02 — 8th AUGUST 2026",
   eventDate: "8th August 2026",
   eventVenue: "Noida, Delhi NCR",
   heroFormat: "One day, <em>two stages</em>",
@@ -401,6 +401,10 @@ function loadAllData() {
     if (parsed.heroMeta && parsed.heroMeta.includes("A SYMPOSIUM BY")) {
       parsed.heroMeta = "";
     }
+    
+    // FORCE eventDate and heroEdition to correct values
+    parsed.eventDate = "8th August 2026";
+    parsed.heroEdition = "EDITION 02 — 8th AUGUST 2026";
     
     localStorage.setItem('elevate_site_content', JSON.stringify(parsed));
   }
