@@ -1,287 +1,318 @@
         <!-- SECTION: SITE IDENTITY -->
         <section id="sec-identity" style="display:none;">
-
-          <!-- ── HERO CONTENT ── -->
-          <div class="manager-card">
-            <div class="section-title">Hero <em>Content</em></div>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Eyebrow Text <span class="label-hint">(e.g. AI Led Quality Engineering Tech Summit · by SDET TECH)</span></label>
-                <input type="text" id="hero-eyebrow">
-              </div>
-              <div class="form-group">
-                <label>Headline <span class="label-hint">(Use | for line breaks, [[text]] for green accent)</span></label>
-                <input type="text" id="hero-headline">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Hero Tagline (Description)</label>
-              <textarea id="hero-tagline" rows="3"></textarea>
-            </div>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Primary CTA Button Text <span class="label-hint">(e.g. Get your ticket →)</span></label>
-                <input type="text" id="hero-cta-text">
-              </div>
-              <div class="form-group">
-                <label>Event Edition <span class="label-hint">(e.g. EDITION 02 — AUGUST 2026)</span></label>
-                <input type="text" id="hero-edition">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Top Meta Bar Text <span class="label-hint">(e.g. A SYMPOSIUM BY SDET TECHNOLOGIES / NOIDA, INDIA / 8TH AUG 2026)</span></label>
-              <input type="text" id="hero-meta">
-            </div>
+          
+          <!-- INTERNAL SUB-NAV -->
+          <div class="internal-tabs">
+            <button class="tab-btn active" onclick="showIdentitySubSection('hero')">HERO & HEADER</button>
+            <button class="tab-btn" onclick="showIdentitySubSection('manifesto')">MANIFESTO</button>
+            <button class="tab-btn" onclick="showIdentitySubSection('map')">THE MAP</button>
+            <button class="tab-btn" onclick="showIdentitySubSection('experience')">EXPERIENCE</button>
+            <button class="tab-btn" onclick="showIdentitySubSection('extras')">EXTRAS & FOOTER</button>
           </div>
 
-          <!-- ── HERO FOOTER METADATA ── -->
-          <div class="manager-card">
-            <div class="section-title">Hero Footer <em>Metadata</em></div>
-            <p class="section-desc">4 items shown at the bottom of the hero. Use a comma (,) to split White / Green color. Example: "Delhi NCR, India" → Delhi NCR is white, India is green.</p>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Format <span class="label-hint">(e.g. One day, two stages)</span></label>
-                <input type="text" id="hero-format">
+          <!-- ── SUB-SECTION: HERO & HEADER ── -->
+          <div id="sub-identity-hero" class="sub-identity-section">
+            <div class="manager-card primary-card">
+              <div class="card-header">
+                <div class="section-title">Hero <em>Core Content</em></div>
+                <div class="badge badge-accent">PRIMARY</div>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Eyebrow Text <span class="label-hint">Small text above headline</span></label>
+                  <input type="text" id="hero-eyebrow" placeholder="AI LED QUALITY ENGINEERING TECH SUMMIT · BY SDET TECH" value="AI LED QUALITY ENGINEERING TECH SUMMIT · BY SDET TECH">
+                </div>
+                <div class="form-group">
+                  <label>Headline <span class="label-hint">Use | for breaks, [[text]] for accent</span></label>
+                  <input type="text" id="hero-headline" placeholder="The [[Proof]]|of Value." value="The [[Proof]]|of Value.">
+                </div>
               </div>
               <div class="form-group">
-                <label>Audience <span class="label-hint">(e.g. 200–500 QE leaders)</span></label>
-                <input type="text" id="hero-audience">
+                <label>Hero Tagline (Description)</label>
+                <textarea id="hero-tagline" rows="2" placeholder="The first grand symposium for quality engineering in the age of AI...">The only summit where quality engineering leaders put real work on the table — what they tried, what broke, and what actually moved the needle.</textarea>
               </div>
-              <div class="form-group">
-                <label>Where / Venue <span class="label-hint">(e.g. Delhi NCR, India)</span></label>
-                <input type="text" id="event-venue">
-              </div>
-              <div class="form-group">
-                <label>When / Date <span class="label-hint">(e.g. Revealing soon)</span></label>
-                <input type="text" id="event-date">
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label>Primary CTA <span class="label-hint">Button text</span></label>
+                  <input type="text" id="hero-cta-text" placeholder="Get your ticket →" value="Get your ticket →">
+                </div>
+                <div class="form-group">
+                  <label>Event Edition <span class="label-hint">Edition info</span></label>
+                  <input type="text" id="hero-edition" placeholder="EDITION 02" value="EDITION 02">
+                </div>
+                <div class="form-group">
+                  <label>Top Meta Bar <span class="label-hint">Banner text</span></label>
+                  <input type="text" id="hero-meta" placeholder="A SYMPOSIUM BY SDET TECHNOLOGIES / NOIDA, INDIA" value="A SYMPOSIUM BY SDET TECHNOLOGIES / NOIDA, INDIA">
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- ── PROOF BAR (STATS) ── -->
-          <div class="manager-card">
-            <div class="section-title">Stats <em>Bar</em></div>
-            <p class="section-desc">The 4 numbers shown in the bar below the hero. Each has a big number and a small label below it.</p>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Stat 1 — Number</label>
-                <input type="text" id="stat1-num" placeholder="e.g. 2nd">
-              </div>
-              <div class="form-group">
-                <label>Stat 1 — Label</label>
-                <input type="text" id="stat1-lbl" placeholder="e.g. Edition / Aug 2026">
-              </div>
-              <div class="form-group">
-                <label>Stat 2 — Number</label>
-                <input type="text" id="stat2-num" placeholder="e.g. 500">
-              </div>
-              <div class="form-group">
-                <label>Stat 2 — Label</label>
-                <input type="text" id="stat2-lbl" placeholder="e.g. QE Practitioners">
-              </div>
-              <div class="form-group">
-                <label>Stat 3 — Number</label>
-                <input type="text" id="stat3-num" placeholder="e.g. 8+">
-              </div>
-              <div class="form-group">
-                <label>Stat 3 — Label</label>
-                <input type="text" id="stat3-lbl" placeholder="e.g. Hours of Signal">
-              </div>
-              <div class="form-group">
-                <label>Stat 4 — Number</label>
-                <input type="text" id="stat4-num" placeholder="e.g. 1">
-              </div>
-              <div class="form-group">
-                <label>Stat 4 — Label</label>
-                <input type="text" id="stat4-lbl" placeholder="e.g. Theme. Proof of Value.">
+            <div class="manager-card">
+              <div class="section-title">Hero <em>Metadata Footer</em></div>
+              <div class="form-grid-4">
+                <div class="form-group">
+                  <label>Format</label>
+                  <input type="text" id="hero-format" placeholder="One day, two stages">
+                </div>
+                <div class="form-group">
+                  <label>Audience</label>
+                  <input type="text" id="hero-audience" placeholder="200–500 QE leaders">
+                </div>
+                <div class="form-group">
+                  <label>Location</label>
+                  <input type="text" id="event-venue" placeholder="Delhi NCR, India">
+                </div>
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="text" id="event-date" placeholder="Revealing soon">
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- ── TICKER / SCROLLING BANNER ── -->
-          <div class="manager-card">
-            <div class="section-title">Scrolling <em>Ticker</em></div>
-            <p class="section-desc">The animated text strip at the very top of the page. One item per field.</p>
-            <div class="form-grid-2">
-              <div class="form-group"><label>Ticker Item 1</label><input type="text" id="ticker-1"></div>
-              <div class="form-group"><label>Ticker Item 2</label><input type="text" id="ticker-2"></div>
-              <div class="form-group"><label>Ticker Item 3</label><input type="text" id="ticker-3"></div>
-              <div class="form-group"><label>Ticker Item 4</label><input type="text" id="ticker-4"></div>
-              <div class="form-group"><label>Ticker Item 5</label><input type="text" id="ticker-5"></div>
-              <div class="form-group"><label>Ticker Item 6</label><input type="text" id="ticker-6"></div>
-              <div class="form-group"><label>Ticker Item 7</label><input type="text" id="ticker-7"></div>
-              <div class="form-group"><label>Ticker Item 8</label><input type="text" id="ticker-8"></div>
-            </div>
-          </div>
-
-          <!-- ── MANIFESTO ── -->
-          <div class="manager-card">
-            <div class="section-title">Manifesto <em>Section</em></div>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Pill Label <span class="label-hint">(e.g. Why now)</span></label>
-                <input type="text" id="manifesto-pill">
-              </div>
-              <div class="form-group">
-                <label>Aside Text <span class="label-hint">(e.g. A note from the founder.)</span></label>
-                <input type="text" id="manifesto-aside">
+            <div class="manager-card">
+              <div class="section-title">Proof <em>Stats Bar</em></div>
+              <div class="stats-form-grid">
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="stat1-num" placeholder="2nd"></div>
+                  <input type="text" id="stat1-lbl" placeholder="Edition / Aug 2026">
+                </div>
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="stat2-num" placeholder="500+"></div>
+                  <input type="text" id="stat2-lbl" placeholder="QE Practitioners">
+                </div>
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="stat3-num" placeholder="8+"></div>
+                  <input type="text" id="stat3-lbl" placeholder="Hours of Signal">
+                </div>
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="stat4-num" placeholder="1"></div>
+                  <input type="text" id="stat4-lbl" placeholder="Theme. Proof of Value.">
+                </div>
               </div>
             </div>
-            <div class="form-group">
-              <label>Manifesto Paragraphs <span class="label-hint">(One paragraph per line)</span></label>
-              <textarea id="manifesto-lines" rows="6"></textarea>
-            </div>
-          </div>
 
-          <!-- ── SPEAKERS SECTION TEXT ── -->
-          <div class="manager-card">
-            <div class="section-title">Speakers <em>Section</em></div>
-            <div class="form-group">
-              <label>Section Title <span class="label-hint">(e.g. A roster built for proof.)</span></label>
-              <input type="text" id="speakers-section-title">
-            </div>
-            <div class="form-group">
-              <label>Intro Paragraph</label>
-              <textarea id="speakers-intro" rows="2"></textarea>
-            </div>
-          </div>
-
-          <!-- ── GET INVOLVED ── -->
-          <div class="manager-card">
-            <div class="section-title">Get Involved <em>Section</em></div>
-            <div class="form-group">
-              <label>Section Title <span class="label-hint">(e.g. Three ways to shape Elevate QA.)</span></label>
-              <input type="text" id="involve-title">
-            </div>
-            <div class="form-grid-2">
-              <div class="form-group"><label>Card 1 — Title</label><input type="text" id="involve-card1-title"></div>
-              <div class="form-group"><label>Card 1 — Description</label><textarea id="involve-card1-desc" rows="2"></textarea></div>
-              <div class="form-group"><label>Card 2 — Title</label><input type="text" id="involve-card2-title"></div>
-              <div class="form-group"><label>Card 2 — Description</label><textarea id="involve-card2-desc" rows="2"></textarea></div>
-              <div class="form-group"><label>Card 3 — Title</label><input type="text" id="involve-card3-title"></div>
-              <div class="form-group"><label>Card 3 — Description</label><textarea id="involve-card3-desc" rows="2"></textarea></div>
-            </div>
-          </div>
-
-          <!-- ── COMING SOON ── -->
-          <div class="manager-card">
-            <div class="section-title">Coming Soon <em>Section</em></div>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Section Title <span class="label-hint">(e.g. Date. Venue. Lineup.)</span></label>
-                <input type="text" id="coming-title">
-              </div>
-              <div class="form-group">
-                <label>Description Paragraph</label>
-                <textarea id="coming-desc" rows="2"></textarea>
+            <div class="manager-card">
+              <div class="section-title">Ticker <em>Scrolling Banner</em></div>
+              <div class="form-grid-2">
+                <div class="form-group"><label>Item 1</label><input type="text" id="ticker-1" placeholder="Elevate QA 2026"></div>
+                <div class="form-group"><label>Item 2</label><input type="text" id="ticker-2" placeholder="[[AI-Led]] Quality Engineering"></div>
+                <div class="form-group"><label>Item 3</label><input type="text" id="ticker-3" placeholder="AI Led Quality Engineering Tech Summit"></div>
+                <div class="form-group"><label>Item 4</label><input type="text" id="ticker-4" placeholder="Attend the AI-Led QE Summit"></div>
+                <div class="form-group"><label>Item 5</label><input type="text" id="ticker-5" placeholder="8th August 2026 — Noida"></div>
+                <div class="form-group"><label>Item 6</label><input type="text" id="ticker-6" placeholder="Speaker Submissions Open"></div>
+                <div class="form-group"><label>Item 7</label><input type="text" id="ticker-7" placeholder="200–500 Attendees — Edition 02"></div>
+                <div class="form-group"><label>Item 8</label><input type="text" id="ticker-8" placeholder="Contact: elevateqa@sdettech.com"></div>
+                <div class="form-group"><label>Item 9</label><input type="text" id="ticker-9" placeholder="CFP Now Open"></div>
               </div>
             </div>
-            <p class="section-desc" style="margin-top:8px;">Checklist item statuses (the green labels on the right):</p>
-            <div class="form-grid-2">
-              <div class="form-group"><label>Theme &amp; Manifesto status</label><input type="text" id="coming-item1-status"></div>
-              <div class="form-group"><label>Speaker Submissions status</label><input type="text" id="coming-item2-status"></div>
-              <div class="form-group"><label>Date Announced status</label><input type="text" id="coming-item3-status"></div>
-              <div class="form-group"><label>Venue status</label><input type="text" id="coming-item4-status"></div>
-              <div class="form-group"><label>Speaker Lineup status</label><input type="text" id="coming-item5-status"></div>
-              <div class="form-group"><label>Tickets &amp; RSVP status</label><input type="text" id="coming-item6-status"></div>
-            </div>
-          </div>
 
-          <!-- ── FOOTER ── -->
-          <div class="manager-card">
-            <div class="section-title">Footer <em>Text</em></div>
-            <div class="form-grid-2">
+            <div class="manager-card">
+              <div class="section-title">Prizes <em>Strip</em></div>
               <div class="form-group">
-                <label>Footer Tagline <span class="label-hint">(Big closing line)</span></label>
-                <input type="text" id="footer-tagline">
+                <label>Headline</label>
+                <textarea id="prizes-title-input" rows="2" placeholder="Speak well. Win big."></textarea>
               </div>
-              <div class="form-group">
-                <label>Footer Location</label>
-                <input type="text" id="footer-location">
-              </div>
-              <div class="form-group">
-                <label>Footer Edition</label>
-                <input type="text" id="footer-edition">
+              <div class="stats-form-grid">
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="prizes-s1-num" placeholder="01"></div>
+                  <input type="text" id="prizes-s1-text" placeholder="Speaker of the Event">
+                </div>
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="prizes-s2-num" placeholder="03"></div>
+                  <input type="text" id="prizes-s2-text" placeholder="Audience Awards">
+                </div>
+                <div class="stat-form-item">
+                  <div class="stat-num-wrap"><input type="text" id="prizes-s3-num" placeholder="∞"></div>
+                  <input type="text" id="prizes-s3-text" placeholder="Surprise Prizes">
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- ── MATURITY MAP ── -->
-          <!-- ── NAVIGATION ── -->
-          <div class="manager-card">
-            <div class="section-title">Navigation <em>Links</em></div>
-            <div class="form-grid-2">
-              <div class="form-group"><label>Manifesto Label</label><input type="text" id="nav-manifesto"></div>
-              <div class="form-group"><label>Why Now Label</label><input type="text" id="nav-maturity"></div>
-              <div class="form-group"><label>Experience Label</label><input type="text" id="nav-experience"></div>
-              <div class="form-group"><label>Agenda Label</label><input type="text" id="nav-agenda"></div>
-              <div class="form-group"><label>Speakers Label</label><input type="text" id="nav-speakers"></div>
-              <div class="form-group"><label>Involved Label</label><input type="text" id="nav-join"></div>
-            </div>
-          </div>
-
-          <!-- ── REGISTRATION MODAL ── -->
-          <div class="manager-card">
-            <div class="section-title">Registration <em>Modal</em></div>
-            <div class="form-grid-2">
-              <div class="form-group"><label>Price Scarcity Label</label><input type="text" id="modal-price-scarcity"></div>
-              <div class="form-group"><label>Old Price (₹)</label><input type="text" id="modal-price-old"></div>
-              <div class="form-group"><label>New Price (₹)</label><input type="text" id="modal-price-new"></div>
-              <div class="form-group"><label>Price Caption</label><input type="text" id="modal-price-caption"></div>
-              <div class="form-group"><label>Price Button Text</label><input type="text" id="modal-price-btn"></div>
-              <div class="form-group"><label>Form Title</label><input type="text" id="modal-form-title"></div>
-            </div>
-            <div class="form-group">
-              <label>Form Description</label>
-              <textarea id="modal-form-desc" rows="2"></textarea>
-            </div>
-          </div>
-
-          <!-- ── MATURITY MAP ── -->
-          <div class="manager-card">
-            <div class="form-group">
-              <label>Section Title <span class="label-hint">(e.g. Where is your team on the AI-led QE curve?)</span></label>
-              <input type="text" id="maturity-title">
-            </div>
-            <div id="maturity-stages-admin" class="asset-grid">
-              <!-- Dynamic -->
-            </div>
-          </div>
-
-          <!-- ── CORE PILLARS (EXPERIENCE) ── -->
-          <div class="manager-card">
-            <div class="section-title">Experience <em>Pillars</em></div>
-            <div class="form-group">
-              <label>Section Title <span class="label-hint">(e.g. A day built around signal, not noise.)</span></label>
-              <input type="text" id="pillars-title">
-            </div>
-            <div id="pillars-admin" class="asset-grid">
-              <!-- Dynamic -->
-            </div>
-          </div>
-
-          <!-- ── TYPOGRAPHY CONTROLS ── -->
-          <div class="manager-card">
-            <div class="section-title">Typography <em>Scaling</em></div>
-            <p class="section-desc">Fine-tune the font sizes across the site to match your branding. Values are in pixels (px).</p>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Hero Title Max Size (px) <span class="label-hint">(Default: 180)</span></label>
-                <input type="number" id="font-hero-title" placeholder="180">
+            <div class="manager-card" style="background: #000; border: 1px solid var(--accent); padding: 60px; margin-top: 40px; text-align: center;">
+              <div class="section-title" style="color: #fff; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; text-align: left;">
+                Live Site <em>Visual Preview</em> 
+                <span class="badge badge-accent">SECTION 00 / HERO</span>
               </div>
-              <div class="form-group">
-                <label>Hero Title Line Height <span class="label-hint">(Default: 0.92)</span></label>
-                <input type="text" id="lh-hero-title" placeholder="0.92">
-              </div>
-              <div class="form-group">
-                <label>Hero Tagline Size (px) <span class="label-hint">(Default: 36)</span></label>
-                <input type="number" id="font-hero-tagline" placeholder="36">
-              </div>
-              <div class="form-group">
-                <label>Global Body Size (px) <span class="label-hint">(Default: 15)</span></label>
-                <input type="number" id="font-body" placeholder="15">
+              <div class="hero-preview" style="color: #fff; font-family: var(--display);">
+                  <div id="pre-hero-eyebrow" style="font-size: 11px; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 24px;">AI LED QUALITY ENGINEERING TECH SUMMIT · BY SDET TECH</div>
+                  <h1 id="pre-hero-headline" style="font-size: 64px; line-height: 0.95; font-weight: 300; margin-bottom: 32px; letter-spacing: -0.03em;">The <em style="font-style: italic; color: var(--accent);">Proof</em> <br>of Value.</h1>
+                  <p id="pre-hero-tagline" style="font-family: var(--body); font-size: 18px; color: rgba(255,255,255,0.6); max-width: 600px; margin: 0 auto 48px; line-height: 1.6;">The only summit where quality engineering leaders put real work on the table — what they tried, what broke, and what actually moved the needle.</p>
+                  <div style="display: flex; justify-content: center; gap: 24px; font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.4);">
+                      <span id="pre-hero-format">ONE DAY, TWO STAGES</span>
+                      <span id="pre-hero-audience">200–500 QE LEADERS</span>
+                      <span id="pre-event-venue">DELHI NCR, INDIA</span>
+                      <span id="pre-event-date">REVEALING SOON</span>
+                  </div>
               </div>
             </div>
-          </div>
+          </div> <!-- END HERO -->
 
+          <!-- ── SUB-SECTION: MANIFESTO ── -->
+          <div id="sub-identity-manifesto" class="sub-identity-section" style="display:none;">
+            <div class="manager-card">
+              <div class="section-title">Manifesto <em>Section</em></div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Section Num</label>
+                  <input type="text" id="manifesto-section-num" placeholder="01 / MANIFESTO">
+                </div>
+                <div class="form-group">
+                  <label>Pill Label</label>
+                  <input type="text" id="manifesto-pill" placeholder="Why now" value="Why now">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Aside Text</label>
+                <input type="text" id="manifesto-aside" placeholder="A note from the founder." value="A note from the founder.">
+              </div>
+              <div class="form-group">
+                <label>Manifesto Paragraphs</label>
+                <textarea id="manifesto-lines" rows="6">Everyone is talking about AI in quality engineering. [[Few are showing the proof.]]
+We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know what actually shipped to production and held up.
+Elevate QA exists for the second conversation. The harder one. The proof of value, or it didn't happen.</textarea>
+              </div>
+            </div>
+
+            <div class="manager-card" style="background: #000; border: 1px solid var(--accent); padding: 60px; margin-top: 40px;">
+              <div class="section-title" style="color: #fff; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+                Live Site <em>Visual Preview</em> 
+                <span class="badge badge-accent">SECTION 01 / MANIFESTO</span>
+              </div>
+              <div style="display: flex; gap: 60px; color: #fff;">
+                  <div style="flex: 0 0 200px;">
+                      <div style="background: var(--accent); color: #000; padding: 4px 12px; border-radius: 100px; display: inline-block; font-family: var(--mono); font-size: 9px; text-transform: uppercase; margin-bottom: 24px;">WHY NOW</div>
+                      <p style="font-family: var(--body); font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.5;">A note from the <br>founder.</p>
+                  </div>
+                  <div style="flex: 1; font-family: var(--body); font-size: 20px; line-height: 1.6; color: rgba(255,255,255,0.8);">
+                      <p style="margin-bottom: 24px;">Everyone is talking about AI in quality engineering. <em style="font-style: italic; color: var(--accent);">Few are showing the proof.</em></p>
+                      <p style="margin-bottom: 24px;">We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know <span style="color: var(--accent); text-decoration: underline;">what actually shipped to production</span> and held up.</p>
+                      <p>Elevate QA exists for the second conversation. The harder one. The proof of value, or it didn't happen.</p>
+                  </div>
+              </div>
+            </div>
+          </div> <!-- END MANIFESTO -->
+
+          <!-- ── SUB-SECTION: THE MAP ── -->
+          <div id="sub-identity-map" class="sub-identity-section" style="display:none;">
+            <div class="manager-card primary-card">
+              <div class="section-title">The Map <em>Section Copy</em></div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Section Num</label>
+                  <input type="text" id="map-section-num" placeholder="02 / THE MAP" value="02 / THE MAP">
+                </div>
+                <div class="form-group">
+                  <label>Section Title</label>
+                  <input type="text" id="maturity-title-input" placeholder="Where is your team on the [[AI-led QE]] curve?" value="Where is your team on the [[AI-led QE]] curve?">
+                </div>
+              </div>
+            </div>
+            <div class="manager-card">
+              <div class="card-header">
+                <div class="section-title">Maturity <em>Stages</em></div>
+                <button class="btn-add" onclick="addMaturityStage()">+ ADD STAGE</button>
+              </div>
+              <div id="maturity-stages-admin" class="dynamic-list"></div>
+            </div>
+          </div> <!-- END MAP -->
+
+          <!-- ── SUB-SECTION: EXPERIENCE ── -->
+          <div id="sub-identity-experience" class="sub-identity-section" style="display:none;">
+            <div class="manager-card primary-card">
+              <div class="section-title">Experience <em>Section Copy</em></div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Section Num</label>
+                  <input type="text" id="experience-section-num" placeholder="03 / THE EXPERIENCE" value="03 / THE EXPERIENCE">
+                </div>
+                <div class="form-group">
+                  <label>Section Title</label>
+                  <input type="text" id="pillars-title-input" placeholder="A day built around [[signal,]] not noise." value="A day built around [[signal,]] not noise.">
+                </div>
+              </div>
+            </div>
+            <div class="manager-card">
+              <div class="card-header">
+                <div class="section-title">Experience <em>Pillars</em></div>
+                <button class="btn-add" onclick="addPillarItem()">+ ADD PILLAR</button>
+              </div>
+              <div id="pillars-admin" class="dynamic-list"></div>
+            </div>
+          </div> <!-- END EXPERIENCE -->
+
+          <!-- ── SUB-SECTION: EXTRAS ── -->
+          <div id="sub-identity-extras" class="sub-identity-section" style="display:none;">
+            <div class="manager-card primary-card">
+              <div class="section-title">The Lineup <em>Section Copy</em></div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Section Num</label>
+                  <input type="text" id="speakers-section-num-input" placeholder="05 / The Lineup" value="05 / The Lineup">
+                </div>
+                <div class="form-group">
+                  <label>Section Title</label>
+                  <input type="text" id="speakers-section-title" placeholder="A roster built for proof." value="A roster built for proof.">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Intro Paragraph</label>
+                <textarea id="speakers-intro" rows="2">We're curating a lineup of keynote voices, practitioner breakouts, and community panels focused strictly on AI-led quality engineering. Real implementers, no vendor pitches.</textarea>
+              </div>
+            </div>
+
+            <div class="manager-card">
+              <div class="section-title">Involvement <em>Pillars</em></div>
+              <div class="form-grid-2">
+                <div class="form-group"><label>Section Num</label><input type="text" id="involve-section-num" value="07 / Get Involved"></div>
+                <div class="form-group"><label>Section Title</label><input type="text" id="involve-title" value="How to participate."></div>
+              </div>
+              <div class="form-group">
+                <label>Card 1: Speak</label>
+                <textarea id="involve-card1-desc" rows="2">If you've shipped real AI-led QE work and have a story that holds up to scrutiny, the floor is yours. We're curating practitioners with receipts, not speakers with slides. Prove the value.</textarea>
+              </div>
+              <div class="form-group">
+                <label>Card 2: Attend</label>
+                <textarea id="involve-card2-desc" rows="2">Experience the epicenter of AI-led Quality Engineering. We've reserved limited Free Entry for the first 300 practitioners to ensure the room is built on pure technical merit, not marketing budgets.</textarea>
+              </div>
+              <div class="form-group">
+                <label>Card 3: Spread</label>
+                <textarea id="involve-card3-desc" rows="2">Send this to a peer who's actually solving the AI-in-QE problem. The right peer recommendation builds a better room than any marketing campaign ever could. Let's compound the signal.</textarea>
+              </div>
+            </div>
+
+            <div class="manager-card">
+              <div class="section-title">Global <em>Footer Config</em></div>
+              <div class="form-grid-3">
+                <div class="form-group"><label>Tagline</label><input type="text" id="footer-tagline" value="The proof of value, or it didn't happen."></div>
+                <div class="form-group"><label>Location</label><input type="text" id="footer-location" value="DELHI NCR, INDIA"></div>
+                <div class="form-group"><label>Edition</label><input type="text" id="footer-edition" value="EDITION 02"></div>
+              </div>
+              <div class="form-grid-2" style="margin-top:12px;">
+                <div class="form-group"><label>Copyright</label><input type="text" id="footer-copyright" value="© 2026 SDET TECHNOLOGIES"></div>
+                <div class="form-group"><label>Contact Email</label><input type="email" id="footer-email" value="elevateqa@sdettech.com"></div>
+              </div>
+            </div>
+          </div> <!-- END EXTRAS -->
         </section>
+
+        <script>
+            // SHARED PREVIEW UPDATER
+            function updateAdminPreview(input) {
+              const val = input.value;
+              const pre = document.getElementById('pre-' + input.id);
+              if (!pre) return;
+              const accentColor = document.getElementById('set-color-primary')?.value || '#d4ff3a';
+              const accent = (s) => String(s || '').replace(/\[\[(.*?)\]\]/g, `<em style="font-style:italic;color:${accentColor};">$1</em>`);
+              if (input.id === 'hero-headline') {
+                pre.innerHTML = val.split(/[|\n]/).map(line => accent(line.trim())).join('<br>');
+              } else {
+                pre.innerHTML = accent(val).replace(/\|/g, '<br>');
+              }
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+              document.querySelectorAll('.sub-identity-section input, .sub-identity-section textarea').forEach(input => {
+                input.addEventListener('input', () => updateAdminPreview(input));
+                if (input.value) updateAdminPreview(input);
+              });
+            });
+        </script>

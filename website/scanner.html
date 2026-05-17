@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Elevate Scanner — Elite Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- SUPABASE SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #050508;
+      --bg-card: #0c0c12;
+      --accent: #d4ff3a;
+      --accent-red: #ff3e3e;
+      --accent-green: #00ffaa;
+      --ink: #ffffff;
+      --ink-dim: #8a8794;
+      --line: rgba(212, 255, 58, 0.1);
+      --glass: rgba(12, 12, 18, 0.7);
+      
+      --display: 'Fraunces', serif;
+      --body: 'Manrope', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      background: var(--bg); color: var(--ink); font-family: var(--body); 
+      overflow: hidden; height: 100vh; width: 100vw;
+      user-select: none;
+    }
+
+    /* GRID BACKGROUND */
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: -1; opacity: 0.3;
+    }
+
+    /* APP SHELL */
+    .app-container {
+      display: flex; flex-direction: column; height: 100%; position: relative;
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      padding: 24px; display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(to bottom, var(--bg), transparent);
+      position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+    }
+    .brand { font-family: var(--display); font-size: 18px; font-style: italic; font-weight: 700; letter-spacing: -0.02em; }
+    .brand span { color: var(--accent); font-style: normal; }
+    
+    .status-pill { 
+      background: rgba(212, 255, 58, 0.05); border: 1px solid var(--line);
+      border-radius: 100px; padding: 6px 14px; font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.05em; color: var(--accent); display: flex; align-items: center; gap: 6px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
+
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    /* CAMERA VIEWPORT */
+    .scanner-viewport {
+      flex: 1; position: relative; background: #000;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    #qr-reader { width: 100% !important; height: 100% !important; border: none !important; }
+    #qr-reader video { object-fit: cover !important; }
+    #qr-reader__scan_region { padding: 0 !important; }
+    #qr-reader__dashboard { display: none !important; }
+    #qr-reader img { display: none !important; }
+
+    /* HUD OVERLAY */
+    .hud {
+      position: absolute; inset: 0; z-index: 10; pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .scan-guide {
+      width: 220px; height: 220px; position: relative;
+      border: 1px solid rgba(255,255,255,0.05); border-radius: 48px;
+      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .scan-guide.active { border-color: var(--accent); box-shadow: 0 0 40px rgba(212, 255, 58, 0.1); }
+
+    .corner {
+      position: absolute; width: 40px; height: 40px; border-color: var(--accent); border-style: solid;
+      filter: drop-shadow(0 0 8px var(--accent)); transition: 0.4s;
+    }
+    .tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-radius: 48px 0 0 0; }
+    .tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-radius: 0 48px 0 0; }
+    .bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-radius: 0 0 0 48px; }
+    .br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-radius: 0 0 48px 0; }
+
+    .scan-line {
+      position: absolute; top: 0; left: 20px; right: 20px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 20px var(--accent);
+      animation: scanAnim 3s ease-in-out infinite;
+      display: none;
+    }
+    @keyframes scanAnim { 0%, 100% { top: 15%; opacity: 0.2; } 50% { top: 85%; opacity: 1; } }
+
+    /* CONTROLS */
+    .scanner-controls {
+      position: absolute; bottom: 60px; left: 0; right: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 24px; z-index: 50;
+    }
+    .primary-btn {
+      background: var(--accent); color: #000; border: none;
+      padding: 20px 48px; border-radius: 100px; font-family: var(--mono);
+      font-weight: 800; font-size: 14px; letter-spacing: 0.1em;
+      box-shadow: 0 10px 30px rgba(212, 255, 58, 0.3);
+      cursor: pointer; transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .primary-btn:active { transform: scale(0.92) translateY(4px); box-shadow: 0 5px 15px rgba(212, 255, 58, 0.2); }
+    .primary-btn.active { background: #fff; box-shadow: 0 10px 30px rgba(255,255,255,0.2); }
+
+    .secondary-controls { display: flex; gap: 16px; }
+    .icon-btn {
+      width: 54px; height: 54px; border-radius: 50%;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 20px; transition: 0.3s;
+    }
+    .icon-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    /* RESULTS OVERLAY */
+    .result-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(5,5,8,0.95); backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center; padding: 40px;
+      opacity: 0; pointer-events: none; transition: 0.4s;
+    }
+    .result-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    .result-card {
+      width: 100%; max-width: 400px; text-align: center;
+      transform: translateY(40px); transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .result-overlay.active .result-card { transform: translateY(0); }
+
+    .result-icon {
+      width: 120px; height: 120px; margin: 0 auto 32px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    
+    /* PAYTM-STYLE CHECKMARK */
+    .checkmark-svg {
+      width: 80px; height: 80px;
+      display: block; stroke-width: 5; stroke: currentColor;
+      stroke-miterlimit: 10;
+      stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      animation: drawCheck 0.8s cubic-bezier(0.65, 0, 0.45, 1) forwards 0.2s;
+    }
+    .check-circle {
+      stroke-dasharray: 166; stroke-dashoffset: 166;
+      stroke-width: 5; stroke-miterlimit: 10; stroke: currentColor;
+      fill: none; animation: outline 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .check-path {
+      stroke-dasharray: 48; stroke-dashoffset: 48;
+      animation: drawCheck 0.4s cubic-bezier(0.65, 0, 0.45, 1) forwards 0.5s;
+    }
+    
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+    @keyframes outline { to { stroke-dashoffset: 0; } }
+    
+    .result-icon::after {
+      content: ''; position: absolute; inset: -15px; border-radius: 50%;
+      border: 2px solid currentColor; opacity: 0; animation: rippleSuccess 1.5s ease-out infinite 0.8s;
+    }
+    @keyframes rippleSuccess { 
+      0% { transform: scale(1); opacity: 0.4; } 
+      100% { transform: scale(1.4); opacity: 0; } 
+    }
+
+    .res-label { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; margin-bottom: 8px; }
+    .res-name { font-family: var(--display); font-size: 42px; line-height: 1.1; margin-bottom: 12px; }
+    .res-org { font-family: var(--body); font-size: 16px; color: var(--ink-dim); margin-bottom: 48px; }
+    
+    .res-badge {
+      padding: 16px 32px; border-radius: 16px; font-family: var(--mono);
+      font-weight: 800; font-size: 14px; letter-spacing: 0.1em;
+      margin-bottom: 40px; display: inline-block;
+    }
+
+    .success .result-icon { background: rgba(0, 255, 170, 0.1); color: var(--accent-green); }
+    .success .res-badge { background: var(--accent-green); color: #000; }
+    .already .result-icon { background: rgba(212, 255, 58, 0.1); color: var(--accent); }
+    .already .res-badge { background: var(--accent); color: #000; }
+    .error .result-icon { background: rgba(255, 62, 62, 0.1); color: var(--accent-red); }
+    .error .res-badge { background: var(--accent-red); color: #fff; }
+
+    .next-btn {
+      width: 100%; padding: 20px; border-radius: 20px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-family: var(--mono); font-weight: 700; cursor: pointer;
+      transition: 0.3s;
+    }
+    .next-btn:active { background: #fff; color: #000; }
+
+    /* LOCK SCREEN */
+    .lock-screen {
+      position: fixed; inset: 0; z-index: 1000; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px; transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .lock-screen.hidden { transform: translateY(-100%); opacity: 0; }
+    
+    .lock-card { width: 100%; max-width: 340px; text-align: center; }
+    .lock-logo { font-family: var(--display); font-size: 32px; font-style: italic; margin-bottom: 40px; }
+    .lock-logo span { color: var(--accent); font-style: normal; }
+    
+    .input-field {
+      width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+      padding: 24px; border-radius: 20px; color: #fff; font-family: var(--mono);
+      font-size: 24px; text-align: center; margin-bottom: 24px; letter-spacing: 0.2em;
+      transition: 0.3s;
+    }
+    .input-field:focus { outline: none; border-color: var(--accent); background: rgba(212, 255, 58, 0.05); }
+    
+    .unlock-btn {
+      width: 100%; padding: 20px; border-radius: 20px; background: var(--accent);
+      color: #000; border: none; font-family: var(--mono); font-weight: 800;
+      letter-spacing: 0.1em; cursor: pointer;
+    }
+
+    #lock-error { color: var(--accent-red); font-size: 12px; margin-top: 16px; display: none; font-family: var(--mono); }
+
+    /* FLASH EFFECT */
+    .flash {
+      position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000;
+    }
+    .flash.active { animation: flashEffect 0.5s ease-out; }
+    @keyframes flashEffect { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="flash" id="flash"></div>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo">Elevate<span>Scanner</span></div>
+    <input type="password" id="access-code" class="input-field" placeholder="••••" maxlength="10">
+    <button class="unlock-btn" onclick="unlock()">INITIALIZE HUD</button>
+    <div id="lock-error">ACCESS DENIED</div>
+  </div>
+</div>
+
+<div class="app-container">
+  <header class="top-bar">
+    <div class="brand">Elevate <span>Scanner</span></div>
+    <div class="status-pill" id="conn-status">
+      <div class="status-dot"></div>
+      OFFLINE
+    </div>
+  </header>
+
+  <main class="scanner-viewport">
+    <div id="qr-reader"></div>
+    <div class="hud">
+      <div class="scan-guide" id="guide">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="scan-line" id="scan-line"></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="scanner-controls">
+    <button class="primary-btn" id="toggle-btn" onclick="toggleScan()">
+      <span>START SCANNER</span>
+    </button>
+    <div class="secondary-controls">
+      <button class="icon-btn" id="torch-btn" onclick="toggleTorch()">🔦</button>
+      <button class="icon-btn" onclick="location.reload()">🔄</button>
+    </div>
+  </div>
+
+  <!-- RESULT OVERLAY -->
+  <div class="result-overlay" id="result-overlay">
+    <div class="result-card" id="result-card">
+      <div class="result-icon" id="res-icon">✓</div>
+      <div class="res-label" id="res-label">SUCCESS</div>
+      <div class="res-name" id="res-name">Attendee Name</div>
+      <div class="res-org" id="res-org">Organization</div>
+      <div class="res-badge" id="res-badge">ADMITTED</div>
+      <button class="next-btn" onclick="resetScanner()">NEXT ATTENDEE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // SUPABASE INITIALIZATION (Direct CDN approach for reliability)
+  const SUPABASE_URL = 'https://wbgxcadajmdjxfhsgose.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
+  let supabaseClient = null;
+
+  try {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supabaseInstance = supabaseClient;
+  } catch (e) {
+    console.error("Supabase Init Error:", e);
+  }
+
+  let html5QrCode = null;
+  let isScanning = false;
+  let isProcessing = false;
+  let torchOn = false;
+  let lastScanned = '';
+  let lastScannedTime = 0;
+  const COOLDOWN = 1500; // Aggressive reset for high throughput
+
+  // 1. ACCESS CONTROL
+  function unlock() {
+    const code = document.getElementById('access-code').value;
+    if (code === 'Sdet@2026') {
+      document.getElementById('lock-screen').classList.add('hidden');
+      sessionStorage.setItem('scanner_unlocked', 'true');
+      initApp();
+    } else {
+      const err = document.getElementById('lock-error');
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 2000);
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
+  }
+
+  if (sessionStorage.getItem('scanner_unlocked') === 'true') {
+    document.getElementById('lock-screen').style.display = 'none';
+    initApp();
+  }
+
+  function initApp() {
+    const status = document.getElementById('conn-status');
+    if (supabaseClient) {
+      status.innerHTML = '<div class="status-dot"></div> ONLINE';
+      status.style.color = 'var(--accent-green)';
+      status.querySelector('.status-dot').style.background = 'var(--accent-green)';
+    }
+  }
+
+  // 2. SCANNER LOGIC
+  async function toggleScan() {
+    if (isScanning) await stopScan();
+    else await startScan();
+  }
+
+  async function startScan() {
+    try {
+      if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+      
+      const config = { 
+        fps: 60,
+        qrbox: (viewWidth, viewHeight) => {
+            const size = Math.min(viewWidth, viewHeight) * 0.6;
+            return { width: size, height: size };
+        },
+        aspectRatio: 1.0,
+        disableFlip: true,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+      };
+
+      const devices = await Html5Qrcode.getCameras();
+      let cameraId = { facingMode: "environment" };
+      
+      if (devices && devices.length) {
+        const back = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment'));
+        if (back) cameraId = back.id;
+      }
+
+      await html5QrCode.start(cameraId, config, onScanSuccess);
+      
+      isScanning = true;
+      document.getElementById('toggle-btn').classList.add('active');
+      document.getElementById('toggle-btn').querySelector('span').textContent = 'STOP SCANNER';
+      document.getElementById('guide').classList.add('active');
+      document.getElementById('scan-line').style.display = 'block';
+    } catch (e) {
+      console.error(e);
+      alert("Camera access failed. Check permissions.");
+    }
+  }
+
+  async function stopScan() {
+    if (html5QrCode && isScanning) {
+      await html5QrCode.stop();
+      isScanning = false;
+      document.getElementById('toggle-btn').classList.remove('active');
+      document.getElementById('toggle-btn').querySelector('span').textContent = 'START SCANNER';
+      document.getElementById('guide').classList.remove('active');
+      document.getElementById('scan-line').style.display = 'none';
+    }
+  }
+
+  async function toggleTorch() {
+    if (!isScanning) return;
+    try {
+      torchOn = !torchOn;
+      await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+      document.getElementById('torch-btn').classList.toggle('active', torchOn);
+    } catch(e) {}
+  }
+
+  // 3. PROCESSING
+  async function onScanSuccess(decodedText) {
+    if (isProcessing) return;
+    const now = Date.now();
+    if (decodedText === lastScanned && now - lastScannedTime < COOLDOWN) return;
+
+    lastScanned = decodedText;
+    lastScannedTime = now;
+    isProcessing = true;
+
+    triggerFlash();
+    if (navigator.vibrate) navigator.vibrate(100);
+
+    await processTicket(decodedText);
+  }
+
+  async function processTicket(raw) {
+    console.log("Processing:", raw);
+    
+    if (!raw.startsWith('ELEVATE-QA:')) {
+      renderResult('error', 'INVALID FORMAT', 'Unrecognized Ticket', 'Please contact support', 'REJECTED');
+      return;
+    }
+
+    if (!supabaseClient) {
+        renderResult('error', 'ERROR', 'Database Error', 'Supabase client not initialized', 'ERROR');
+        return;
+    }
+
+    const ticketId = raw.replace('ELEVATE-QA:', '').split('|')[0].trim();
+    
+    try {
+      const { data: user, error } = await supabaseClient
+        .from('registrations')
+        .select('*')
+        .eq('id', ticketId)
+        .single();
+
+      if (error || !user) {
+        renderResult('error', 'NOT FOUND', 'No Record', 'Ticket does not exist', 'REJECTED');
+        return;
+      }
+
+      if (user.status === 'PRESENT') {
+        renderResult('already', 'DUPLICATE', user.name, user.company || user.email, 'ALREADY IN');
+        return;
+      }
+
+      const { error: upErr } = await supabaseClient
+        .from('registrations')
+        .update({ status: 'PRESENT' })
+        .eq('id', ticketId);
+
+      if (upErr) throw upErr;
+
+      renderResult('success', 'CONFIRMED', user.name, user.company || user.email, 'ADMITTED');
+      playBeep('success');
+
+    } catch (e) {
+      console.error("Process Error:", e);
+      renderResult('error', 'SYSTEM ERROR', 'Sync Failed', e.message, 'TRY AGAIN');
+    }
+  }
+
+  function renderResult(type, label, name, org, badge) {
+    const overlay = document.getElementById('result-overlay');
+    const card = document.getElementById('result-card');
+    const iconContainer = document.getElementById('res-icon');
+    
+    const successSvg = `
+      <svg class="checkmark-svg" viewBox="0 0 52 52">
+        <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+      </svg>`;
+      
+    const errorSvg = `
+      <svg class="checkmark-svg" viewBox="0 0 52 52" style="transform: rotate(45deg);">
+        <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="check-path" fill="none" d="M16 16h20M16 36h20" style="transform-origin: center; transform: rotate(90deg);"/>
+        <path class="check-path" fill="none" d="M16 26h20"/>
+      </svg>`;
+
+    card.className = `result-card ${type}`;
+    
+    if (type === 'success') {
+      iconContainer.innerHTML = successSvg;
+    } else if (type === 'error') {
+      iconContainer.innerHTML = errorSvg;
+    } else {
+      iconContainer.innerHTML = `<div style="font-size: 40px;">⚠️</div>`;
+    }
+
+    document.getElementById('res-label').textContent = label;
+    document.getElementById('res-name').textContent = name;
+    document.getElementById('res-org').textContent = org;
+    document.getElementById('res-badge').textContent = badge;
+
+    overlay.classList.add('active');
+    if (type !== 'success') playBeep('error');
+  }
+
+  function resetScanner() {
+    document.getElementById('result-overlay').classList.remove('active');
+    setTimeout(() => { isProcessing = false; }, 500);
+  }
+
+  // FLASH EFFECT
+  function triggerFlash() {
+    const f = document.getElementById('flash');
+    f.classList.remove('active');
+    void f.offsetWidth;
+    f.classList.add('active');
+  }
+
+  function playBeep(type) {
+    try {
+      const a = new (window.AudioContext || window.webkitAudioContext)();
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.connect(g); g.connect(a.destination);
+      o.type = 'sine';
+      if (type === 'success') {
+        o.frequency.setValueAtTime(880, a.currentTime);
+        o.frequency.exponentialRampToValueAtTime(1200, a.currentTime + 0.1);
+      } else {
+        o.frequency.setValueAtTime(220, a.currentTime);
+        o.frequency.exponentialRampToValueAtTime(110, a.currentTime + 0.1);
+      }
+      g.gain.setValueAtTime(0, a.currentTime);
+      g.gain.linearRampToValueAtTime(0.2, a.currentTime + 0.05);
+      g.gain.linearRampToValueAtTime(0, a.currentTime + 0.2);
+      o.start(); o.stop(a.currentTime + 0.2);
+    } catch(e) {}
+  }
+</script>
+</body>
+</html>

@@ -55,13 +55,17 @@ nav.scrolled {
   display: block;
 }
 #site-logo-img {
-  height: 64px; /* Balanced height for desktop */
+  height: 96px; /* Expanded for luxury brand prominence */
   width: auto;
   transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 nav.scrolled #site-logo-img {
-  height: 48px; /* Balanced sleek height for scroll */
+  height: 64px; /* Balanced sleek scrolled size */
+}
+#footer-logo-img {
+  height: 80px; /* Standout presentation in the footer */
+  width: auto;
 }
 .brand-top {
   display: flex;

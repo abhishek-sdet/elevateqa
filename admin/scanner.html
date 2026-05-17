@@ -371,7 +371,6 @@
       const config = { 
         fps: 60,
         qrbox: (viewWidth, viewHeight) => {
-            // Smaller box = faster processing
             const size = Math.min(viewWidth, viewHeight) * 0.6;
             return { width: size, height: size };
         },
@@ -490,7 +489,6 @@
     const card = document.getElementById('result-card');
     const iconContainer = document.getElementById('res-icon');
     
-    // Paytm-style animated icons
     const successSvg = `
       <svg class="checkmark-svg" viewBox="0 0 52 52">
         <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
@@ -528,6 +526,7 @@
     setTimeout(() => { isProcessing = false; }, 500);
   }
 
+  // FLASH EFFECT
   function triggerFlash() {
     const f = document.getElementById('flash');
     f.classList.remove('active');

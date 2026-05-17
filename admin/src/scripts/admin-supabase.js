@@ -33,6 +33,47 @@ export async function uploadImageToStorage(file, path) {
   return urlData.publicUrl;
 }
 
+/** Transform raw DB row (snake_case) → camelCase object for main.js compatibility */
+function transformSiteContent(raw) {
+  if (!raw) return {};
+  const sc = {
+    heroHeadline: raw.hero_headline || '',
+    heroTagline:  raw.hero_tagline  || '',
+    heroEyebrow:  raw.hero_eyebrow  || '',
+    heroEdition:  raw.hero_edition  || '',
+    eventDate:    raw.event_date    || '',
+    eventVenue:   raw.event_venue   || '',
+    heroMeta:     raw.hero_meta     || '',
+    heroFormat:   raw.hero_format   || '',
+    heroAudience: raw.hero_audience || '',
+  };
+  // Unbundle hero_meta JSON
+  if (sc.heroMeta && (typeof sc.heroMeta === 'string' || typeof sc.heroMeta === 'object')) {
+    try {
+      const extra = (typeof sc.heroMeta === 'string') ? JSON.parse(sc.heroMeta) : sc.heroMeta;
+      Object.assign(sc, extra);
+      if (extra.heroMetaText) sc.heroMeta = extra.heroMetaText;
+    } catch(e) {}
+  }
+  return sc;
+}
+
+/** Transform Branding DB row → visuals object */
+function transformBranding(raw) {
+  if (!raw) return {};
+  return {
+    logo: raw.logo_url,
+    logoHeight: raw.logo_height || 48,
+    heroBg: raw.hero_bg_url,
+    primaryColor: raw.primary_color,
+    strip: [
+      { img: raw.strip_img_1, cap: raw.strip_cap_1 },
+      { img: raw.strip_img_2, cap: raw.strip_cap_2 },
+      { img: raw.strip_img_3, cap: raw.strip_cap_3 }
+    ]
+  };
+}
+
 export async function loadAllData() {
   console.log('[ElevateAdmin] Initializing failsafe data fetch...');
   
@@ -65,24 +106,16 @@ export async function loadAllData() {
     fetchTable('registrations')
   ]);
 
-  let finalContent = site_content || {};
-  if (finalContent.hero_meta) {
-    try {
-      const meta = (typeof finalContent.hero_meta === 'string') 
-        ? JSON.parse(finalContent.hero_meta) 
-        : finalContent.hero_meta;
-      Object.assign(finalContent, meta);
-    } catch(e) { console.warn('[ElevateAdmin] HeroMeta parse failed', e); }
-  }
-  
-  const combined = { ...finalContent, ...(branding || {}) };
+  const combined = transformSiteContent(site_content || {});
+  const visuals = transformBranding(branding || {});
   
   localStorage.setItem('elevate_site_content', JSON.stringify(combined));
+  localStorage.setItem('elevate_visuals', JSON.stringify(visuals));
   if (speakers) localStorage.setItem('elevate_speakers', JSON.stringify(speakers));
   if (agenda) localStorage.setItem('elevate_agenda', JSON.stringify(agenda));
-  if (maturity_stages) localStorage.setItem('elevate_maturity', JSON.stringify(maturity_stages));
-  if (pillars) localStorage.setItem('elevate_pillars', JSON.stringify(pillars));
-  if (manifesto) localStorage.setItem('elevate_manifesto', JSON.stringify(manifesto));
+  if (maturity_stages) localStorage.setItem('elevate_maturity_stages', JSON.stringify(maturity_stages));
+  if (pillars) localStorage.setItem('elevate_experience_pillars', JSON.stringify(pillars));
+  if (manifesto) localStorage.setItem('elevate_manifesto', JSON.stringify([{ content: manifesto.content || '' }]));
 
   return {
     siteContent: combined,

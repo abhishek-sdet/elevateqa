@@ -48,8 +48,24 @@ function tryParse(key) {
   try { return JSON.parse(localStorage.getItem(key)) || null; } catch(e) { return null; }
 }
 
+// Escape HTML special chars for safe interpolation into innerHTML
+const escapeHtml = (value) => {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+window.escapeHtml = window.escapeHtml || escapeHtml;
+
+// parseAccent: ONLY wraps [[...]] tokens with span.accent — input is escaped first.
+// IMPORTANT: This function is used on admin-authored content where intentional HTML em tags
+// are part of the design. We escape input then re-introduce ONLY our marker pattern.
 const parseAccent = (str) => {
   if (!str) return '';
+  // Preserve <em>…</em> as design intent, but escape anything else
   return String(str).replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
 };
 
@@ -158,7 +174,24 @@ function syncEverything() {
     setHtml('hero-eyebrow', site.heroEyebrow);
     setHtml('hero-tagline', site.heroTagline);
     setHtml('hero-edition', site.heroEdition);
-    setHtml('hero-meta',    site.heroMeta);
+    
+    // UNBUNDLE JSON from heroMeta if present
+    let metaText = site.heroMeta || '';
+    let ctaText  = '';
+    if (metaText.startsWith('{')) {
+      try {
+        const extra = JSON.parse(metaText);
+        Object.assign(site, extra);
+        metaText = extra.heroMetaText || '';
+        ctaText  = extra.heroCtaText || '';
+      } catch(e) {}
+    }
+    
+    setHtml('hero-meta', metaText);
+    if (ctaText) {
+      const ctaBtn = document.getElementById('hero-cta-btn');
+      if (ctaBtn) ctaBtn.innerHTML = `${ctaText} <span class="arrow">→</span>`;
+    }
     
     if (site.heroHeadline) {
       const titleEl = document.getElementById('hero-title');
@@ -236,6 +269,11 @@ function syncEverything() {
     setHtml('footer-location', site.footerLocation);
     setHtml('footer-edition',  site.footerEdition);
 
+    // Ticker
+    for (let i = 1; i <= 8; i++) {
+      setHtml(`ticker-${i}`, site[`ticker${i}`]);
+    }
+
     // Maturity Map
     renderMaturity(site.maturityStages);
 
@@ -247,12 +285,18 @@ function syncEverything() {
   }
 
   if (visuals) {
-    // Logo (nav + footer)
     if (visuals.logo) {
       const logoImg = document.getElementById('site-logo-img');
       const footerLogo = document.getElementById('footer-logo-img');
-      if (logoImg)    logoImg.src    = visuals.logo;
-      if (footerLogo) footerLogo.src = visuals.logo;
+      if (logoImg)    {
+        logoImg.src = visuals.logo;
+        logoImg.style.display = 'block';
+        if (visuals.logoHeight) logoImg.style.height = visuals.logoHeight + 'px';
+      }
+      if (footerLogo) {
+        footerLogo.src = visuals.logo;
+        footerLogo.style.display = 'block';
+      }
     }
     // Hero background image
     const heroImg = document.querySelector('.hero-ambient img');
@@ -303,14 +347,14 @@ function renderAgenda(agenda) {
     const isFeatured = item.tag?.toLowerCase().includes('keynote');
     const isBreak    = item.tag?.toLowerCase().includes('break') || item.tag?.toLowerCase().includes('tea') || item.tag?.toLowerCase().includes('lunch');
     const rowClass   = `timeline-row reveal${isFeatured ? ' featured' : ''}${isBreak ? ' break' : ''}`;
-    
+
     return `
     <div class="${rowClass}">
-      <div class="timeline-time">${item.time}</div>
+      <div class="timeline-time">${escapeHtml(item.time)}</div>
       <div class="timeline-content">
-        <span class="tag">${item.tag}</span>
+        <span class="tag">${escapeHtml(item.tag)}</span>
         <h4>${parseAccent(item.title)}</h4>
-        <p>${item.desc || ''}</p>
+        <p>${escapeHtml(item.desc || '')}</p>
       </div>
     </div>`;
   }).join('');
@@ -332,12 +376,17 @@ function renderSpeakers(speakers) {
     const hasPhoto = s.img && s.img.length > 10;
     const card = document.createElement('div');
     card.className = 'speaker-card reveal' + (hasPhoto ? ' speaker-has-photo' : '');
+    const safeImg = escapeHtml(s.img);
+    const safeName = escapeHtml(s.name || 'To be revealed');
+    const safeRole = escapeHtml((s.role || 'KEYNOTE')).toUpperCase();
+    const safeWave = escapeHtml(s.wave || 'WAVE 01');
+    const safeSilhouette = escapeHtml(s.silhouette || '0' + (idx + 1));
     card.innerHTML = `
       ${hasPhoto
-        ? `<div class="speaker-photo-wrap"><img src="${s.img}" class="speaker-photo" alt="${s.name}" /></div>`
-        : `<div class="silhouette">${s.silhouette || '0' + (idx + 1)}</div>`
+        ? `<div class="speaker-photo-wrap"><img src="${safeImg}" class="speaker-photo" alt="${safeName}" loading="lazy" decoding="async" /></div>`
+        : `<div class="silhouette" aria-hidden="true">${safeSilhouette}</div>`
       }
-      <div class="top"><span>${(s.role || 'KEYNOTE').toUpperCase()}</span><span>${s.wave || 'WAVE 01'}</span></div>
+      <div class="top"><span>${safeRole}</span><span>${safeWave}</span></div>
       <div class="name">${parseAccent(s.name || 'To be revealed')}</div>`;
     fragment.appendChild(card);
   });

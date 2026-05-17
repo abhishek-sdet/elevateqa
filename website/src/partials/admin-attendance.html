@@ -4,8 +4,8 @@
             <div class="section-title">
               <span>Verified Registrations</span>
               <div style="display:flex; gap:12px; align-items:center;">
-                <button class="btn-mini" onclick="exportAttendees()">⬇ Export DB</button>
-                <span class="badge badge-accent" id="attendee-count">0 registered</span>
+                <button class="btn-mini" onclick="exportAttendees()" aria-label="Export attendee database">⬇ Export DB</button>
+                <span class="badge badge-accent" id="attendee-count" aria-live="polite">0 registered</span>
               </div>
             </div>
             <div class="table-wrap">
@@ -17,7 +17,8 @@
                     <th>Email</th>
                     <th>Registered</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th>Pass</th>
+                    <th style="text-align: right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="attendee-table">

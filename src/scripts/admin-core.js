@@ -779,6 +779,8 @@ window.saveAll = async () => {
     btn.innerHTML = originalText;
     btn.disabled = false;
     window.showToast('All your changes have been successfully synced to the cloud and are now live on the site.', 'success', '100% Synced');
+    // Force local cache refresh so other tabs (and the current UI) stay in sync
+    await loadAllData();
   } catch (err) {
     console.error('[ElevateAdmin] Save Error:', err);
     btn.innerHTML = 'Error! Try Again';

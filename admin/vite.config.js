@@ -8,6 +8,14 @@ export default defineConfig({
       partialDirectory: resolve(__dirname, 'src/partials'),
     }),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        scanner: resolve(__dirname, 'scanner.html'),
+      }
+    }
+  },
   server: {
     port: 5173,
     strictPort: true,

@@ -579,6 +579,8 @@ window.saveAll = async () => {
 
     if (results.every(r => r === true)) {
       window.showToast('Your changes have been successfully synced to the cloud.', 'success', '100% Synced');
+      // Force local cache refresh so other tabs (and the current UI) stay in sync
+      loadAllData();
     } else {
       window.showToast('Some items failed to sync. Check console for details.', 'error', 'Partial Sync');
     }

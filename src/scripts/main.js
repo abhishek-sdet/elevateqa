@@ -1,7 +1,7 @@
 import { initCloudSync } from './main-sync.js';
 import { supabase } from './supabase-config.js';
 
-// ─── UTIL: HTML ESCAPE (XSS guard for untrusted Supabase strings) ────────────
+// ─── UTIL: HTML ESCAPE ──────────────────────────────────────────────────────
 window.escapeHtml = window.escapeHtml || function(value) {
   if (value === null || value === undefined) return '';
   return String(value)
@@ -12,8 +12,6 @@ window.escapeHtml = window.escapeHtml || function(value) {
     .replace(/'/g, '&#39;');
 };
 
-// MagneticElement disabled for .btn — buttons stay fixed in position
-// Keep class available for other uses (e.g. floating-stamp)
 const lerp = (a, b, n) => (1 - n) * a + n * b;
 
 class MagneticElement {
@@ -50,6 +48,7 @@ class MagneticElement {
 
 function startCountUp(el) {
   const target = parseInt(el.getAttribute('data-target'));
+  if (isNaN(target)) return;
   const duration = 2000;
   const start = 0;
   const startTime = performance.now();
@@ -67,18 +66,13 @@ function startCountUp(el) {
 }
 
 function initAnimations() {
-  const observerOptions = {
-    threshold: 0.15,
-    rootMargin: '0px 0px -40px 0px'
-  };
+  const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -40px 0px' };
 
   window.io = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible', 'revealed');
-        if (entry.target.classList.contains('count-up')) {
-          startCountUp(entry.target);
-        }
+        if (entry.target.classList.contains('count-up')) startCountUp(entry.target);
         if (entry.target.classList.contains('maturity-stage')) {
           const fill = entry.target.querySelector('.meter-fill');
           if (fill) {
@@ -98,51 +92,206 @@ function initAnimations() {
     });
   }, observerOptions);
 
-  document.querySelectorAll('.reveal, .reveal-child > *').forEach(el => {
-    window.io.observe(el);
-  });
-  document.querySelectorAll('.maturity-stage').forEach(el => window.io.observe(el));
+  document.querySelectorAll('.reveal').forEach(el => window.io.observe(el));
 }
 
-// --- GLOBALLY EXPOSED MODAL FUNCTIONS ---
+function initCursor() {
+  const cursor = document.querySelector('.cursor-branded');
+  if (!cursor) return;
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    const dx = e.movementX || 0;
+    const rotation = Math.min(Math.max(dx * 0.5, -15), 15);
+    cursor.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
+}
+
+// ─── SYNCHRONIZATION ENGINE ─────────────────────────────────────────────────
+window.syncEverything = () => {
+  console.log('[ElevateQA] 🔄 Running Global Sync...');
+  
+  const site = JSON.parse(localStorage.getItem('elevate_site_content'));
+  const visuals = JSON.parse(localStorage.getItem('elevate_visuals'));
+  const speakers = JSON.parse(localStorage.getItem('elevate_speakers')) || [];
+  const agenda = JSON.parse(localStorage.getItem('elevate_agenda')) || [];
+  const manifesto = JSON.parse(localStorage.getItem('elevate_manifesto')) || [];
+  const maturity = JSON.parse(localStorage.getItem('elevate_maturity_stages')) || [];
+  const pillars = JSON.parse(localStorage.getItem('elevate_pillars')) || [];
+
+  const setHtml = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
+  const parseAccent = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>').replace(/==(.*?)==/g, '<span class="highlight">$1</span>');
+  const parseEm = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+
+  if (visuals) {
+    if (visuals.logo) {
+      document.querySelectorAll('.logo img, .preloader-logo, #footer-logo-img, #site-logo-img').forEach(img => img.src = visuals.logo);
+    }
+    if (visuals.primaryColor) {
+      document.documentElement.style.setProperty('--accent', visuals.primaryColor);
+    }
+    if (visuals.heroBg) {
+      const heroBg = document.querySelector('.hero-ambient img');
+      if (heroBg) heroBg.src = visuals.heroBg;
+    }
+  }
+
+  if (site) {
+    // Hero
+    const headline = site.heroHeadline || 'Elevate Quality. | Prove value.';
+    const titleEl = document.getElementById('hero-title');
+    if (titleEl) {
+      titleEl.innerHTML = headline.split(/[|\n]/).filter(l => l.trim()).map(line => {
+        return `<span class="title-line"><span>${parseAccent(line)}</span></span>`;
+      }).join('');
+    }
+    setHtml('hero-tagline', parseAccent(site.heroTagline));
+    setHtml('hero-eyebrow', parseAccent(site.heroEyebrow));
+    setHtml('hero-edition', parseAccent(site.heroEdition));
+    setHtml('hero-format', parseEm(site.heroFormat));
+    setHtml('hero-audience', parseEm(site.heroAudience));
+    setHtml('hero-venue-bottom', parseEm(site.eventVenue));
+    setHtml('hero-date-bottom', parseEm(site.eventDate));
+
+    // Stats
+    const stats = [1, 2, 3, 4];
+    stats.forEach(i => {
+      const numEl = document.getElementById(`stat${i}-num`);
+      const lblEl = document.getElementById(`stat${i}-lbl`);
+      if (numEl) {
+        numEl.innerHTML = (site[`stat${i}Num`] || '0').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+      }
+      if (lblEl) lblEl.innerHTML = (site[`stat${i}Lbl`] || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+    });
+
+    // Manifesto Metadata
+    setHtml('manifesto-section-num', site.manifestoSectionNum || '01 / Manifesto');
+    setHtml('manifesto-pill', site.manifestoPill || 'Why now');
+    setHtml('manifesto-aside-text', site.manifestoAside || 'A note from the <br>founder.');
+
+    setHtml('prizes-title', parseEm(site.prizesHeadline));
+    setHtml('prizes-s1-val', site.prizesS1Num); setHtml('prizes-s1-text', site.prizesS1Lbl);
+    setHtml('prizes-s2-val', site.prizesS2Num); setHtml('prizes-s2-text', site.prizesS2Lbl);
+    setHtml('prizes-s3-val', site.prizesS3Num); setHtml('prizes-s3-text', site.prizesS3Lbl);
+
+    setHtml('footer-tagline', parseAccent(site.footerTagline));
+    setHtml('footer-location', site.footerLocation);
+    setHtml('footer-edition', site.footerEdition);
+    setHtml('footer-copyright', site.footerCopyright);
+    const fEmail = document.getElementById('footer-email');
+    if (fEmail && site.footerEmail) fEmail.innerHTML = `<a href="mailto:${site.footerEmail}" style="color: var(--accent); font-weight: 600;">${site.footerEmail}</a>`;
+
+    // Navigation
+    const navs = ['manifesto', 'maturity', 'experience', 'agenda', 'speakers', 'join'];
+    navs.forEach(n => {
+      const key = 'nav' + n.charAt(0).toUpperCase() + n.slice(1);
+      setHtml(`nav-${n}`, site[key]);
+    });
+  }
+
+  if (manifesto && manifesto[0]) {
+    const wrap = document.getElementById('manifesto-text');
+    if (wrap && manifesto[0].content) {
+      const lines = manifesto[0].content.split(/[|\n]/).filter(l => l.trim());
+      wrap.innerHTML = lines.map(line => `<p class="reveal">${parseAccent(line)}</p>`).join('');
+    }
+  }
+
+  if (maturity.length > 0) {
+    const grid = document.getElementById('maturity-stages-grid');
+    if (grid) {
+      const COLORS = ['#ffffff', 'var(--accent-3)', 'var(--accent-2)', 'var(--accent)'];
+      grid.innerHTML = maturity.map((m, i) => {
+        const pct = String(m.pct || '0').replace('%', '').trim();
+        const color = m.color || COLORS[i] || 'var(--accent)';
+        return `
+          <div class="maturity-stage reveal">
+            <div class="level"><span>STAGE 0${i+1}</span></div>
+            <div class="stage-name">${parseEm(m.name)}</div>
+            <p class="stage-desc">${m.desc}</p>
+            <div class="meter"><div class="meter-fill" style="width: 0%; background: ${color} !important;" data-width="${pct}%"></div></div>
+            <div class="pct">~ ${pct}% of orgs surveyed</div>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  if (pillars.length > 0) {
+    const grid = document.getElementById('pillars-grid');
+    if (grid) {
+      const ICONS = [
+        '<circle cx="24" cy="24" r="20"/><path d="M14 24 L22 32 L34 18"/>',
+        '<rect x="6" y="6" width="36" height="36" rx="2"/><path d="M14 18 L34 18 M14 24 L28 24 M14 30 L34 30"/>',
+        '<circle cx="14" cy="24" r="6"/><circle cx="34" cy="14" r="6"/><circle cx="34" cy="34" r="6"/><path d="M19 22 L29 16 M19 26 L29 32"/>',
+        '<path d="M24 6 L24 42 M6 24 L42 24"/><circle cx="24" cy="24" r="8"/>',
+        '<path d="M12 36 L12 12 L36 12 L36 28 L24 28 L12 36 Z"/>',
+        '<polygon points="24,6 28,18 40,18 30,26 34,38 24,30 14,38 18,26 8,18 20,18"/>'
+      ];
+      grid.innerHTML = pillars.map((p, i) => `
+        <div class="pillar reveal">
+          <div class="pillar-num">> 0${i+1}</div>
+          <div class="pillar-icon"><svg viewBox="0 0 48 48">${ICONS[i] || ICONS[0]}</svg></div>
+          <h3>${parseEm(p.title)}</h3>
+          <p>${p.desc}</p>
+        </div>`).join('');
+    }
+  }
+
+  if (agenda.length > 0) {
+    const timeline = document.querySelector('.timeline');
+    if (timeline) {
+      timeline.innerHTML = agenda.map(item => `
+        <div class="timeline-row reveal ${item.tag?.toLowerCase().includes('keynote') ? 'featured' : ''}">
+          <div class="timeline-time">${item.time_slot || item.time}</div>
+          <div class="timeline-content">
+            <span class="tag">${item.tag || 'SESSION'}</span>
+            <h4>${parseEm(item.title)}</h4>
+            <p class="desc">${item.desc || ''}</p>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  if (speakers.length > 0) {
+    const grid = document.querySelector('.speakers-grid');
+    if (grid) {
+      grid.innerHTML = speakers.map((s, idx) => `
+        <div class="speaker-card reveal">
+          ${s.image_url ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${s.image_url}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
+          <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status || 'CONFIRMED'}</span></div>
+          <div class="speaker-content">
+            <div class="name">${s.name}</div>
+            <div class="designation">${s.title || ''}</div>
+          </div>
+        </div>`).join('') + `
+          <div class="speaker-card speaker-cta-card reveal">
+            <div class="silhouette" aria-hidden="true">+</div>
+            <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
+            <div class="pitch">Have a story <em>worth telling?</em><br><a href="#join">Apply to speak ></a></div>
+          </div>`;
+    }
+  }
+
+  // RE-OBSERVE NEW ELEMENTS
+  if (window.io) {
+    document.querySelectorAll('.reveal, .maturity-stage, .pillar').forEach(el => {
+      window.io.observe(el);
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible', 'revealed');
+      }
+    });
+  }
+};
+
 window.openModal = (e) => {
   if (e) e.preventDefault();
   const modal = document.getElementById('regModal');
   if (modal) {
-    // Proactive Reset every time we open
-    const form = document.getElementById('registration-form');
-    if (form) form.reset();
-    
-    const submitBtn = document.getElementById('generate-btn') || document.querySelector('#registration-form button[type="submit"]');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = 'CONFIRM & GENERATE TICKET';
-    }
-
     modal.classList.add('active');
-    document.getElementById('price-view').style.display = 'block';
-    document.getElementById('form-view').style.display = 'none';
-    document.getElementById('ticket-view').style.display = 'none';
     document.body.style.overflow = 'hidden';
-    
-    // Clear status messages
-    const status = document.getElementById('email-status');
-    if (status) {
-      status.innerHTML = '';
-      status.className = 'email-status';
-    }
-    
-    console.log('[ElevateQA] Modal Opened & State Reset');
-  }
-};
-
-window.proceedToForm = () => {
-  const priceView = document.getElementById('price-view');
-  const formView = document.getElementById('form-view');
-  if (priceView && formView) {
-    priceView.style.display = 'none';
-    formView.style.display = 'block';
-    console.log('[ElevateQA] Proceeding to Form');
   }
 };
 
@@ -151,789 +300,24 @@ window.closeModal = () => {
   if (modal) {
     modal.classList.remove('active');
     document.body.style.overflow = '';
-    
-    // RESET FORM FOR NEXT USER
-    setTimeout(() => {
-      // 1. Clear text inputs
-      const form = document.getElementById('registration-form');
-      if (form) form.reset();
-      
-      // 2. Reset Button State
-      const submitBtn = document.getElementById('generate-btn') || document.querySelector('#registration-form button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'CONFIRM & GENERATE TICKET';
-      }
-      
-      // 3. Reset View Hierarchy
-      const priceView = document.getElementById('price-view');
-      const formView = document.getElementById('form-view');
-      const ticketView = document.getElementById('ticket-view');
-      
-      if (priceView) priceView.style.display = 'block';
-      if (formView) formView.style.display = 'none';
-      if (ticketView) ticketView.style.display = 'none';
-      
-      // 4. Clear status messages
-      const status = document.getElementById('email-status');
-      if (status) {
-        status.innerHTML = '';
-        status.className = 'email-status';
-      }
-    }, 400); // Wait for modal fade-out
   }
-};
-
-window.generateTicket = async (e) => {
-  e.preventDefault();
-  console.log('[ElevateQA] Registration Started...');
-  const btn = e.target.querySelector('button');
-  const originalText = btn.textContent;
-  btn.textContent = 'Processing...';
-  btn.disabled = true;
-
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const org = document.getElementById('reg-org').value.trim();
-  let ticketId = Math.random().toString(36).substr(2, 9).toUpperCase();
-
-  try {
-    console.log('[ElevateQA] Persisting to Supabase:', { name, email, org });
-    // PERSIST TO SUPABASE
-    const { error } = await supabase
-      .from('registrations')
-      .insert([{ name, email, company: org }]);
-
-    if (error) {
-      console.error('[ElevateQA] Supabase Insert Error Details:', error);
-      throw error;
-    }
-
-    console.log('[ElevateQA] Registration Success, Generating QR');
-      document.getElementById('ticket-name').textContent = name;
-      document.getElementById('ticket-org').textContent = org;
-      ticketId = `E-QA-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      document.getElementById('ticket-id-val').textContent = ticketId;
-      
-      // Generate QR
-      const qrContainer = document.getElementById('qrcode');
-      qrContainer.innerHTML = '';
-      
-      // Also update the hidden visual-side ticket-qr for canvas
-      const ticketQr = document.getElementById('ticket-qr');
-      if (ticketQr) {
-        ticketQr.innerHTML = '';
-      }
-      
-      if (typeof QRCode !== 'undefined') {
-        const qrText = `ELEVATE-QA: ${ticketId} | ${email}`;
-        new QRCode(qrContainer, {
-          text: qrText,
-          width: 160, height: 160, colorDark: "#0b0b10", colorLight: "#ffffff"
-        });
-        
-        if (ticketQr) {
-           new QRCode(ticketQr, {
-            text: qrText,
-            width: 300, height: 300, colorDark: "#0b0b10", colorLight: "#ffffff"
-          });
-        }
-        
-        // Add LinkedIn Share Link
-        const shareMsg = encodeURIComponent(`Excited to attend Elevate QA 2026! 🚀 \n\nLooking forward to deep-diving into the proof of value and shipping quality at scale. Catch me there! \n\n#ElevateQA #QualityEngineering #Testing #SDET`);
-        const shareUrl = encodeURIComponent('https://elevateqa.netlify.app');
-        const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}&summary=${shareMsg}`;
-        
-        const shareBtn = document.getElementById('linkedin-share-btn');
-        if (shareBtn) shareBtn.setAttribute('href', linkedinUrl);
-      } else {
-        console.warn('[ElevateQA] QRCode library not loaded yet!');
-        qrContainer.innerHTML = '<p style="font-size:10px; color:red;">QR Error - Please refresh</p>';
-      }
-
-    document.getElementById('form-view').style.display = 'none';
-    document.getElementById('ticket-view').style.display = 'block';
-    
-    // EMAILJS INTEGRATION (Setup ready)
-    if (window.emailjs) {
-      // Initialize with Public Key
-      emailjs.init('ZzPD0nx75Ms7J2ntS');
-
-      const templateParams = {
-        to_name: name,
-        to_email: email,
-        ticket_id: ticketId,
-        qr_data: `ELEVATE-QA: ${ticketId} | ${email}`,
-        company: org
-      };
-
-      // Sending using the service ID from your screenshot and the template I created
-      emailjs.send('service_5za1p9c', 'template_0wi7mv9', templateParams)
-        .then(() => {
-          console.log('[ElevateQA] Ticket Email Sent Successfully to:', email);
-          const status = document.getElementById('email-status');
-          if (status) {
-            status.className = 'email-status success';
-            status.innerHTML = '✓ Ticket sent to your email';
-          }
-        })
-        .catch((err) => {
-          console.error('[ElevateQA] Email Failed:', err);
-          const status = document.getElementById('email-status');
-          if (status) {
-            status.className = 'email-status error';
-            status.innerHTML = '✕ Email failed, please download QR below';
-          }
-        });
-    }
-
-    console.log('[ElevateQA] Preparing to send confirmation email to:', email);
-  } catch (err) {
-    console.error('[ElevateQA] Full Registration Failure:', err);
-    alert('Registration failed. ' + (err.message || 'Please try again.'));
-            btn.textContent = originalText;
-    btn.disabled = false;
-  }
-};
-
-// --- PREMIUM TICKET GENERATION & DOWNLOAD ---
-window.downloadPremiumTicket = () => {
-  const name = document.getElementById('ticket-name').textContent;
-  const org = document.getElementById('ticket-org').textContent;
-  const qrImg = document.querySelector('#ticket-qr img');
-  const ticketId = document.getElementById('ticket-id-val').textContent;
-
-  if (!qrImg) return;
-
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  
-  // Set Canvas Dimensions (Vertical Pass Style)
-  canvas.width = 800;
-  canvas.height = 1200;
-
-  // 1. Background
-  ctx.fillStyle = '#0a0a0c';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 2. Accents & Borders
-  ctx.strokeStyle = '#d4ff3a';
-  ctx.lineWidth = 10;
-  ctx.strokeRect(40, 40, 720, 1120);
-
-  // 3. Header Text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '300 32px Fraunces, serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('ELEVATE QA 2026', canvas.width/2, 120);
-
-  // 4. Branding Line
-  ctx.fillStyle = '#d4ff3a';
-  ctx.font = '800 24px Manrope, sans-serif';
-  ctx.fillText('THE AI-LED QE SUMMIT', canvas.width/2, 160);
-
-  // 5. Divider
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(100, 220);
-  ctx.lineTo(700, 220);
-  ctx.stroke();
-
-  // 6. Attendee Info
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.font = '400 20px Manrope, sans-serif';
-  ctx.fillText('OFFICIAL DELEGATE PASS', canvas.width/2, 280);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '800 64px Fraunces, serif';
-  ctx.fillText(name.toUpperCase(), canvas.width/2, 360);
-
-  ctx.fillStyle = '#d4ff3a';
-  ctx.font = '600 28px Manrope, sans-serif';
-  ctx.fillText(org.toUpperCase(), canvas.width/2, 410);
-
-  // 7. QR Code (Centered)
-  // Draw QR on a white rounded rect for visibility
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.roundRect(canvas.width/2 - 180, 480, 360, 360, 30);
-  ctx.fill();
-  ctx.drawImage(qrImg, canvas.width/2 - 150, 510, 300, 300);
-
-  // 8. Event Footer Meta
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '800 32px Manrope, sans-serif';
-  ctx.fillText('8 AUG 2026 • DELHI NCR', canvas.width/2, 950);
-  
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.font = '400 18px JetBrains Mono, monospace';
-  ctx.fillText(`ID: ${ticketId}`, canvas.width/2, 1000);
-
-  // 9. Download Trigger
-  const link = document.createElement('a');
-  link.download = `ElevateQA26_Pass_${name.replace(/\s+/g, '_')}.png`;
-  link.href = canvas.toDataURL('image/png', 1.0);
-  link.click();
-};
-
-// --- LINKEDIN SHARING ---
-window.shareOnLinkedIn = () => {
-  const name = document.getElementById('ticket-name').textContent;
-  const url = window.location.origin;
-  const text = encodeURIComponent(
-    `I'm excited to announce that I've secured my spot at Elevate QA 2026 — The AI-Led Quality Engineering Tech Summit in Delhi NCR! 🚀\n\n` +
-    `Looking forward to deep-diving into the future of QE with industry leaders. See you there!\n\n` +
-    `#ElevateQA #QualityEngineering #AIinTesting #TechSummit2026`
-  );
-  
-  const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${text}`;
-  window.open(shareUrl, '_blank', 'width=600,height=600');
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  const stamp = document.querySelector('.floating-stamp');
-  const heroImg = document.querySelector('.hero-ambient img');
-
-  const backToTop = document.getElementById('backToTop');
-
-  let ticking = false;
-  let lastScrollY = window.scrollY;
-
-  const updateScrollTransitions = () => {
-    if (nav) {
-      if (lastScrollY > 50) nav.classList.add('scrolled');
-      else nav.classList.remove('scrolled');
-    }
-
-    if (backToTop) {
-      if (lastScrollY > 600) backToTop.classList.add('visible');
-      else backToTop.classList.remove('visible');
-    }
-
-    if (progressBar) {
-      const total = document.documentElement.scrollHeight - window.innerHeight;
-      progressBar.style.width = (lastScrollY / total * 100) + '%';
-    }
-
-    if (stamp) {
-      stamp.style.transform = `rotate(${lastScrollY * 0.15}deg)`;
-    }
-
-    if (heroImg && lastScrollY < window.innerHeight) {
-      heroImg.style.transform = `scale(${1 + lastScrollY * 0.0005}) translateY(${lastScrollY * 0.18}px)`;
-    }
-
-    ticking = false;
-  };
-
-  window.addEventListener('scroll', () => {
-    lastScrollY = window.scrollY;
-    if (!ticking) {
-      requestAnimationFrame(updateScrollTransitions);
-      ticking = true;
-    }
-  }, { passive: true });
-
-  if (backToTop) {
-    backToTop.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  }
-
-  // ELITE SMOOTH SCROLL CONTROLLER
-  const menuToggle = document.querySelector('.menu-toggle');
-  const navLinks = document.querySelector('.nav-links');
+  initAnimations();
+  initCursor();
+  initCloudSync();
   
-  const handleSmoothScroll = (targetId, e) => {
-    const target = document.querySelector(targetId);
-    if (!target) return;
-    
-    if (e) e.preventDefault();
-    
-    // Mobile menu cleanup
-    if (menuToggle && navLinks && navLinks.classList.contains('active')) {
-      menuToggle.classList.remove('open');
-      navLinks.classList.remove('active');
-      document.body.style.overflow = '';
-      menuToggle.setAttribute('aria-expanded', 'false');
-    }
-
-    const headerHeight = nav ? nav.offsetHeight : 80;
-    const elementPosition = target.getBoundingClientRect().top;
-    // Increase offset to 40px for better visibility of section titles
-    const offsetPosition = elementPosition + window.scrollY - headerHeight - 40;
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth'
-    });
-
-    // Force reveal elements in the target section to become visible immediately
-    target.classList.add('visible', 'revealed');
-    target.querySelectorAll('.reveal, .reveal-child > *').forEach(el => {
-      el.classList.add('visible', 'revealed');
-    });
-  };
-
-  // Intercept all internal links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-      const targetId = this.getAttribute('href');
-      if (targetId === '#' || targetId === '') return;
-      handleSmoothScroll(targetId, e);
-    });
-  });
-
-
-  // MOBILE NAVIGATION CONTROLLER - Elite Full-Screen Overlay
-  if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => {
-      menuToggle.classList.toggle('active');
-      navLinks.classList.toggle('active');
-      
-      const isOpen = navLinks.classList.contains('active');
-      document.body.style.overflow = isOpen ? 'hidden' : '';
-      menuToggle.setAttribute('aria-expanded', isOpen);
-    });
-
-    // Close on link click
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        menuToggle.classList.remove('open');
-        navLinks.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      });
-    });
-  }
-
-  // WORLD CLASS ELITE BRANDED CURSOR - Desktop Only (>1024px)
-  const brandedCursor = document.querySelector('.cursor-branded');
-  const isMobile = window.innerWidth <= 1024;
-  
-  if (brandedCursor && !isMobile) {
-    brandedCursor.style.display = 'block'; // Force visible on desktop
-    document.addEventListener('mousemove', (e) => {
-      brandedCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-    }, { passive: true });
-
-    const interactive = 'a, button, .btn, .speaker-card, .involve-card, .clickable';
-    document.addEventListener('mouseover', (e) => {
-      if (e.target.closest(interactive)) document.body.classList.add('cursor-hover');
-    });
-    document.addEventListener('mouseout', (e) => {
-      if (e.target.closest(interactive)) document.body.classList.remove('cursor-hover');
-    });
-  } else if (brandedCursor) {
-    brandedCursor.style.display = 'none';
-  }
-
-  // Magnetic effect disabled for buttons — only apply to floating decorative stamp
-  document.querySelectorAll('.floating-stamp').forEach(el => new MagneticElement(el));
-
-  // Spotlight Effect for Bento Cards
-  document.querySelectorAll('.pillar, .maturity-stage').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-    });
-  });
-
-  // 3. SYNCHRONIZATION ENGINE
-  window.syncEverything = function() {
-    const site = JSON.parse(localStorage.getItem('elevate_site_content'));
-    const agenda = JSON.parse(localStorage.getItem('elevate_agenda'));
-    const speakers = JSON.parse(localStorage.getItem('elevate_speakers'));
-    const manifesto = JSON.parse(localStorage.getItem('elevate_manifesto'));
-    const maturity = JSON.parse(localStorage.getItem('elevate_maturity_stages'));
-    const pillars = JSON.parse(localStorage.getItem('elevate_pillars'));
-    const visuals = JSON.parse(localStorage.getItem('elevate_visuals'));
-
-    if (site) {
-      const setImg = (id, src) => { const el = document.getElementById(id); if (el && src) el.src = src; };
-
-      const heroAmbImg = document.querySelector('.hero-ambient img');
-      if (heroAmbImg) {
-        const bgUrl = (visuals && visuals.heroBg) || (site && site.heroBg);
-        if (bgUrl && bgUrl.length > 5) {
-          heroAmbImg.src = bgUrl;
-          heroAmbImg.style.filter = 'none'; 
-          heroAmbImg.style.opacity = '0.7'; 
-        } else {
-          // Fallback to default unsplash if DB is empty
-          heroAmbImg.src = 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1600&q=80';
-          heroAmbImg.style.filter = 'grayscale(100%) contrast(1.2)';
-          heroAmbImg.style.opacity = '0.35';
-        }
-      }
-
-      setImg('strip-img-01', site.strip01Img);
-      setImg('strip-img-02', site.strip02Img);
-      setImg('strip-img-03', site.strip03Img);
-      const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
-      setTxt('strip-cap-01', site.strip01Cap);
-      setTxt('strip-cap-02', site.strip02Cap);
-      setTxt('strip-cap-03', site.strip03Cap);
-
-      const b = visuals || {};
-      const logoUrl = b.logo || (site && site.logoUrl) || '/logo-elevate-clean.svg';
-      const logoHeight = b.logoHeight || (site && site.logoHeight) || 48;
-      
-      const logos = document.querySelectorAll('.logo img, .preloader-logo, #footer-logo-img, #site-logo-img');
-      logos.forEach(img => {
-        img.src = logoUrl;
-        img.style.display = 'block';
-        img.style.height = logoHeight + 'px';
-        img.style.width = 'auto';
-        if (!img.alt) img.alt = 'Elevate QA Logo';
-      });
-
-      const titleEl = document.getElementById('hero-title');
-      if (titleEl && site.heroHeadline) {
-        const lines = site.heroHeadline.split(/[|\n]/).filter(l => l.trim());
-        titleEl.innerHTML = lines.map(line => {
-          const processed = line.replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-          return `<span class="title-line" style="display:block;"><span style="display:inline-block;">${processed}</span></span>`;
-        }).join('');
-      }
-
-      const tagEl = document.getElementById('hero-tagline');
-      if (tagEl && site.heroTagline) {
-        tagEl.innerHTML = site.heroTagline.replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-      }
-
-      const eyebrowEl = document.getElementById('hero-eyebrow');
-      if (eyebrowEl && site.heroEyebrow) {
-        eyebrowEl.innerHTML = site.heroEyebrow.replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-      }
-
-      const introEl = document.getElementById('speakers-intro');
-      if (introEl) {
-        introEl.innerHTML = (site.speakersIntro || '').replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-      }
-
-      const metaEl = document.getElementById('hero-line-signature');
-      if (metaEl) {
-        const text = site.heroMeta || '';
-        const processed = text.replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-        metaEl.innerHTML = text ? `<span class="line"></span> ${processed}` : '';
-      }
-
-      const venueEl = document.getElementById('hero-venue-bottom');
-      if (venueEl && site.eventVenue) venueEl.innerHTML = site.eventVenue;
-
-      const dateEl = document.getElementById('hero-date-bottom');
-      if (dateEl && site.eventDate) dateEl.innerHTML = site.eventDate;
-
-      // Stats Bar / Proof Bar
-      const setStat = (id, val) => { 
-        const el = document.getElementById(id); 
-        if (el && val) el.innerHTML = val.replace(/\[\[(.*?)\]\]/g, '<em>$1</em>'); 
-      };
-      setStat('stat1-num', site.stat1Num); setStat('stat1-lbl', site.stat1Lbl);
-      setStat('stat2-num', site.stat2Num); setStat('stat2-lbl', site.stat2Lbl);
-      setStat('stat3-num', site.stat3Num); setStat('stat3-lbl', site.stat3Lbl);
-      setStat('stat4-num', site.stat4Num); setStat('stat4-lbl', site.stat4Lbl);
-
-      const pTitle = document.getElementById('prizes-title');
-      if (pTitle && site.prizesHeadline) {
-        let html = site.prizesHeadline.replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-        html = html.replace(/\|/g, '<br>');
-        pTitle.innerHTML = html;
-      }
-
-      const setPrize = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val || ''; };
-      setPrize('prizes-s1-val', site.prizesS1Num);
-      setPrize('prizes-s1-text', site.prizesS1Lbl);
-      setPrize('prizes-s2-val', site.prizesS2Num);
-      setPrize('prizes-s2-text', site.prizesS2Lbl);
-      setPrize('prizes-s3-val', site.prizesS3Num);
-      setPrize('prizes-s3-text', site.prizesS3Lbl);
-
-      for (let i = 1; i <= 9; i++) {
-        const tEl = document.getElementById(`ticker-${i}`);
-        if (tEl && site[`ticker${i}`]) {
-          tEl.innerHTML = site[`ticker${i}`].replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-        }
-      }
-
-      const setFooter = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
-      setFooter('footer-tagline', site.footerTagline);
-      setFooter('footer-location', site.footerLocation);
-      setFooter('footer-edition', site.footerEdition);
-      setFooter('footer-copyright', site.footerCopyright);
-      if (site.footerEmail) {
-        const fe = document.getElementById('footer-email');
-        if (fe) fe.innerHTML = `<a href="mailto:${site.footerEmail}" style="color: var(--accent); font-weight: 600;">${site.footerEmail}</a>`;
-      }
-
-      setFooter('involve-title', site.involveTitle);
-      setFooter('involve-section-num', site.involveSectionNum);
-      for (let i = 1; i <= 3; i++) {
-        setFooter(`involve-card${i}-title`, site[`involveCard${i}Title`]);
-        const desc = (site[`involveCard${i}Desc`] || '').replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-        const dEl = document.getElementById(`involve-card${i}-desc`);
-        if (dEl) dEl.innerHTML = desc;
-      }
-      const c1Link = document.getElementById('involve-card1-link');
-      if (c1Link) {
-        // Hardcoded to ensure the correct form is always attached as requested
-        c1Link.setAttribute('href', 'https://forms.office.com/r/eNjZMN831G');
-      }
-      
-      const c3Link = document.getElementById('copyLink');
-      if (c3Link && site.involveCard3LinkText) {
-        c3Link.innerHTML = site.involveCard3LinkText;
-      }
-
-      setFooter('coming-title', site.comingTitle);
-      setFooter('coming-desc', site.comingDesc);
-      setFooter('coming-section-num', site.comingSectionNum);
-      setFooter('coming-visual-label', site.comingVisualLabel);
-      setFooter('coming-visual-sub', site.comingVisualSub);
-      const comingList = document.getElementById('coming-checklist');
-      if (comingList) {
-        const lis = comingList.querySelectorAll('li');
-        for (let i = 1; i <= 6; i++) {
-          const li = lis[i - 1];
-          if (!li) continue;
-          const labelEl = li.querySelector('span:not(.status)');
-          if (labelEl && site[`comingItem${i}Label`]) labelEl.innerHTML = site[`comingItem${i}Label`];
-        }
-      }
-      for (let i = 1; i <= 6; i++) {
-        const sEl = document.getElementById(`coming-item${i}-status`);
-        if (sEl && site[`comingItem${i}Status`]) {
-          const val = site[`comingItem${i}Status`];
-          sEl.innerHTML = val;
-          if (val.toLowerCase().includes('live') || val.toLowerCase().includes('open') || val.includes('✓')) {
-            sEl.classList.remove('pending');
-          } else {
-            sEl.classList.add('pending');
-          }
-        }
-      }
-
-      setFooter('agenda-section-num', site.agendaSectionNum);
-      if (site.agendaSectionTitle) {
-        const aTitleEl = document.getElementById('agenda-section-title');
-        if (aTitleEl) {
-          aTitleEl.innerHTML = site.agendaSectionTitle.replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-        }
-      }
-      setFooter('speakers-section-num', site.speakersSectionNum);
-
-      const navItemsList = ['manifesto', 'maturity', 'experience', 'agenda', 'speakers', 'join'];
-      navItemsList.forEach(item => {
-        const key = 'nav' + item.charAt(0).toUpperCase() + item.slice(1);
-        const el = document.getElementById('nav-' + item);
-        if (el && site[key]) el.innerHTML = site[key];
-      });
-
-      const b2 = visuals || {};
-      let pColor = b2.primaryColor || site.primaryColor || '#d4ff3a';
-      if (pColor === '#000000' || pColor === '') pColor = '#d4ff3a';
-      document.documentElement.style.setProperty('--accent', pColor);
-    }
-
-    const setFooter2 = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
-
-    // MANIFESTO
-    if (site) {
-      setFooter2('manifesto-section-num', site.manifestoSectionNum);
-      setFooter2('manifesto-pill', site.manifestoPill);
-      setFooter2('manifesto-aside-text', site.manifestoAside);
-    }
-    if (manifesto && manifesto[0]) {
-      const manifestEl = document.getElementById('manifesto-text') || document.getElementById('manifesto-text-content');
-      if (manifestEl && manifesto[0].content) {
-        const lines = String(manifesto[0].content).split(/[|\n]/).filter(l => l.trim());
-        if (lines.length) {
-          manifestEl.innerHTML = lines.map(line => {
-            let clean = line;
-            // Auto-format signature phrases if markers are missing from the DB
-            if (!clean.includes('[[') && !clean.includes('<')) {
-              clean = clean.replace(/Few are showing the proof\./g, '[[Few are showing the proof.]]');
-              clean = clean.replace(/The proof of value, or it didn't happen\./g, '[[The proof of value, or it didn\'t happen.]]');
-            }
-            if (!clean.includes('==') && !clean.includes('<')) {
-              clean = clean.replace(/what actually shipped to production/g, '==what actually shipped to production==');
-            }
-            
-            clean = clean.replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
-            clean = clean.replace(/==(.*?)==/g, '<span class="highlight">$1</span>');
-            return `<p class="reveal">${clean}</p>`;
-          }).join('');
-        }
-      }
-    }
-
-    // MATURITY
-    if (site) setFooter2('map-section-num', site.mapSectionNum);
-    const mTitle = document.getElementById('maturity-title');
-    if (mTitle && site && site.maturityTitle) {
-      mTitle.innerHTML = site.maturityTitle.replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-    }
-
-    if (maturity && maturity.length > 0) {
-      const stagesContainer = document.getElementById('maturity-stages-grid');
-      if (stagesContainer) {
-        const seen = new Set();
-        const uniqueMaturity = maturity.filter(m => {
-          if (seen.has(m.name)) return false;
-          seen.add(m.name);
-          return true;
-        });
-        const STAGE_COLORS = ['#ffffff', 'var(--accent-3, #3a8dff)', 'var(--accent-2, #ff3a3a)', 'var(--accent, #d4ff3a)'];
-
-        stagesContainer.innerHTML = uniqueMaturity.map((m, i) => {
-          const cleanPct = String(m.pct || '0').replace(/%/g, '').trim();
-          const barColor = m.color || STAGE_COLORS[i] || 'var(--accent)';
-          const procName = (m.name || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-          const procDesc = (m.desc || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-          return `
-            <div class="maturity-stage reveal" style="--meter-width: ${cleanPct}%">
-              <div class="level"><span>STAGE 0${i+1}</span></div>
-              <div class="stage-name">${procName}</div>
-              <p class="stage-desc">${procDesc}</p>
-              <div class="meter"><div class="meter-fill" style="width: 0%; background: ${barColor} !important;" data-width="${cleanPct}%"></div></div>
-              <div class="pct">~ ${cleanPct}% of orgs surveyed</div>
-            </div>`;
-        }).join('');
-      }
-    }
-
-    // PILLARS
-    if (site) setFooter2('experience-section-num', site.experienceSectionNum);
-    if (pillars && pillars.length > 0) {
-      const pillarsGrid = document.getElementById('pillars-grid');
-      if (pillarsGrid) {
-        const seen = new Set();
-        const uniquePillars = pillars.filter(p => {
-          if (seen.has(p.title)) return false;
-          seen.add(p.title);
-          return true;
-        });
-        const PILLAR_ICONS = [
-          '<circle cx="24" cy="24" r="20"/><path d="M14 24 L22 32 L34 18"/>',
-          '<rect x="6" y="6" width="36" height="36" rx="2"/><path d="M14 18 L34 18 M14 24 L28 24 M14 30 L34 30"/>',
-          '<circle cx="14" cy="24" r="6"/><circle cx="34" cy="14" r="6"/><circle cx="34" cy="34" r="6"/><path d="M19 22 L29 16 M19 26 L29 32"/>',
-          '<path d="M24 6 L24 42 M6 24 L42 24"/><circle cx="24" cy="24" r="8"/>',
-          '<path d="M12 36 L12 12 L36 12 L36 28 L24 28 L12 36 Z"/>',
-          '<polygon points="24,6 28,18 40,18 30,26 34,38 24,30 14,38 18,26 8,18 20,18"/>'
-        ];
-        pillarsGrid.innerHTML = uniquePillars.map((p, i) => {
-          const icon = PILLAR_ICONS[i] || PILLAR_ICONS[0];
-          const procTitle = (p.title || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-          const procDesc = (p.desc || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-          return `
-            <div class="pillar reveal">
-              <div class="pillar-num">> 0${i+1}</div>
-              <div class="pillar-icon"><svg viewBox="0 0 48 48">${icon}</svg></div>
-              <h3>${procTitle}</h3>
-              <p>${procDesc}</p>
-            </div>`;
-        }).join('');
-      }
-    }
-
-    // AGENDA
-    if (agenda && agenda.length > 0) {
-      const timeline = document.querySelector('.timeline');
-      if (timeline) {
-        const esc = window.escapeHtml;
-        timeline.innerHTML = agenda.map(item => {
-          const isKeynote = (item.tag || '').toLowerCase().includes('keynote');
-          const isBreak = (item.tag || '').toLowerCase().includes('break') || (item.title || '').toLowerCase().includes('lunch');
-          return `
-            <div class="timeline-row reveal ${isKeynote ? 'featured' : ''} ${isBreak ? 'break' : ''}">
-              <div class="timeline-time">${esc(item.time_slot || item.time)}</div>
-              <div class="timeline-content">
-                <span class="tag">${esc(item.tag || 'SESSION')}</span>
-                <h4>${(item.title || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>')}</h4>
-                <p>${esc(item.desc || '')}</p>
-              </div>
-            </div>`;
-        }).join('');
-      }
-    }
-
-    // SPEAKERS
-    if (speakers && speakers.length > 0) {
-      const grid = document.querySelector('.speakers-grid');
-      if (grid) {
-        const esc = window.escapeHtml;
-        grid.innerHTML = speakers.map((s, idx) => {
-          const spkImg = s.image_url || s.img || '';
-          const isPhoto = spkImg && spkImg.length > 5;
-          const safeName = esc(s.name || '');
-          const photoHtml = isPhoto
-            ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${esc(spkImg)}" alt="${safeName}" loading="lazy"></div>`
-            : `<div class="silhouette" aria-hidden="true">${(idx + 1).toString().padStart(2, '0')}</div>`;
-          const nameParts = (s.name || '').split(' ');
-          const firstSafe = esc(nameParts[0] || '');
-          const restSafe = esc(nameParts.slice(1).join(' '));
-          return `
-            <div class="speaker-card reveal ${isPhoto ? 'speaker-has-photo' : ''}">
-              ${photoHtml}
-              <div class="top"><span>${esc((s.role || 'Keynote').toUpperCase())}</span><span>${esc((s.status || 'CONFIRMED').toUpperCase())}</span></div>
-              <div class="speaker-content">
-                <div class="name">${firstSafe} ${restSafe ? `<em>${restSafe}</em>` : ''}</div>
-                ${s.title ? `<div class="designation">${esc(s.title)}</div>` : ''}
-              </div>
-            </div>`;
-        }).join('') + `
-          <div class="speaker-card speaker-cta-card reveal">
-            <div class="silhouette" aria-hidden="true">+</div>
-            <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
-            <div class="pitch">Have a story <em>worth telling?</em><br><a href="#join">Apply to speak ></a></div>
-          </div>`;
-      }
-    }
-
-    if (window.io) {
-      document.querySelectorAll('.reveal').forEach(el => window.io.observe(el));
-      document.querySelectorAll('.maturity-stage').forEach(el => window.io.observe(el));
-    }
-  };
-
   window.addEventListener('storage', (e) => {
-    if (e && e.key && e.key.startsWith('elevate_')) {
-      try { window.syncEverything(); } catch(err) { console.error('[ElevateQA] Sync Error:', err); }
+    if (e.key && e.key.startsWith('elevate_')) window.syncEverything();
+  });
+
+  // Failsafe preloader removal
+  setTimeout(() => {
+    const preloader = document.getElementById('page-preloader');
+    if (preloader) {
+      preloader.classList.add('fade-out');
+      setTimeout(() => preloader.remove(), 1000);
     }
-  });
-
-  try {
-    initCloudSync();
-    window.syncEverything();
-  } catch(err) {
-    console.error('[ElevateQA] Initial Sync Failed:', err);
-  } finally {
-    const dismissPreloader = () => {
-      const preloader = document.getElementById('page-preloader');
-      if (preloader) {
-        preloader.style.opacity = '0';
-        preloader.style.visibility = 'hidden';
-        setTimeout(() => preloader.remove(), 1000);
-      }
-    };
-    if (document.readyState === 'complete') dismissPreloader();
-    else window.addEventListener('load', dismissPreloader);
-    setTimeout(dismissPreloader, 3000);
-  }
+  }, 4000);
 });
-
-window.copyLink = (e) => {
-  e.preventDefault();
-  const link = document.getElementById('copyLink');
-  const original = link.textContent;
-  navigator.clipboard?.writeText(window.location.href).then(() => {
-    link.textContent = 'Copied';
-    setTimeout(() => link.textContent = original, 2200);
-  });
-};

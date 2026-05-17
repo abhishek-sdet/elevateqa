@@ -95,6 +95,46 @@ button {
   top: 0;
 }
 
+/* ELITE BUTTONS - Spring Physics */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  border-radius: 40px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: background 0.3s var(--ease-out), color 0.3s var(--ease-out), border-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  border: 1px solid var(--accent);
+}
+.btn-primary:hover {
+  background: #fff;
+  border-color: #fff;
+  box-shadow: 0 10px 30px rgba(212, 255, 58, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #fff;
+  border: 1px solid var(--line-strong);
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -131,9 +171,90 @@ body:hover .cursor-glow { opacity: 0.6; }
 }
 @media (max-width: 1024px) { .cursor-glow { display: none; } }
 
-/* GLOBAL ACCENT SYNTAX */
-.accent {
-  color: var(--accent) !important;
+/* ACCENT SYNTAX — [[text]] → <span class="accent"> via parseAccent() */
+/* Only apply forced green to .accent spans (from admin [[syntax]]) and */
+/* to em tags inside specific design zones — NOT globally to all em tags */
+.accent,
+span.accent {
+  color: #d4ff3a !important; /* FALLBACK TO BRAND GREEN */
+  color: var(--accent, #d4ff3a) !important;
   font-style: italic;
-  font-weight: inherit;
+}
+
+/* Specific section em → green italic (matches original reference design) */
+h1.title .accent,
+.title-line .accent,
+.hero-content .tagline em,
+.manifesto-text p em,
+.section-title em,
+.pillar h3 em,
+.maturity-stage .stage-name em,
+.coming-content h2 em,
+.finale-mark em,
+.hero-bottom-item .value em,
+.timeline-content h4 em {
+  color: var(--accent, #d4ff3a) !important;
+  font-style: italic;
+}
+
+/* FOCUS VISIBLE — clear ring on both dark and light backgrounds */
+:focus-visible {
+  outline: 2px solid var(--accent, #d4ff3a) !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(11, 11, 16, 0.85) !important;
+}
+
+/* REDUCED MOTION SUPPORT — WCAG 2.3.3 */
+/* REVEAL-ON-SCROLL DISCOVERY ENGINE */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s var(--spring), transform 1s var(--spring);
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* STAGGERED REVEAL FOR GRIDS */
+.bento-item, .pillar, .speaker-card, .maturity-stage {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s var(--spring);
+}
+.bento-item.revealed, .pillar.revealed, .speaker-card.revealed, .maturity-stage.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* BENTO MICRO-ANIMATIONS */
+.pillar-icon svg {
+  transition: transform 0.6s var(--spring-bouncy);
+}
+.pillar:hover .pillar-icon svg {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.maturity-stage .meter-fill {
+  width: 0;
+  transition: width 1.5s cubic-bezier(0.7, 0, 0.3, 1) 0.3s;
+}
+.maturity-stage.revealed .meter-fill,
+.maturity-stage.visible .meter-fill {
+  width: var(--meter-width) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .cursor-glow,
+  .ticker-track {
+    animation: none !important;
+  }
 }

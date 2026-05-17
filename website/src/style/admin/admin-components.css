@@ -154,3 +154,141 @@ tr:last-child td { border-bottom: none; }
   border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
 }
 .color-swatch-wrap input[type="text"] { border: none !important; background: none !important; padding: 0 8px !important; box-shadow: none !important; }
+
+/* INTERNAL SUB-NAV TABS */
+.internal-tabs {
+  display: flex; gap: 8px; margin-bottom: 32px;
+  background: var(--bg-3); padding: 6px; border-radius: 14px;
+  border: 1px solid var(--line); align-self: flex-start;
+}
+.tab-btn {
+  background: transparent; color: var(--ink-dim); border: none;
+  padding: 10px 20px; border-radius: 10px; font-family: var(--mono);
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+  cursor: pointer; transition: 0.3s; font-weight: 600;
+}
+.tab-btn:hover { color: var(--ink); background: rgba(255,255,255,0.03); }
+.tab-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+
+/* ADVANCED GRIDS */
+.form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.form-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+
+/* PRIMARY CARD STYLING */
+.primary-card { border-left: 4px solid var(--accent) !important; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+
+/* STATS FORM GRID */
+.stats-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 10px; }
+.stat-form-item { 
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.stat-num-wrap {
+  background: var(--bg-3); border-radius: 8px; padding: 8px; border: 1px dashed var(--accent);
+}
+.stat-num-wrap input { 
+  font-family: var(--display); font-size: 24px; text-align: center; color: var(--accent);
+  background: none; border: none; width: 100%; padding: 0;
+}
+.stat-form-item input[type="text"]:not(.stat-num-wrap input) {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-dim);
+  background: none; border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 4px 0;
+}
+
+/* PREMIUM TOAST NOTIFICATIONS */
+.toast-container {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(11, 11, 16, 0.85);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  color: var(--ink);
+  min-width: 320px;
+  max-width: 480px;
+  animation: toast-slide-in 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  pointer-events: auto;
+}
+
+.toast.removing {
+  animation: toast-slide-out 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.toast.success { border-left: 4px solid var(--accent); }
+.toast.error { border-left: 4px solid var(--accent-red); }
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.toast.success .toast-icon {
+  background: rgba(212, 255, 58, 0.15);
+  color: var(--accent);
+}
+
+.toast.error .toast-icon {
+  background: rgba(255, 90, 54, 0.15);
+  color: var(--accent-red);
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.toast-message {
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+@keyframes toast-slide-in {
+  from { transform: translateX(120%) scale(0.9); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+@keyframes toast-slide-out {
+  from { transform: translateX(0) scale(1); opacity: 1; }
+  to { transform: translateX(120%) scale(0.9); opacity: 0; }
+}
+
+@media (max-width: 600px) {
+  .toast-container {
+    bottom: 20px; right: 20px; left: 20px; align-items: stretch;
+  }
+  .toast { max-width: none; min-width: 0; }
+}

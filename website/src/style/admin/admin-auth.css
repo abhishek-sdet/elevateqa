@@ -52,3 +52,23 @@
   color: var(--accent); transition: 0.3s;
 }
 .otp-input:focus { border-color: var(--accent); outline: none; background: var(--bg-3); box-shadow: 0 0 20px var(--accent-dim); }
+.otp-input[aria-invalid="true"] { border-color: #ff5a36 !important; }
+
+.auth-msg {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  min-height: 16px;
+  margin-bottom: 16px;
+  color: var(--ink-dim);
+}
+.auth-msg.error { color: #ff5a36; }
+.auth-msg.success { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .login-card { padding: 48px 28px; border-radius: 32px; }
+  .login-card h2 { font-size: 24px; }
+  .otp-wrap { gap: 8px; }
+  .otp-input { width: 40px; height: 52px; font-size: 20px; border-radius: 10px; }
+}

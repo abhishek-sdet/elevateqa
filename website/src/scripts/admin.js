@@ -87,10 +87,10 @@ const DEFAULT_SPEAKERS = [
 const DEFAULT_SETTINGS = {
   domain: "elevate-qa.com",
   emails: {
-    admin: "abhishekjohri150@gmail.com",
-    attendee: "tickets@elevate-qa.com",
-    presenter: "speakers@elevate-qa.com",
-    support: "help@sdet.tech"
+    admin: "elevateqa@sdettech.com",
+    attendee: "elevateqa@sdettech.com",
+    presenter: "elevateqa@sdettech.com",
+    support: "elevateqa@sdettech.com"
   },
   theme: {
     primary: "#d4ff3a",
@@ -725,7 +725,8 @@ function addSpeakerItem(data = { name: '', role: '', img: '' }) {
       </div>
       <div class="speaker-inputs">
         <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
-        <div class="form-group"><label>Role / Title</label><input type="text" class="s-role" value="${data.role}" placeholder="Keynote Speaker"></div>
+        <div class="form-group"><label>Role / Badge</label><input type="text" class="s-role" value="${data.role}" placeholder="Keynote Speaker"></div>
+        <div class="form-group"><label>Professional Designation</label><input type="text" class="s-title" value="${data.title || ''}" placeholder="e.g. CEO at SDET TECH"></div>
       </div>
       <button class="btn-del" onclick="this.parentElement.parentElement.remove()" title="Remove">✕</button>
     </div>`;
@@ -869,12 +870,16 @@ function saveAll() {
     desc:  el.querySelector('.a-desc') ? el.querySelector('.a-desc').value : ''
   }));
 
-  // 4. Collect Speakers
-  const speakers = Array.from(document.querySelectorAll('#speaker-list .dynamic-item')).map(el => ({
-    name: el.querySelector('.s-name').value,
-    role: el.querySelector('.s-role').value,
-    img:  el.querySelector('img').src && !el.querySelector('img').src.endsWith(location.href) ? el.querySelector('img').src : ''
-  }));
+  // 4. Speakers
+    const speakerEls = Array.from(document.querySelectorAll('#speaker-list .dynamic-item'));
+    const speakers = speakerEls.map(el => {
+      return {
+        name: el.querySelector('.s-name').value,
+        role: el.querySelector('.s-role').value,
+        title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '',
+        img: el.querySelector('img').src.includes('data:image') || el.querySelector('img').src.includes('http') ? el.querySelector('img').src : ''
+      };
+    });
 
   // 5. Collect Visuals
   const visuals = {

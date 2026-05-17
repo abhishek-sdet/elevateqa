@@ -1,11 +1,38 @@
 <section id="maturity" class="infographic-section" aria-labelledby="maturity-title">
         <div class="section-head reveal">
             <div>
-                <div class="section-num" id="maturity-section-num">02 / The Map</div>
-                <h2 id="maturity-title" class="section-title" id="maturity-section-title">Where is your team on the <em>AI-led QE</em> curve?</h2>
+                <div class="section-num" id="maturity-section-num">02 / THE MAP</div>
+                <h2 id="maturity-title" class="section-title">Where is your team on the <em>AI-led QE</em> curve?</h2>
             </div>
         </div>
-        <div class="maturity">
-            <!-- Dynamic: Rendered by main-ui.js renderMaturity() -->
+        <div class="maturity" id="maturity-stages-grid">
+            <div class="maturity-stage reveal" style="--meter-width: 25%;">
+                <div class="level"><span>STAGE 01</span><span>FOUNDATION</span></div>
+                <div class="stage-name"><em>Manual</em>-first</div>
+                <p class="stage-desc">Test cases authored by hand. Automation islands. AI is "interesting," not yet operational.</p>
+                <div class="meter" aria-hidden="true"><div class="meter-fill" style="width: 25%;"></div></div>
+                <div class="pct">~ 25% of orgs surveyed</div>
+            </div>
+            <div class="maturity-stage reveal" style="--meter-width: 50%;">
+                <div class="level"><span>STAGE 02</span><span>EXPLORATORY</span></div>
+                <div class="stage-name"><em>Assisted</em></div>
+                <p class="stage-desc">AI helps generate test cases and data. Engineers stay in the loop. Early wins, mixed signals.</p>
+                <div class="meter"><div class="meter-fill" style="width: 50%; background: var(--accent-3);"></div></div>
+                <div class="pct">~ 50% of orgs surveyed</div>
+            </div>
+            <div class="maturity-stage reveal" style="--meter-width: 75%;">
+                <div class="level"><span>STAGE 03</span><span>OPERATIONAL</span></div>
+                <div class="stage-name"><em>Augmented</em></div>
+                <p class="stage-desc">Self-healing automation, intelligent triage, AI-driven coverage gap analysis. Measurable lift.</p>
+                <div class="meter"><div class="meter-fill" style="width: 75%; background: var(--accent-2);"></div></div>
+                <div class="pct">~ 18% of orgs surveyed</div>
+            </div>
+            <div class="maturity-stage reveal" style="--meter-width: 100%;">
+                <div class="level"><span>STAGE 04</span><span>FRONTIER</span></div>
+                <div class="stage-name"><em>Autonomous</em></div>
+                <p class="stage-desc">Quality agents reason about risk, prioritize, and adapt. Humans set strategy. The future, already here in pockets.</p>
+                <div class="meter"><div class="meter-fill" style="width: 100%; background: var(--accent);"></div></div>
+                <div class="pct">~ 7% of orgs surveyed</div>
+            </div>
         </div>
     </section>

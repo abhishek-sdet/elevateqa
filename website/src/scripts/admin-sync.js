@@ -24,9 +24,9 @@ function syncToCloud(path, data) {
       .catch(err => {
         console.error(`[ElevateQA] ✗ ${path} sync failed:`, err);
         if (err.message && err.message.includes('permission_denied')) {
-          alert('Database Error: Permission Denied. Please check your Firebase rules (current rules may require authentication).');
+          window.showToast('Database Error: Permission Denied. Please check your Supabase/Firebase rules.', 'error', 'Permission Denied');
         } else if (err.message === 'Sync Timeout') {
-          alert(`Sync Timeout: The ${path} data is too large or connection is unstable.`);
+          window.showToast(`Sync Timeout: The ${path} data is too large or connection is unstable.`, 'error', 'Sync Timeout');
         }
         return false;
       });

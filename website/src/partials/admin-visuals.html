@@ -20,6 +20,22 @@
                 </div>
               </div>
             </div>
+            <div class="form-grid-2" style="margin-top: 24px;">
+              <div class="form-group">
+                <label>Primary Brand Color</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <input type="color" id="set-color-primary" value="#d4ff3a" style="width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 4px; cursor: pointer;" oninput="document.getElementById('set-color-primary-hex').value = this.value">
+                  <input type="text" id="set-color-primary-hex" placeholder="#d4ff3a" style="flex: 1; font-family: var(--mono); text-transform: uppercase;" oninput="document.getElementById('set-color-primary').value = this.value">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Accent Color</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <input type="color" id="set-color-accent" value="#d4ff3a" style="width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 4px; cursor: pointer;" oninput="document.getElementById('set-color-accent-hex').value = this.value">
+                  <input type="text" id="set-color-accent-hex" placeholder="#d4ff3a" style="flex: 1; font-family: var(--mono); text-transform: uppercase;" oninput="document.getElementById('set-color-accent').value = this.value">
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="manager-card">

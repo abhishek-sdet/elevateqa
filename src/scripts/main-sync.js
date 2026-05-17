@@ -58,14 +58,11 @@ function transformBranding(rows) {
 export function initCloudSync() {
   console.log('[ElevateQA] ⚡ Supabase Sync Engine Starting...');
   
-  // Clear any existing subscriptions to prevent "cannot add after subscribe()" error
-  supabase.removeAllChannels().then(async () => {
-    // Tables with display_order vs without
-    const orderedTables   = ['speakers', 'agenda', 'maturity_stages', 'pillars'];
-    const unorderedTables = ['branding', 'site_content', 'manifesto'];
-    const allTables       = [...orderedTables, ...unorderedTables];
-    
-    // 1. Initial Data Fetch
+  // 1. Initial Data Fetch starts immediately
+  const orderedTables   = ['speakers', 'agenda', 'maturity_stages', 'pillars'];
+  const unorderedTables = ['branding', 'site_content', 'manifesto'];
+  const allTables       = [...orderedTables, ...unorderedTables];
+  
   allTables.forEach(async (table) => {
     let query = supabase.from(table).select('*');
     if (orderedTables.includes(table)) {
@@ -93,7 +90,8 @@ export function initCloudSync() {
     }
   });
 
-    // 2. Real-time Subscriptions
+  // 2. Real-time Subscriptions setup after initial cleanup
+  supabase.removeAllChannels().then(() => {
     allTables.forEach((table) => {
       supabase
         .channel(`${table}-changes`)
