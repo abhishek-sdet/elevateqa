@@ -1,8 +1,0 @@
-<svg width="400" height="120" viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- ELEVATE Text (White) -->
-  <text x="10" y="85" font-family="Fraunces, serif" font-size="72" font-weight="700" fill="white">ElevAte</text>
-  <!-- QA Text (Lime Green) -->
-  <text x="280" y="85" font-family="Manrope, sans-serif" font-size="72" font-weight="800" fill="#D4FF3A">QA</text>
-  <!-- Arrow Path (Lime Green) -->
-  <path d="M165 80C190 60 230 40 275 25M275 25L260 22M275 25L272 40" stroke="#D4FF3A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
