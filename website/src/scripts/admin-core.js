@@ -237,7 +237,7 @@ window.renderAttendees = (registrations) => {
   if (countBadge) countBadge.textContent = `${atts.length} registered`;
 
   if (atts.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--ink-dim);">No registrations found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 40px; color: var(--ink-dim);">No registrations found</td></tr>';
     return;
   }
 
@@ -245,12 +245,15 @@ window.renderAttendees = (registrations) => {
     const qrHtml = window.generateAdminQR(p);
     const safeName = (p.name || '—').replace(/'/g, "\\'");
     const safeEmail = (p.email || '—').replace(/'/g, "\\'");
+    const linkedinLink = p.linkedin ? `<a href="${p.linkedin}" target="_blank" style="color:var(--accent); font-weight:600; text-decoration:none;">LinkedIn ↗</a>` : '—';
     
     return `
       <tr data-id="${p.id}">
         <td>${p.name || '—'}</td>
         <td>${p.company || '—'}</td>
+        <td>${p.designation || '—'}</td>
         <td>${p.email || '—'}</td>
+        <td>${linkedinLink}</td>
         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '—'}</td>
         <td>${(p.status && p.status.toUpperCase() === 'PRESENT') ? '<span class="badge" style="background:var(--accent); color:#000;">Present</span>' : '<span class="badge">Verified</span>'}</td>
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
@@ -292,8 +295,10 @@ window.exportAttendees = () => {
     return {
       name: cells[0]?.innerText,
       company: cells[1]?.innerText,
-      email: cells[2]?.innerText,
-      registered: cells[3]?.innerText
+      designation: cells[2]?.innerText,
+      email: cells[3]?.innerText,
+      linkedin: cells[4]?.querySelector('a')?.href || cells[4]?.innerText || '—',
+      registered: cells[5]?.innerText
     };
   });
 

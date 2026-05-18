@@ -129,11 +129,11 @@ window.syncEverything = () => {
   const parseEm = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
 
   if (visuals) {
-    const logoUrl = visuals.logo || '/logo-elevate-clean.svg';
+    const logoUrl = visuals.logo || './logo.png';
     document.querySelectorAll('.logo img, .preloader-logo, #footer-logo-img, #site-logo-img').forEach(img => {
       img.src = logoUrl;
       img.onerror = function() {
-        this.src = '/logo-elevate-clean.svg';
+        this.src = './logo.png';
       };
     });
     if (visuals.primaryColor) {
@@ -145,7 +145,7 @@ window.syncEverything = () => {
     }
   } else {
     document.querySelectorAll('.logo img, .preloader-logo, #footer-logo-img, #site-logo-img').forEach(img => {
-      img.src = '/logo-elevate-clean.svg';
+      img.src = './logo.png';
     });
   }
 
@@ -333,6 +333,8 @@ window.generateTicket = async function(event) {
   const name = document.getElementById('reg-name').value;
   const email = document.getElementById('reg-email').value;
   const org = document.getElementById('reg-org').value;
+  const designation = document.getElementById('reg-designation').value;
+  const linkedin = document.getElementById('reg-linkedin').value;
 
   // Show loading state
   const btn = document.querySelector('#form-view button[type="submit"]');
@@ -348,7 +350,7 @@ window.generateTicket = async function(event) {
   // Save to Supabase FIRST to get the UUID
   try {
     const { data, error } = await supabase.from('registrations').insert([
-      { name, email, company: org, status: 'confirmed' }
+      { name, email, company: org, status: 'confirmed', designation, linkedin }
     ]).select();
 
     if (error) {
@@ -399,7 +401,7 @@ window.generateTicket = async function(event) {
 
   // SEND ACTUAL EMAIL VIA EMAILJS
   try {
-    await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId });
+    await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
     const statusWrap = document.getElementById('email-status-wrap');
     if (statusWrap) {
       statusWrap.innerHTML = '<div class="email-status success">✓ Ticket sent to ' + escapeHtml(email) + '</div>';

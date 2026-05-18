@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,10 +7,10 @@
   <meta name="description" content="Elevate QA 2026 — The AI-Led Quality Engineering Tech Summit. A one-day symposium for QE leaders. Delhi NCR, India, August 2026.">
 
   <!-- SECURITY HEADERS -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://images.unsplash.com; connect-src 'self' https://cdn.jsdelivr.net https://*.supabase.co wss://*.supabase.co https://api.emailjs.com https://hook.eu1.make.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' 'unsafe-inline' file: blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; style-src 'self' 'unsafe-inline' file: https://fonts.googleapis.com; font-src 'self' file: https://fonts.gstatic.com; img-src 'self' data: file: blob: https: https://images.unsplash.com; connect-src 'self' file: https://cdn.jsdelivr.net https://*.supabase.co wss://*.supabase.co https://api.emailjs.com https://hook.eu1.make.com; worker-src 'self' file: blob:; base-uri 'self'; form-action 'self';">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 
   <!-- SEO / SOCIAL -->
   <meta name="theme-color" content="#0b0b10">
@@ -55,7 +55,7 @@
     (function() {
       try {
         const visuals = JSON.parse(localStorage.getItem('elevate_visuals') || '{}');
-        const logoUrl = visuals.logo || '/logo-elevate-clean.svg';
+        const logoUrl = visuals.logo || './logo.png';
         
         // Immediate DOM observer to set the src as soon as elements appear
         const observer = new MutationObserver((mutations) => {
@@ -63,11 +63,11 @@
           const siteLogoImg = document.getElementById('site-logo-img');
           if (preloaderImg) {
             preloaderImg.src = logoUrl;
-            preloaderImg.onerror = function() { this.src = '/logo-elevate-clean.svg'; };
+            preloaderImg.onerror = function() { this.src = './logo.png'; };
           }
           if (siteLogoImg) {
             siteLogoImg.src = logoUrl;
-            siteLogoImg.onerror = function() { this.src = '/logo-elevate-clean.svg'; };
+            siteLogoImg.onerror = function() { this.src = './logo.png'; };
           }
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -84,7 +84,7 @@
   <div id="page-preloader">
     <div class="preloader-content">
       <div class="logo-aura"></div>
-      <img id="preloader-logo-img" src="/logo-elevate-clean.svg" class="preloader-logo" alt="Elevate QA Logo" style="display: block; margin: 0 auto 30px;" onerror="this.src='/logo-elevate-clean.svg'">
+      <img id="preloader-logo-img" src="./logo.png" class="preloader-logo" alt="Elevate QA Logo" style="display: block; margin: 0 auto 30px;" onerror="this.src='./logo.png'">
       <!-- Circular Tech Spinner -->
       <div class="tech-spinner-wrap">
         <div class="spinner-ring ring-outer"></div>

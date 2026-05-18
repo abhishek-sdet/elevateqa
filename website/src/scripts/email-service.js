@@ -4,7 +4,7 @@
  */
 
 export const sendAttendeeEmail = async (attendeeData) => {
-  const { name, email, company, ticketId, dbId } = attendeeData;
+  const { name, email, company, ticketId, dbId, designation, linkedin } = attendeeData;
 
   console.log(`[ElevateQA] Sending data to Power Automate Webhook for ${email}...`);
 
@@ -22,6 +22,8 @@ export const sendAttendeeEmail = async (attendeeData) => {
       attendeeEmail: email,
       companyName: company,
       ticketId: ticketId,
+      designation: designation || '',
+      linkedin: linkedin || '',
       qrData: `ELEVATE-QA:${dbId}|${name}|${company}`
     };
 

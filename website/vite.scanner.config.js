@@ -12,15 +12,11 @@ export default defineConfig({
     viteSingleFile(),
   ],
   build: {
+    emptyOutDir: false,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        scanner: resolve(__dirname, 'scanner.html'),
       }
     }
   },
-  server: {
-    port: 5174,
-    strictPort: true,
-    host: true
-  }
 });
