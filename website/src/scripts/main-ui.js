@@ -535,3 +535,4 @@ function renderPillars(pillars) {
     </div>`;
   }).join('');
 }
+
