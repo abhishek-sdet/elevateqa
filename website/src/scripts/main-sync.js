@@ -87,6 +87,16 @@ export async function initCloudSync() {
     }
 
     if (data) {
+      if (table === 'agenda') {
+        data.forEach(a => {
+          if (a.title && a.title.includes('||')) {
+            const parts = a.title.split('||');
+            a.title = parts[0] || '';
+            a.tag = parts[1] || '';
+            a.desc = parts[2] || '';
+          }
+        });
+      }
       if (table === 'site_content') {
         const transformed = transformSiteContent(data);
         localStorage.setItem('elevate_site_content', JSON.stringify(transformed));
@@ -130,6 +140,16 @@ async function fetchAndSync(table, ordered = false) {
   const { data, error } = await query;
 
   if (data) {
+    if (table === 'agenda') {
+      data.forEach(a => {
+        if (a.title && a.title.includes('||')) {
+          const parts = a.title.split('||');
+          a.title = parts[0] || '';
+          a.tag = parts[1] || '';
+          a.desc = parts[2] || '';
+        }
+      });
+    }
     if (table === 'site_content') {
       const transformed = transformSiteContent(data);
       localStorage.setItem('elevate_site_content', JSON.stringify(transformed));

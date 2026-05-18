@@ -141,7 +141,17 @@ export async function loadAllData() {
   }
 
   try {
-    const combined = transformSiteContent(site_content || {});
+    if (agenda) {
+      agenda.forEach(a => {
+        if (a.title && a.title.includes('||')) {
+          const parts = a.title.split('||');
+          a.title = parts[0] || '';
+          a.tag = parts[1] || '';
+          a.desc = parts[2] || '';
+        }
+      });
+    }
+    const combined = transformSiteContent(site_content_raw || {});
     const visuals = transformBranding(branding || {});
     
     localStorage.setItem('elevate_site_content', JSON.stringify(combined));
@@ -317,9 +327,7 @@ export async function saveAgendaItem(a) {
   const validId = sanitizeId(a.id);
   const dbData = {
     time_slot: a.time || a.time_slot,
-    tag: a.tag,
-    title: a.title,
-    desc: a.desc,
+    title: `${a.title || ''}||${a.tag || ''}||${a.desc || ''}`,
     speaker_name: a.speaker_name || a.speaker,
     display_order: a.display_order
   };

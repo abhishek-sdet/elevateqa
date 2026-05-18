@@ -20,12 +20,12 @@
 .timeline-row:last-child { border-bottom: none; }
 .timeline-row::before { content: ''; position: absolute; left: 76px; top: 36px; width: 9px; height: 9px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px var(--bg); z-index: 1; }
 .timeline-row.featured::before { background: var(--accent-2); width: 12px; height: 12px; left: 74px; }
-.timeline-row.break::before { background: var(--accent-4); }
+.timeline-row.break::before { background: var(--accent-3); width: 12px; height: 12px; left: 74px; }
 .timeline-time { font-family: var(--mono); font-size: 14px; color: var(--ink-dim); letter-spacing: 0.05em; padding-top: 4px; }
 .timeline-content { padding-left: 40px; }
 .timeline-content .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 100px; margin-bottom: 12px; }
 .timeline-row.featured .timeline-content .tag { color: var(--accent-2); border-color: var(--accent-2); }
-.timeline-row.break .timeline-content .tag { color: var(--accent-4); border-color: var(--accent-4); }
+.timeline-row.break .timeline-content .tag { color: var(--accent-3); border-color: var(--accent-3); }
 .timeline-content h4 { font-family: var(--display); font-size: clamp(28px, 3vw, 40px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px; }
 .timeline-content h4 em { font-style: italic; }
 .timeline-content p { font-size: 16px; color: var(--ink-dim); line-height: 1.55; max-width: 700px; }
@@ -41,6 +41,7 @@
   }
   .timeline-row::before { left: 20px; top: 38px; }
   .timeline-row.featured::before { left: 18px; }
+  .timeline-row.break::before { left: 18px; }
   .timeline-time { font-size: 12px; padding-top: 0; }
   .timeline-content { padding-left: 20px; }
   .timeline-content h4 { font-size: 24px; }
@@ -232,6 +233,7 @@
   .timeline-row { padding-left: 16px; }
   .timeline-row::before { left: 12px; }
   .timeline-row.featured::before { left: 10px; }
+  .timeline-row.break::before { left: 10px; }
   .timeline-content { padding-left: 16px; }
   .involve-card { padding: 40px 20px; }
   .involve-card .num { font-size: 56px; }

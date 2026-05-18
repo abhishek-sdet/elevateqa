@@ -33,8 +33,7 @@
 
 /* WORLD CLASS PERFORMANCE ENGINE */
 section {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 500px; /* Placeholder for layout stability */
+  /* Removed content-visibility: auto to fix anchor link scroll offset issues on initial load */
 }
 
 .hero-ambient img, .floating-stamp, .back-to-top {
@@ -67,6 +66,12 @@ section {
   z-index: 99999;
   will-change: transform;
   transform-origin: top left;
+}
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  .cursor-branded {
+    display: none !important;
+  }
 }
 
 .cursor-arrow {
@@ -141,7 +146,7 @@ body::before {
 }
 
 .preloader-logo {
-  height: 300px;
+  height: 160px;
   width: auto;
   max-width: 80vw;
   z-index: 2;

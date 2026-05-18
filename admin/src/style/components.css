@@ -63,6 +63,10 @@ nav.scrolled {
 nav.scrolled #site-logo-img {
   height: 48px; /* Balanced shrunk height */
 }
+#footer-logo-img {
+  height: clamp(80px, 9vw, 130px);
+  width: auto;
+}
 .brand-top {
   display: flex;
   align-items: baseline;
@@ -151,7 +155,7 @@ nav.scrolled #site-logo-img {
 .timeline-content h4 em { font-style: italic; }
 .timeline-content p { font-size: 14px; color: var(--ink-dim); line-height: 1.55; max-width: 600px; }
 
-.nav-links { display: flex; gap: 28px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+.nav-links { display: flex; gap: clamp(14px, 1.8vw, 24px); font-family: var(--mono); font-size: clamp(11px, 0.9vw, 13px); text-transform: uppercase; letter-spacing: 0.1em; }
 .nav-links a { color: var(--ink); text-decoration: none; position: relative; padding-bottom: 4px; }
 .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--ink); transition: width 0.4s cubic-bezier(0.7,0,0.3,1); }
 .nav-links a:hover::after { width: 100%; }

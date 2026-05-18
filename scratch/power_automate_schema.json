@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "attendeeName": {
+      "type": "string"
+    },
+    "attendeeEmail": {
+      "type": "string"
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "ticketId": {
+      "type": "string"
+    },
+    "qrCodeUrl": {
+      "type": "string"
+    }
+  }
+}

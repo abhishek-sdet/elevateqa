@@ -194,7 +194,7 @@ window.showPass = (id, name, email) => {
   target.innerHTML = '';
   // Generate high-resolution QR
   const qr = qrcode(0, 'H');
-  qr.addData(`ELEVATE-QA: ${id} | ${email}`);
+  qr.addData(`ELEVATE-QA:${id}|${name}|${email}`);
   qr.make();
   
   // Use a size that fits comfortably in the 380px compact modal
@@ -220,7 +220,7 @@ window.generateAdminQR = (data) => {
   try {
     if (typeof qrcode === 'undefined') return '<span style="font-size:10px; color:var(--accent-red);">QR LIB MISSING</span>';
     const qr = qrcode(0, 'M');
-    qr.addData(`ELEVATE-QA: ${data.id} | ${data.email}`);
+    qr.addData(`ELEVATE-QA:${data.id}|${data.name}|${data.email}`);
     qr.make();
     return qr.createImgTag(2); // Small size for table
   } catch (e) {
@@ -316,7 +316,7 @@ function populateUI(data) {
   function setVal(id, val) {
     const el = document.getElementById(id);
     if (el) {
-      if (val !== undefined && val !== null && val !== '') {
+      if (val !== undefined && val !== null) {
         el.value = val;
       } else {
         el.value = el.placeholder || '';
@@ -334,6 +334,18 @@ function populateUI(data) {
   // MIGRATION: Auto-fix manifesto section number if it's stuck on old value
   if (sc.manifestoSectionNum === 'Manifesto' || !sc.manifestoSectionNum) {
     sc.manifestoSectionNum = '01 / MANIFESTO';
+  }
+
+  // MIGRATION: Auto-fix heroEdition if it's EDITION 01 or INAUGURAL or empty
+  let heroEd = sc.heroEdition || '';
+  if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) {
+    sc.heroEdition = 'Edition 2';
+  }
+
+  // MIGRATION: Auto-fix footerEdition if it's EDITION 01 or INAUGURAL or empty
+  let footerEd = sc.footerEdition || '';
+  if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) {
+    sc.footerEdition = 'Edition 2';
   }
   
   setVal('hero-headline', sc.heroHeadline);
@@ -467,15 +479,26 @@ function populateUI(data) {
     window._visualData.heroBg = heroBg;
     renderImgPreview('hero-bg', heroBg);
   }
+  // High-fidelity fallback defaults for gallery strip matching the main website
+  const defaultStrips = [
+    { img: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1200&q=80', cap: 'The room. Curated, not crowded.' },
+    { img: 'https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=1000&q=80', cap: 'The stage. Built for proof.' },
+    { img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80', cap: 'The conversation. Where careers compound.' }
+  ];
+
   for (let i = 1; i <= 3; i++) {
-    const img = data[`stripImg${i}`];
-    const cap = data[`stripCap${i}`];
+    const rawImg = sc[`stripImg${i}`];
+    const rawCap = sc[`stripCap${i}`];
+    
+    const img = (rawImg !== undefined && rawImg !== null) ? rawImg : defaultStrips[i-1].img;
+    const cap = (rawCap !== undefined && rawCap !== null) ? rawCap : defaultStrips[i-1].cap;
+    
     if (img) {
       window._visualData.strip[i-1] = img;
       renderImgPreview(`strip-0${i}`, img);
     }
     const capEl = document.getElementById(`strip-0${i}-caption`);
-    if (capEl) capEl.value = cap || '';
+    if (capEl) capEl.value = cap;
   }
 
   function renderImgPreview(id, url) {
@@ -486,6 +509,11 @@ function populateUI(data) {
       preview.style.display = 'block';
       preview.parentElement.classList.add('has-img');
       if (placeholder) placeholder.style.display = 'none';
+    }
+    const dlLink = document.getElementById(`download-${id}`);
+    if (dlLink && url) {
+      dlLink.href = url;
+      dlLink.style.display = 'inline-block';
     }
   }
 
@@ -514,14 +542,25 @@ function populateUI(data) {
     if (container) {
       container.innerHTML = '';
       const agenda = data.agenda.length > 0 ? data.agenda : [
-        { time: '09:00', tag: 'Opens', title: 'Registration & morning <em>coffee</em>', desc: 'Pick up your badge, meet the early arrivals, find your tribe before the day begins.' },
-        { time: '10:00', tag: 'Opening Keynote', title: '<em>The proof of value:</em> what AI in QE has actually delivered', desc: 'A grounded look at where AI has paid off in quality engineering — and where the receipts are still missing.' },
-        { time: '11:00', tag: 'Track Sessions', title: 'Parallel deep-dives <em>across two stages</em>', desc: 'Self-healing automation, AI-driven test generation, intelligent triage, risk-based prioritization. Engineers showing real implementations.' },
-        { time: '13:00', tag: 'Break', title: 'Lunch & <em>networking</em>', desc: 'Curated tables by topic — sit with people working on the problems you\'re working on.' },
-        { time: '14:30', tag: 'Keynote Panel', title: 'The candid panel: <em>hype vs. reality</em>', desc: 'Practitioners and leaders go on record about what\'s overhyped, what\'s underrated, and where the field goes next.' },
-        { time: '15:30', tag: 'Workshops', title: 'Hands-on <em>working sessions</em>', desc: 'Bring a laptop. Leave with code, frameworks, and concrete starting points for your own AI-led QE program.' },
-        { time: '17:30', tag: 'Awards', title: 'Speaker of the Event <em>& recognition</em>', desc: 'The day\'s best voice gets headline prizes. Audience awards, surprises, applause that means something.' },
-        { time: '18:30', tag: 'Reception', title: 'Closing reception & <em>after hours</em>', desc: 'Drinks, conversations, and the connections that outlast the agenda.' }
+        { time: '09:00 – 09:30', tag: 'Opens', title: 'Registration', desc: 'Pick up your badge, collect your welcome kit. Find your tribe before the day begins.' },
+        { time: '09:35 – 09:55', tag: 'Opening', title: 'Welcome & Opening Remarks', desc: 'MC sets the stage. What today is about and what to expect from the next 8 hours.', speaker_name: 'MC' },
+        { time: '10:00 – 10:20', tag: 'Keynote', title: 'Keynote Speaker 1', desc: 'The proof of value: what AI in QE has actually delivered. Real metrics, no hype.' },
+        { time: '10:25 – 10:45', tag: 'Talk', title: 'Presenter 1', desc: 'Practitioner deep-dive into AI-augmented test engineering.' },
+        { time: '10:50 – 11:10', tag: 'Talk', title: 'Presenter 2', desc: 'Hands-on session on self-healing automation and intelligent quality pipelines.' },
+        { time: '11:15 – 11:25', tag: 'Break', title: 'Tea Break', desc: 'Quick reset and networking in the lounge.' },
+        { time: '11:30 – 11:55', tag: 'Panel', title: 'Panel Discussion', desc: 'Four practitioners go on record about the uncomfortable truth of AI ROI.' },
+        { time: '12:00 – 12:20', tag: 'Talk', title: 'Presenter 3', desc: 'Case study: Scaling AI-led QE in a legacy environment.' },
+        { time: '12:25 – 12:45', tag: 'Talk', title: 'Presenter 4', desc: 'Beyond the hype: Technical architecture of AI testing agents.' },
+        { time: '12:50 – 01:50', tag: 'Break', title: 'Lunch Break', desc: 'Curated tables by topic. Connect with your peers.' },
+        { time: '02:00 – 02:20', tag: 'Keynote', title: 'Keynote Speaker 2', desc: 'Beyond Test Automation — AI as Your Quality Intelligence Layer.' },
+        { time: '02:25 – 02:45', tag: 'Talk', title: 'Presenter 5', desc: 'Practitioner session on intelligent triage and risk-based testing.' },
+        { time: '02:50 – 03:10', tag: 'Talk', title: 'Presenter 6', desc: 'LLM-powered test design: From requirements to execution.' },
+        { time: '03:15 – 03:35', tag: 'Talk', title: 'Presenter 7', desc: 'The role of the tester in an AI-first world: A career roadmap.' },
+        { time: '03:40 – 03:55', tag: 'Break', title: 'Tea Break', desc: 'Afternoon recharge before the closing sessions.' },
+        { time: '04:00 – 04:20', tag: 'Keynote', title: 'Presenter 8/ Keynote Speaker 3', desc: 'Strategic Address on AI-Led Quality Engineering Leadership by Sachin Sir.', speaker_name: 'Sachin Sir' },
+        { time: '04:25 – 04:45', tag: 'Talk', title: 'Presenter 9', desc: 'Final practitioner track: AI in mobile and cross-platform testing.' },
+        { time: '04:50 – 05:10', tag: 'Talk', title: 'Presenter 10', desc: 'The roadmap to 2028: What’s actually next for QE.' },
+        { time: '05:15 – 05:30', tag: 'Closing', title: 'Awards & Closing Remarks', desc: 'Lucky Draw Game, Trophies & Certificates.', speaker_name: 'MC' }
       ];
       agenda.forEach(a => window.addAgendaItem({
         id: a.id,
@@ -958,12 +997,23 @@ window.handleVisualUpload = async (input, id) => {
       window._visualData.strip[idx] = publicUrl;
     }
 
+    const dlLink = document.getElementById(`download-${id}`);
+    if (dlLink) {
+      dlLink.href = publicUrl;
+      dlLink.style.display = 'inline-block';
+    }
+
     window.showToast('Image uploaded successfully!', 'success', 'Upload Done');
   } else {
     if (preview) {
       preview.src = '';
       preview.style.display = 'none';
       preview.parentElement.classList.remove('has-img');
+    }
+    const dlLink = document.getElementById(`download-${id}`);
+    if (dlLink) {
+      dlLink.href = '';
+      dlLink.style.display = 'none';
     }
     URL.revokeObjectURL(localPreview);
     window.showToast('Image upload failed. Check console.', 'error', 'Upload Failed');

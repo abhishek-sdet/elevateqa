@@ -32,10 +32,10 @@
 }
 
 .finale-mark img {
-  height: 80px;
+  height: clamp(80px, 9vw, 130px);
   width: auto;
   margin: 0 auto 32px;
-  filter: drop-shadow(0 0 30px rgba(212, 255, 58, 0.1));
+  filter: drop-shadow(0 0 35px rgba(212, 255, 58, 0.18));
 }
 
 .finale-tag {

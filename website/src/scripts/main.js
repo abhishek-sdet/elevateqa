@@ -1,7 +1,7 @@
 import { initCloudSync } from './main-sync.js';
 import { supabase } from './supabase-config.js';
 import { sendAttendeeEmail } from './email-service.js';
-import './main-ui.js';
+import { DEFAULT_MATURITY, DEFAULT_PILLARS, DEFAULT_AGENDA, DEFAULT_SPEAKERS } from './main-ui.js';
 
 
 // ─── UTIL: HTML ESCAPE ──────────────────────────────────────────────────────
@@ -124,39 +124,69 @@ window.syncEverything = () => {
   const maturity = JSON.parse(localStorage.getItem('elevate_maturity_stages')) || [];
   const pillars = JSON.parse(localStorage.getItem('elevate_pillars')) || [];
 
-  const setHtml = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
-  const parseAccent = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>').replace(/==(.*?)==/g, '<span class="highlight">$1</span>');
-  const parseEm = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+  const setHtml = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) {
+      const targetStr = String(val);
+      if (el.innerHTML !== targetStr) {
+        el.innerHTML = targetStr;
+      }
+    }
+  };
+  const parseAccent = (str) => String(str || '')
+    .replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>')
+    .replace(/==(.*?)==/g, '<span class="highlight">$1</span>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+  const parseEm = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>').replace(/\|/g, '<br>');
 
   if (visuals) {
     const logoUrl = visuals.logo || './logo.png';
-    document.querySelectorAll('.logo img, .preloader-logo, #footer-logo-img, #site-logo-img').forEach(img => {
-      img.src = logoUrl;
-      img.onerror = function() {
-        this.src = './logo.png';
-      };
+    document.querySelectorAll('.logo img, #footer-logo-img, #site-logo-img').forEach(img => {
+      if (img.src !== logoUrl) {
+        img.src = logoUrl;
+        img.onerror = function() {
+          this.src = './logo.png';
+        };
+      }
     });
     if (visuals.primaryColor) {
       document.documentElement.style.setProperty('--accent', visuals.primaryColor);
     }
     if (visuals.heroBg) {
       const heroBg = document.querySelector('.hero-ambient img');
-      if (heroBg) heroBg.src = visuals.heroBg;
+      if (heroBg && heroBg.src !== visuals.heroBg) heroBg.src = visuals.heroBg;
     }
   } else {
-    document.querySelectorAll('.logo img, .preloader-logo, #footer-logo-img, #site-logo-img').forEach(img => {
-      img.src = './logo.png';
+    document.querySelectorAll('.logo img, #footer-logo-img, #site-logo-img').forEach(img => {
+      if (!img.src.includes('logo.png')) {
+        img.src = './logo.png';
+      }
     });
   }
 
   if (site) {
+    // MIGRATION: Auto-fix heroEdition if it's EDITION 01 or INAUGURAL or empty
+    let heroEd = site.heroEdition || '';
+    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) {
+      site.heroEdition = 'Edition 2';
+    }
+
+    // MIGRATION: Auto-fix footerEdition if it's EDITION 01 or INAUGURAL or empty
+    let footerEd = site.footerEdition || '';
+    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) {
+      site.footerEdition = 'Edition 2';
+    }
+
     // Hero
     const headline = site.heroHeadline || 'Elevate Quality. | Prove value.';
     const titleEl = document.getElementById('hero-title');
     if (titleEl) {
-      titleEl.innerHTML = headline.split(/[|\n]/).filter(l => l.trim()).map(line => {
+      const targetHtml = headline.split(/[|\n]/).filter(l => l.trim()).map(line => {
         return `<span class="title-line"><span>${parseAccent(line)}</span></span>`;
       }).join('');
+      if (titleEl.innerHTML !== targetHtml) {
+        titleEl.innerHTML = targetHtml;
+      }
     }
     setHtml('hero-tagline', parseAccent(site.heroTagline));
     setHtml('hero-eyebrow', parseAccent(site.heroEyebrow));
@@ -172,9 +202,13 @@ window.syncEverything = () => {
       const numEl = document.getElementById(`stat${i}-num`);
       const lblEl = document.getElementById(`stat${i}-lbl`);
       if (numEl) {
-        numEl.innerHTML = (site[`stat${i}Num`] || '0').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+        const val = (site[`stat${i}Num`] || '0').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+        if (numEl.innerHTML !== val) numEl.innerHTML = val;
       }
-      if (lblEl) lblEl.innerHTML = (site[`stat${i}Lbl`] || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+      if (lblEl) {
+        const val = (site[`stat${i}Lbl`] || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
+        if (lblEl.innerHTML !== val) lblEl.innerHTML = val;
+      }
     });
 
     // Manifesto Metadata
@@ -187,12 +221,19 @@ window.syncEverything = () => {
     setHtml('prizes-s2-val', site.prizesS2Num); setHtml('prizes-s2-text', site.prizesS2Lbl);
     setHtml('prizes-s3-val', site.prizesS3Num); setHtml('prizes-s3-text', site.prizesS3Lbl);
 
-    setHtml('footer-tagline', parseAccent(site.footerTagline));
+    let footerTagStr = site.footerTagline || "The proof of value, or it didn't happen.";
+    if (!footerTagStr.includes('<em>') && !footerTagStr.includes('*')) {
+      footerTagStr = footerTagStr.replace(/(or it didn't happen\.?)/i, '<em>$1</em>');
+    }
+    setHtml('footer-tagline', parseAccent(footerTagStr));
     setHtml('footer-location', site.footerLocation);
     setHtml('footer-edition', site.footerEdition);
     setHtml('footer-copyright', site.footerCopyright);
     const fEmail = document.getElementById('footer-email');
-    if (fEmail && site.footerEmail) fEmail.innerHTML = `<a href="mailto:${site.footerEmail}" style="color: var(--accent); font-weight: 600;">${site.footerEmail}</a>`;
+    if (fEmail && site.footerEmail) {
+      const mailHtml = `<a href="mailto:${site.footerEmail}" style="color: var(--accent); font-weight: 600;">${site.footerEmail}</a>`;
+      if (fEmail.innerHTML !== mailHtml) fEmail.innerHTML = mailHtml;
+    }
 
     // Navigation
     const navs = ['manifesto', 'maturity', 'experience', 'agenda', 'speakers', 'join'];
@@ -206,15 +247,19 @@ window.syncEverything = () => {
     const wrap = document.getElementById('manifesto-text');
     if (wrap && manifesto[0].content) {
       const lines = manifesto[0].content.split(/[|\n]/).filter(l => l.trim());
-      wrap.innerHTML = lines.map(line => `<p class="reveal">${parseAccent(line)}</p>`).join('');
+      const targetHtml = lines.map(line => `<p class="reveal">${parseAccent(line)}</p>`).join('');
+      if (wrap.innerHTML !== targetHtml) {
+        wrap.innerHTML = targetHtml;
+      }
     }
   }
 
-  if (maturity.length > 0) {
+  const finalMaturity = (maturity && maturity.length > 0) ? maturity : DEFAULT_MATURITY;
+  if (finalMaturity.length > 0) {
     const grid = document.getElementById('maturity-stages-grid');
     if (grid) {
       const COLORS = ['#ffffff', 'var(--accent-3)', 'var(--accent-2)', 'var(--accent)'];
-      grid.innerHTML = maturity.map((m, i) => {
+      const targetHtml = finalMaturity.map((m, i) => {
         const pct = String(m.pct || '0').replace('%', '').trim();
         const color = m.color || COLORS[i] || 'var(--accent)';
         return `
@@ -226,10 +271,14 @@ window.syncEverything = () => {
             <div class="pct">~ ${pct}% of orgs surveyed</div>
           </div>`;
       }).join('');
+      if (grid.innerHTML !== targetHtml) {
+        grid.innerHTML = targetHtml;
+      }
     }
   }
 
-  if (pillars.length > 0) {
+  const finalPillars = (pillars && pillars.length > 0) ? pillars : DEFAULT_PILLARS;
+  if (finalPillars.length > 0) {
     const grid = document.getElementById('pillars-grid');
     if (grid) {
       const ICONS = [
@@ -240,48 +289,67 @@ window.syncEverything = () => {
         '<path d="M12 36 L12 12 L36 12 L36 28 L24 28 L12 36 Z"/>',
         '<polygon points="24,6 28,18 40,18 30,26 34,38 24,30 14,38 18,26 8,18 20,18"/>'
       ];
-      grid.innerHTML = pillars.map((p, i) => `
+      const targetHtml = finalPillars.map((p, i) => `
         <div class="pillar reveal">
           <div class="pillar-num">> 0${i+1}</div>
-          <div class="pillar-icon"><svg viewBox="0 0 48 48">${ICONS[i] || ICONS[0]}</svg></div>
+          <div class="pillar-icon"><svg viewBox="0 0 48 48">${p.icon || ICONS[i] || ICONS[0]}</svg></div>
           <h3>${parseEm(p.title)}</h3>
           <p>${p.desc}</p>
         </div>`).join('');
+      if (grid.innerHTML !== targetHtml) {
+        grid.innerHTML = targetHtml;
+      }
     }
   }
 
-  if (agenda.length > 0) {
+  const finalAgenda = (agenda && agenda.length > 0) ? agenda : DEFAULT_AGENDA;
+  if (finalAgenda.length > 0) {
     const timeline = document.querySelector('.timeline');
     if (timeline) {
-      timeline.innerHTML = agenda.map(item => `
-        <div class="timeline-row reveal ${item.tag?.toLowerCase().includes('keynote') ? 'featured' : ''}">
+      const targetHtml = finalAgenda.map(item => {
+        const isFeatured = item.tag?.toLowerCase().includes('keynote');
+        const isBreak = item.tag?.toLowerCase().includes('break') || item.tag?.toLowerCase().includes('tea') || item.tag?.toLowerCase().includes('lunch');
+        const rowClass = `timeline-row reveal${isFeatured ? ' featured' : ''}${isBreak ? ' break' : ''}`;
+        return `
+        <div class="${rowClass}">
           <div class="timeline-time">${item.time_slot || item.time}</div>
           <div class="timeline-content">
             <span class="tag">${item.tag || 'SESSION'}</span>
             <h4>${parseEm(item.title)}</h4>
             <p class="desc">${item.desc || ''}</p>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
+      if (timeline.innerHTML !== targetHtml) {
+        timeline.innerHTML = targetHtml;
+      }
     }
   }
 
-  if (speakers.length > 0) {
+  const finalSpeakers = (speakers && speakers.length > 0) ? speakers : DEFAULT_SPEAKERS;
+  if (finalSpeakers.length > 0) {
     const grid = document.querySelector('.speakers-grid');
     if (grid) {
-      grid.innerHTML = speakers.map((s, idx) => `
+      const targetHtml = finalSpeakers.map((s, idx) => {
+        const photo = s.image_url || s.img;
+        return `
         <div class="speaker-card reveal">
-          ${s.image_url ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${s.image_url}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
-          <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status || 'CONFIRMED'}</span></div>
+          ${photo ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${photo}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
+          <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status || s.wave || 'CONFIRMED'}</span></div>
           <div class="speaker-content">
             <div class="name">${s.name}</div>
-            <div class="designation">${s.title || ''}</div>
+            <div class="designation">${s.title || s.role || ''}</div>
           </div>
-        </div>`).join('') + `
+        </div>`;
+      }).join('') + `
           <div class="speaker-card speaker-cta-card reveal">
             <div class="silhouette" aria-hidden="true">+</div>
             <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
             <div class="pitch">Have a story <em>worth telling?</em><br><a href="#join">Apply to speak ></a></div>
           </div>`;
+      if (grid.innerHTML !== targetHtml) {
+        grid.innerHTML = targetHtml;
+      }
     }
   }
 
@@ -443,7 +511,33 @@ window.shareOnLinkedIn = function() {
 document.addEventListener('DOMContentLoaded', () => {
   initAnimations();
   initCursor();
-  initCloudSync();
+  
+  // Helper to safely dismiss the preloader
+  const dismissPreloader = () => {
+    const preloader = document.getElementById('page-preloader');
+    if (preloader && !preloader.classList.contains('fade-out')) {
+      preloader.classList.add('fade-out');
+      setTimeout(() => preloader.remove(), 800);
+    }
+  };
+
+  // 1. Immediately sync UI with cached data for instantaneous LCP (0ms perceived load)
+  if (typeof window.syncEverything === 'function') {
+    window.syncEverything();
+  }
+
+  // 2. If cached data already exists, dismiss the preloader instantly so the user sees the page immediately
+  if (localStorage.getItem('elevate_site_content')) {
+    dismissPreloader();
+  }
+
+  // 3. Revalidate in the background from Supabase
+  initCloudSync().then(() => {
+    // If the user didn't have cached data previously, dismiss the preloader now
+    dismissPreloader();
+  }).catch(() => {
+    dismissPreloader();
+  });
   
   let syncTimeout;
   window.addEventListener('storage', (e) => {
@@ -455,12 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Failsafe preloader removal
-  setTimeout(() => {
-    const preloader = document.getElementById('page-preloader');
-    if (preloader) {
-      preloader.classList.add('fade-out');
-      setTimeout(() => preloader.remove(), 1000);
-    }
-  }, 4000);
+  // Failsafe preloader removal (reduced to 5 seconds to prevent frozen screen if offline)
+  setTimeout(dismissPreloader, 5000);
 });

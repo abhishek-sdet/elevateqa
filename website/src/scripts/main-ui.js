@@ -4,14 +4,14 @@
  */
 
 // ─── ORIGINAL CONTENT DEFAULTS ─────────────────────────────────────────────
-const DEFAULT_MATURITY = [
+export const DEFAULT_MATURITY = [
   { label: 'FOUNDATION', name: '<em>Manual</em>-first', pct: '25%', color: '#ffffff', desc: 'Test cases authored by hand. Automation islands. AI is "interesting," not yet operational.' },
   { label: 'EXPLORATORY', name: '<em>Assisted</em>', pct: '50%', color: 'var(--accent-3)', desc: 'AI helps generate test cases and data. Engineers stay in the loop. Early wins, mixed signals.' },
   { label: 'OPERATIONAL', name: '<em>Augmented</em>', pct: '75%', color: 'var(--accent-2)', desc: 'Self-healing automation, intelligent triage, AI-driven coverage gap analysis. Measurable lift.' },
   { label: 'FRONTIER', name: '<em>Autonomous</em>', pct: '100%', color: 'var(--accent)', desc: 'Quality agents reason about risk, prioritize, and adapt. Humans set strategy. The future, already here in pockets.' }
 ];
 
-const DEFAULT_PILLARS = [
+export const DEFAULT_PILLARS = [
   { title: '<em>Keynotes</em> from people doing the work', desc: 'Industry voices and engineering leaders sharing concrete case studies — what AI changed, what it cost, what it delivered. Real numbers, not roadmaps.', icon: '<circle cx="24" cy="24" r="20"/><path d="M14 24 L22 32 L34 18"/>' },
   { title: 'Practitioner <em>deep-dives</em>', desc: 'Hands-on breakouts from engineers who\'ve shipped AI-augmented test suites, self-healing automation, and intelligent quality pipelines at scale.', icon: '<rect x="6" y="6" width="36" height="36" rx="2"/><path d="M14 18 L34 18 M14 24 L28 24 M14 30 L34 30"/>' },
   { title: 'The <em>community</em> table', desc: 'Curated roundtables where 200–500 quality engineering leaders connect, debate, and forge the relationships that move careers and companies forward.', icon: '<circle cx="14" cy="24" r="6"/><circle cx="34" cy="14" r="6"/><circle cx="34" cy="34" r="6"/><path d="M19 22 L29 16 M19 26 L29 32"/>' },
@@ -20,18 +20,29 @@ const DEFAULT_PILLARS = [
   { title: 'Recognition <em>& prizes</em>', desc: 'Speaker of the event, audience awards, and surprises throughout the day. We celebrate the people pushing the field — loudly.', icon: '<polygon points="24,6 28,18 40,18 30,26 34,38 24,30 14,38 18,26 8,18 20,18"/>' }
 ];
 
-const DEFAULT_AGENDA = [
-  { time: '09:00', tag: 'Opens',          title: 'Registration & morning <em>coffee</em>',        desc: 'Pick up your badge, meet the early arrivals, find your tribe before the day begins.' },
-  { time: '10:00', tag: 'Opening Keynote',title: '<em>The proof of value:</em> what AI in QE has actually delivered', desc: 'A grounded look at where AI has paid off in quality engineering — and where the receipts are still missing.' },
-  { time: '11:00', tag: 'Track Sessions', title: 'Parallel deep-dives <em>across two stages</em>', desc: 'Self-healing automation, AI-driven test generation, intelligent triage, risk-based prioritization. Engineers showing real implementations.' },
-  { time: '13:00', tag: 'Break',          title: 'Lunch & <em>networking</em>',                   desc: 'Curated tables by topic — sit with people working on the problems you\'re working on.' },
-  { time: '14:30', tag: 'Keynote Panel',  title: 'The candid panel: <em>hype vs. reality</em>',   desc: 'Practitioners and leaders go on record about what\'s overhyped, what\'s underrated, and where the field goes next.' },
-  { time: '15:30', tag: 'Workshops',      title: 'Hands-on <em>working sessions</em>',             desc: 'Bring a laptop. Leave with code, frameworks, and concrete starting points for your own AI-led QE program.' },
-  { time: '17:30', tag: 'Awards',         title: 'Speaker of the Event <em>& recognition</em>',   desc: 'The day\'s best voice gets headline prizes. Audience awards, surprises, applause that means something.' },
-  { time: '18:30', tag: 'Reception',      title: 'Closing reception & <em>after hours</em>',      desc: 'Drinks, conversations, and the connections that outlast the agenda.' }
+export const DEFAULT_AGENDA = [
+  { time: '09:00 – 09:30', tag: 'Opens', title: 'Registration', desc: 'Pick up your badge, collect your welcome kit. Find your tribe before the day begins.' },
+  { time: '09:35 – 09:55', tag: 'Opening', title: 'Welcome & Opening Remarks', desc: 'MC sets the stage. What today is about and what to expect from the next 8 hours.' },
+  { time: '10:00 – 10:20', tag: 'Keynote', title: 'Keynote Speaker 1', desc: 'The proof of value: what AI in QE has actually delivered. Real metrics, no hype.' },
+  { time: '10:25 – 10:45', tag: 'Talk', title: 'Presenter 1', desc: 'Practitioner deep-dive into AI-augmented test engineering.' },
+  { time: '10:50 – 11:10', tag: 'Talk', title: 'Presenter 2', desc: 'Hands-on session on self-healing automation and intelligent quality pipelines.' },
+  { time: '11:15 – 11:25', tag: 'Break', title: 'Tea Break', desc: 'Quick reset and networking in the lounge.' },
+  { time: '11:30 – 11:55', tag: 'Panel', title: 'Panel Discussion', desc: 'Four practitioners go on record about the uncomfortable truth of AI ROI.' },
+  { time: '12:00 – 12:20', tag: 'Talk', title: 'Presenter 3', desc: 'Case study: Scaling AI-led QE in a legacy environment.' },
+  { time: '12:25 – 12:45', tag: 'Talk', title: 'Presenter 4', desc: 'Beyond the hype: Technical architecture of AI testing agents.' },
+  { time: '12:50 – 01:50', tag: 'Break', title: 'Lunch Break', desc: 'Curated tables by topic. Connect with your peers.' },
+  { time: '02:00 – 02:20', tag: 'Keynote', title: 'Keynote Speaker 2', desc: 'Beyond Test Automation — AI as Your Quality Intelligence Layer.' },
+  { time: '02:25 – 02:45', tag: 'Talk', title: 'Presenter 5', desc: 'Practitioner session on intelligent triage and risk-based testing.' },
+  { time: '02:50 – 03:10', tag: 'Talk', title: 'Presenter 6', desc: 'LLM-powered test design: From requirements to execution.' },
+  { time: '03:15 – 03:35', tag: 'Talk', title: 'Presenter 7', desc: 'The role of the tester in an AI-first world: A career roadmap.' },
+  { time: '03:40 – 03:55', tag: 'Break', title: 'Tea Break', desc: 'Afternoon recharge before the closing sessions.' },
+  { time: '04:00 – 04:20', tag: 'Keynote', title: 'Presenter 8/ Keynote Speaker 3', desc: 'Strategic Address on AI-Led Quality Engineering Leadership by Sachin Sir.', speaker_name: 'Sachin Sir' },
+  { time: '04:25 – 04:45', tag: 'Talk', title: 'Presenter 9', desc: 'Final practitioner track: AI in mobile and cross-platform testing.' },
+  { time: '04:50 – 05:10', tag: 'Talk', title: 'Presenter 10', desc: 'The roadmap to 2028: What’s actually next for QE.' },
+  { time: '05:15 – 05:30', tag: 'Closing', title: 'Awards & Closing Remarks', desc: 'Lucky Draw Game, Trophies & Certificates.', speaker_name: 'MC' }
 ];
 
-const DEFAULT_SPEAKERS = [
+export const DEFAULT_SPEAKERS = [
   { name: 'To be revealed', role: 'KEYNOTE',     wave: 'WAVE 01', silhouette: '01' },
   { name: 'To be revealed', role: 'KEYNOTE',     wave: 'WAVE 01', silhouette: '02' },
   { name: 'To be revealed', role: 'INDUSTRY',    wave: 'WAVE 01', silhouette: '03' },
@@ -171,6 +182,18 @@ function syncEverything() {
   };
 
   if (site) {
+    // MIGRATION: Auto-fix heroEdition if it's EDITION 01 or INAUGURAL or empty
+    let heroEd = site.heroEdition || '';
+    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) {
+      site.heroEdition = 'Edition 2';
+    }
+
+    // MIGRATION: Auto-fix footerEdition if it's EDITION 01 or INAUGURAL or empty
+    let footerEd = site.footerEdition || '';
+    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) {
+      site.footerEdition = 'Edition 2';
+    }
+
     setHtml('hero-eyebrow', site.heroEyebrow);
     setHtml('hero-tagline', site.heroTagline);
     setHtml('hero-edition', site.heroEdition);
@@ -196,9 +219,15 @@ function syncEverything() {
     if (site.heroHeadline) {
       const titleEl = document.getElementById('hero-title');
       if (titleEl) {
-        titleEl.innerHTML = site.heroHeadline.split(/[|\n]/).filter(l => l.trim()).map(line => {
-          return `<span class="title-line"><span>${parseAccent(line.trim())}</span></span>`;
-        }).join('');
+        // Only render (and animate) the hero title ONCE — the first time.
+        // Subsequent syncEverything() calls skip innerHTML rewrite to prevent
+        // the CSS `rise` animation from re-triggering (double-animation bug).
+        if (!titleEl.dataset.animated) {
+          titleEl.innerHTML = site.heroHeadline.split(/[|\n]/).filter(l => l.trim()).map(line => {
+            return `<span class="title-line"><span>${parseAccent(line.trim())}</span></span>`;
+          }).join('');
+          titleEl.dataset.animated = '1';
+        }
       }
     }
 
@@ -260,7 +289,10 @@ function syncEverything() {
     // Coming Soon
     setHtml('coming-title', site.comingTitle);
     setHtml('coming-desc',  site.comingDesc);
+    setHtml('coming-visual-label', site.comingVisualLabel || 'REVEALING');
+    setHtml('coming-visual-sub',   site.comingVisualSub   || 'Soon');
     for (let i = 1; i <= 6; i++) {
+      setHtml(`coming-item${i}-label`,  site[`comingItem${i}Label`]);
       setHtml(`coming-item${i}-status`, site[`comingItem${i}Status`]);
     }
 
@@ -309,7 +341,16 @@ function syncEverything() {
         const img = document.getElementById(`strip-img-${n}`);
         const cap = document.getElementById(`strip-cap-${n}`);
         if (img && item.img) img.src = item.img;
-        if (cap && item.cap) cap.textContent = item.cap;
+        if (cap) {
+          const wrapper = cap.closest('.caption');
+          if (item.cap === '') {
+            cap.textContent = '';
+            if (wrapper) wrapper.style.display = 'none';
+          } else if (item.cap) {
+            cap.textContent = item.cap;
+            if (wrapper) wrapper.style.display = '';
+          }
+        }
       });
     }
   }
@@ -356,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderAgenda(agenda) {
   const timeline = document.querySelector('.timeline');
   if (!timeline) return;
-  const data = (agenda && Array.isArray(agenda)) ? agenda : DEFAULT_AGENDA;
+  const data = (agenda && Array.isArray(agenda) && agenda.length > 0) ? agenda : DEFAULT_AGENDA;
   timeline.innerHTML = data.map(item => {
     const isFeatured = item.tag?.toLowerCase().includes('keynote');
     const isBreak    = item.tag?.toLowerCase().includes('break') || item.tag?.toLowerCase().includes('tea') || item.tag?.toLowerCase().includes('lunch');
@@ -364,7 +405,7 @@ function renderAgenda(agenda) {
 
     return `
     <div class="${rowClass}">
-      <div class="timeline-time">${escapeHtml(item.time)}</div>
+      <div class="timeline-time">${escapeHtml(item.time_slot || item.time)}</div>
       <div class="timeline-content">
         <span class="tag">${escapeHtml(item.tag)}</span>
         <h4>${parseAccent(item.title)}</h4>
@@ -380,7 +421,7 @@ function renderSpeakers(speakers) {
   // The .speaker-cta-card is static HTML; we prepend dynamic cards only.
   const grid = document.querySelector('.speakers-grid');
   if (!grid) return;
-  const data = (speakers && Array.isArray(speakers)) ? speakers : DEFAULT_SPEAKERS;
+  const data = (speakers && Array.isArray(speakers) && speakers.length > 0) ? speakers : DEFAULT_SPEAKERS;
 
   // Remove any previously injected dynamic cards (not the static CTA card)
   grid.querySelectorAll('.speaker-card:not(.speaker-cta-card)').forEach(el => el.remove());

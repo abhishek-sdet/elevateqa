@@ -286,20 +286,20 @@ function _hideLoadingOverlay(overlay) {
 function populateUI(data) {
   const { siteContent, speakers, agenda, maturity, pillars, manifesto } = data;
   
-  // Set global visuals
+  // Set global visuals with proper high-fidelity defaults matching the main design
   window._visualData = {
-    heroBg: siteContent.heroBg || null,
+    heroBg: siteContent.heroBg || 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1600&q=80',
     logo: siteContent.logoUrl || null,
-    strip01Img: siteContent.strip01Img || null,
-    strip02Img: siteContent.strip02Img || null,
-    strip03Img: siteContent.strip03Img || null
+    strip01Img: siteContent.strip01Img || 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1200&q=80',
+    strip02Img: siteContent.strip02Img || 'https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=1000&q=80',
+    strip03Img: siteContent.strip03Img || 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80'
   };
 
   // Populate form fields
   const setVal = (id, val) => {
     const el = document.getElementById(id);
     if (el) {
-      if (val !== undefined && val !== null && val !== '') {
+      if (val !== undefined && val !== null) {
         el.value = val;
       } else {
         el.value = el.placeholder || '';
@@ -390,6 +390,11 @@ function populateUI(data) {
 
   setVal('manifesto-lines', manifesto.content);
 
+  // Gallery captions
+  setVal('strip-01-caption', (siteContent.strip01Cap !== undefined && siteContent.strip01Cap !== null) ? siteContent.strip01Cap : 'The room. Curated, not crowded.');
+  setVal('strip-02-caption', (siteContent.strip02Cap !== undefined && siteContent.strip02Cap !== null) ? siteContent.strip02Cap : 'The stage. Built for proof.');
+  setVal('strip-03-caption', (siteContent.strip03Cap !== undefined && siteContent.strip03Cap !== null) ? siteContent.strip03Cap : 'The conversation. Where careers compound.');
+
   // Dynamic Lists
   if (data.maturity) {
     const mCont = document.getElementById('maturity-stages-admin');
@@ -434,10 +439,15 @@ function updateVisualPreviews() {
         img.src = src;
         img.style.display = 'block';
       }
+      const ph = document.getElementById(`placeholder-${id}`);
+      if (ph) ph.style.display = 'none';
     }
   };
   updateImg('hero-bg', window._visualData.heroBg);
   updateImg('logo', window._visualData.logo);
+  updateImg('strip-01', window._visualData.strip01Img);
+  updateImg('strip-02', window._visualData.strip02Img);
+  updateImg('strip-03', window._visualData.strip03Img);
 }
 
 // SAVE ALL
