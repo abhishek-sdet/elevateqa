@@ -227,7 +227,7 @@ h1.title .accent {
 
 @media (max-width: 768px) {
   .hero {
-    padding-top: 160px;
+    padding-top: 110px;
     padding-left: var(--pad-mobile);
     padding-right: var(--pad-mobile);
     min-height: 100vh;
@@ -243,8 +243,24 @@ h1.title .accent {
     align-items: center;
     text-align: center;
     width: 100%;
-    margin-bottom: var(--space-lg-mobile);
-    gap: 12px;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+
+  .eyebrow {
+    line-height: 1.5;
+    max-width: 95%;
+    margin: 0 auto;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 12px rgba(212, 255, 58, 0.3);
+  }
+
+  .hero-edition-mini {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
   }
 
   .hero-meta .fade-in { 
@@ -299,7 +315,7 @@ h1.title .accent {
   .hero-bottom {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 16px;
     width: 100%;
     margin-top: auto;
   }
@@ -307,24 +323,24 @@ h1.title .accent {
   .hero-bottom-item {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--line-strong);
-    padding: 20px 16px;
+    padding: 24px 16px;
     border-radius: 16px;
     backdrop-filter: blur(12px);
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .hero-bottom-item .label {
-    font-size: 9px;
+    font-size: 10px;
     margin-bottom: 0;
     opacity: 0.5;
     letter-spacing: 0.1em;
   }
 
   .hero-bottom-item .value {
-    font-size: 1rem;
+    font-size: 1.1rem;
     line-height: 1.2;
     color: #fff;
     font-family: var(--display);
@@ -337,9 +353,9 @@ h1.title .accent {
 }
 
 @media (max-width: 480px) {
-  .hero { padding-top: 120px; }
+  .hero { padding-top: 100px; }
   h1.title { font-size: 2.2rem; }
   .tagline { font-size: 1.05rem; }
-  .hero-bottom-item { padding: 16px 12px; }
-  .hero-bottom-item .value { font-size: 0.9rem; }
+  .hero-bottom-item { padding: 20px 14px; gap: 8px; }
+  .hero-bottom-item .value { font-size: 0.95rem; }
 }

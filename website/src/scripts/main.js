@@ -156,6 +156,26 @@ window.syncEverything = () => {
       const heroBg = document.querySelector('.hero-ambient img');
       if (heroBg && heroBg.src !== visuals.heroBg) heroBg.src = visuals.heroBg;
     }
+
+    // Experience image strip (strip-img-01/02/03 + captions)
+    if (Array.isArray(visuals.strip)) {
+      visuals.strip.forEach((item, i) => {
+        const n   = String(i + 1).padStart(2, '0');
+        const img = document.getElementById(`strip-img-${n}`);
+        const cap = document.getElementById(`strip-cap-${n}`);
+        if (img && item.img) img.src = item.img;
+        if (cap) {
+          const wrapper = cap.closest('.caption');
+          if (!item.cap || item.cap.trim() === '') {
+            cap.textContent = '';
+            if (wrapper) wrapper.style.display = 'none';
+          } else {
+            cap.textContent = item.cap;
+            if (wrapper) wrapper.style.display = '';
+          }
+        }
+      });
+    }
   } else {
     document.querySelectorAll('.logo img, #footer-logo-img, #site-logo-img').forEach(img => {
       if (!img.src.includes('logo.png')) {
@@ -309,15 +329,24 @@ window.syncEverything = () => {
     const timeline = document.querySelector('.timeline');
     if (timeline) {
       const targetHtml = finalAgenda.map(item => {
-        const isFeatured = item.tag?.toLowerCase().includes('keynote');
-        const isBreak = item.tag?.toLowerCase().includes('break') || item.tag?.toLowerCase().includes('tea') || item.tag?.toLowerCase().includes('lunch');
+        const titleLower = item.title?.toLowerCase() || '';
+        const tagLower = item.tag?.toLowerCase() || '';
+        
+        const isFeatured = tagLower.includes('keynote') || tagLower.includes('closing') || titleLower.includes('keynote') || titleLower.includes('closing') || titleLower.includes('remarks') || titleLower.includes('remarks');
+        const isBreak = tagLower.includes('break') || tagLower.includes('tea') || tagLower.includes('lunch') || tagLower.includes('coffee') ||
+                        titleLower.includes('break') || titleLower.includes('tea') || titleLower.includes('lunch') || titleLower.includes('coffee');
+        
         const rowClass = `timeline-row reveal${isFeatured ? ' featured' : ''}${isBreak ? ' break' : ''}`;
+        const cleanTag = item.tag ? item.tag.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+        const tagClass = `tag${cleanTag ? ' tag-' + cleanTag : ''}`;
+        const escapeHtml = (val) => String(val || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         return `
         <div class="${rowClass}">
           <div class="timeline-time">${item.time_slot || item.time}</div>
           <div class="timeline-content">
-            <span class="tag">${item.tag || 'SESSION'}</span>
+            <span class="${tagClass}" style="${item.tag ? '' : 'display:none;'}">${item.tag || ''}</span>
             <h4>${parseEm(item.title)}</h4>
+            ${item.speaker_name ? `<div class="timeline-speaker">By <strong>${escapeHtml(item.speaker_name)}</strong></div>` : ''}
             <p class="desc">${item.desc || ''}</p>
           </div>
         </div>`;
@@ -374,6 +403,10 @@ window.openModal = (e) => {
   const formView = document.getElementById('form-view');
   const ticketView = document.getElementById('ticket-view');
 
+  // Clear previous data every time the form is opened
+  const regForm = document.querySelector('.reg-form');
+  if (regForm) regForm.reset();
+
   if (modal) {
     if (priceView) priceView.style.display = 'block';
     if (formView) formView.style.display = 'none';
@@ -419,8 +452,24 @@ window.generateTicket = async function(event) {
 
   // Save to Supabase FIRST to get the UUID
   try {
+    // 1. Check if the email already exists in the database
+    const { data: existingUser, error: checkError } = await supabase
+      .from('registrations')
+      .select('id')
+      .eq('email', email)
+      .limit(1);
+      
+    if (existingUser && existingUser.length > 0) {
+      alert('This email is already registered. Please use a different professional email.');
+      if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
+      return;
+    }
+
+    // 2. Insert new registration
+    // Supabase will reject the insert if we pass columns that don't exist yet in the database.
+    // We omit designation & linkedin here, but still pass them to the email webhook later!
     const { data, error } = await supabase.from('registrations').insert([
-      { name, email, company: org, status: 'confirmed', designation, linkedin }
+      { name, email, company: org, status: 'confirmed' }
     ]).select();
 
     if (error) {
@@ -510,7 +559,7 @@ window.shareOnLinkedIn = function() {
   window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=600');
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+const startApp = () => {
   initAnimations();
   initCursor();
   initNav(); // ← explicit call ensures hamburger works regardless of module load order
@@ -554,4 +603,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Failsafe preloader removal (reduced to 5 seconds to prevent frozen screen if offline)
   setTimeout(dismissPreloader, 5000);
-});
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}
+

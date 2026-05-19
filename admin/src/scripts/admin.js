@@ -22,10 +22,10 @@ const DEFAULT_SITE_CONTENT = {
   manifestoPill: "Why now",
   manifestoAside: "A note from the <br>founder.",
   manifestoLines: [
-    "Everyone is talking about AI in quality engineering. <em>Few are showing the proof.</em>",
-    "We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know <span class=\"highlight\">what actually shipped to production</span> and held up.",
+    "Everyone is talking about AI in quality engineering. *Few are showing the proof.*",
+    "We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know ==what actually shipped to production== and held up.",
     "Elevate QA exists for the second conversation. The harder one. The one where engineers, leaders, and practitioners put real work on the table — what they tried, what broke, what changed the math.",
-    "No vendor pitches. No abstract theory. <em>The proof of value, or it didn't happen.</em>"
+    "No vendor pitches. No abstract theory. *The proof of value, or it didn't happen.*"
   ],
 
   // WHY NOW / MATURITY
@@ -940,5 +940,83 @@ async function resetToDefaults() {
   localStorage.removeItem('elevate_visuals');
   location.reload();
 }
+
+// ============================================================
+// MAKE.COM INTEGRATION
+// ============================================================
+window.testMakeConnection = async function() {
+  const token = document.getElementById('make-api-token').value.trim();
+  const orgId = document.getElementById('make-org-id').value.trim();
+  
+  if (!token || !orgId) {
+    showSavedToast("⚠ Please enter Token and Org ID first");
+    return;
+  }
+  
+  localStorage.setItem('make_api_token', token);
+  localStorage.setItem('make_org_id', orgId);
+  
+  await fetchMakeUsage(token, orgId);
+};
+
+window.fetchMakeUsage = async function(token, orgId) {
+  if (!token) token = localStorage.getItem('make_api_token');
+  if (!orgId) orgId = localStorage.getItem('make_org_id');
+  
+  if (document.getElementById('make-api-token')) {
+    document.getElementById('make-api-token').value = token || '';
+    document.getElementById('make-org-id').value = orgId || '';
+  }
+
+  if (!token || !orgId) return;
+
+  try {
+    const res = await fetch(`https://eu1.make.com/api/v2/organizations/${orgId}`, {
+      headers: { 'Authorization': `Token ${token}` }
+    });
+    
+    if (!res.ok) throw new Error('API Error: ' + res.status);
+    
+    const body = await res.json();
+    const data = body.organization || body; // Make API might wrap in object
+    
+    if (data && data.license) {
+      const left = data.license.operationsLeft || 0;
+      const limit = data.license.operationsLimit || 0;
+      const reset = data.license.resetDate ? new Date(data.license.resetDate).toLocaleDateString() : 'N/A';
+      
+      const display = document.getElementById('make-usage-display');
+      if (display) {
+        display.style.display = 'block';
+        document.getElementById('make-ops-left').textContent = left;
+        document.getElementById('make-ops-limit').textContent = limit;
+        document.getElementById('make-ops-reset').textContent = reset;
+      }
+      
+      const banner = document.getElementById('make-alert-banner');
+      if (banner) {
+        if (left < 200 || (limit > 0 && left / limit < 0.1)) {
+          banner.style.display = 'flex';
+          banner.style.background = 'rgba(255, 50, 50, 0.1)';
+          banner.style.border = '1px solid var(--accent-red)';
+          banner.style.color = 'var(--accent-red)';
+          banner.textContent = `⚠ WARNING: Make.com operations are dangerously low (${left} left)! Emails will stop sending soon.`;
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+      
+      showSavedToast("Make.com Linked!");
+    }
+  } catch (err) {
+    console.error(err);
+    showSavedToast("⚠ Make.com connection failed");
+  }
+};
+
+// Initialize make usage on load
+setTimeout(() => {
+  if (typeof fetchMakeUsage === 'function') fetchMakeUsage();
+}, 1000);
 
 checkAuth();

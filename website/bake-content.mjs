@@ -32,6 +32,7 @@ function transformSiteContent(rows) {
   const raw = Array.isArray(rows) ? rows[0] : rows;
   if (!raw) return null;
 
+  // Start with top-level snake_case columns
   const sc = {
     heroHeadline:   raw.hero_headline   || '',
     heroTagline:    raw.hero_tagline    || '',
@@ -42,40 +43,22 @@ function transformSiteContent(rows) {
     heroAudience:   raw.hero_audience   || '',
     eventDate:      raw.event_date      || '',
     eventVenue:     raw.event_venue     || '',
-
-    stat1Num: raw.stat1_num, stat1Lbl: raw.stat1_lbl,
-    stat2Num: raw.stat2_num, stat2Lbl: raw.stat2_lbl,
-    stat3Num: raw.stat3_num, stat3Lbl: raw.stat3_lbl,
-    stat4Num: raw.stat4_num, stat4Lbl: raw.stat4_lbl,
-
-    navManifesto:  raw.nav_manifesto,
-    navMaturity:   raw.nav_maturity,
-    navExperience: raw.nav_experience,
-    navAgenda:     raw.nav_agenda,
-    navSpeakers:   raw.nav_speakers,
-    navJoin:       raw.nav_join,
-
-    manifestoPill:  raw.manifesto_pill,
-    manifestoAside: raw.manifesto_aside,
-    manifestoLines: raw.manifesto_lines,
-
-    ctaLabel:       raw.cta_label,
-    ctaSubLabel:    raw.cta_sub_label,
-    footerEdition:  raw.footer_edition,
-    footerTagline:  raw.footer_tagline,
   };
 
-  // Unwrap hero_meta JSON bundle if present
-  if (sc.heroMeta && typeof sc.heroMeta === 'string' && sc.heroMeta.startsWith('{')) {
+  // hero_meta is a JSONB column that contains ALL other settings bundled together.
+  // Unpack it so every field inside becomes a top-level property.
+  const heroMeta = raw.hero_meta;
+  if (heroMeta) {
     try {
-      const extra = JSON.parse(sc.heroMeta);
-      Object.assign(sc, extra);
-      sc.heroMeta = extra.heroMetaText || '';
+      const extra = (typeof heroMeta === 'string') ? JSON.parse(heroMeta) : heroMeta;
+      Object.assign(sc, extra);           // spreads ALL nested fields (nav labels, stats, ticker, etc.)
+      sc.heroMeta = extra.heroMetaText || '';  // keep the plain text version for the meta bar
     } catch (_) {}
   }
 
   return sc;
 }
+
 
 function transformBranding(rows) {
   const raw = Array.isArray(rows) ? rows[0] : rows;

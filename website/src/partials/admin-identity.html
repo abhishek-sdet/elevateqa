@@ -7,6 +7,7 @@
             <button class="tab-btn" onclick="showIdentitySubSection('manifesto')">MANIFESTO</button>
             <button class="tab-btn" onclick="showIdentitySubSection('map')">THE MAP</button>
             <button class="tab-btn" onclick="showIdentitySubSection('experience')">EXPERIENCE</button>
+            <button class="tab-btn" onclick="showIdentitySubSection('coming')">WHAT'S COMING</button>
             <button class="tab-btn" onclick="showIdentitySubSection('extras')">EXTRAS & FOOTER</button>
           </div>
 
@@ -197,9 +198,10 @@
               </div>
               <div class="form-group">
                 <label>Manifesto Paragraphs</label>
-                <textarea id="manifesto-lines" rows="6">Everyone is talking about AI in quality engineering. [[Few are showing the proof.]]
-We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know what actually shipped to production and held up.
-Elevate QA exists for the second conversation. The harder one. The proof of value, or it didn't happen.</textarea>
+                <textarea id="manifesto-lines" rows="6">Everyone is talking about AI in quality engineering. *Few are showing the proof.*
+We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know ==what actually shipped to production== and held up.
+Elevate QA exists for the second conversation. The harder one. The one where engineers, leaders, and practitioners put real work on the table — what they tried, what broke, what changed the math.
+No vendor pitches. No abstract theory. *The proof of value, or it didn't happen.*</textarea>
               </div>
             </div>
 
@@ -269,6 +271,96 @@ Elevate QA exists for the second conversation. The harder one. The proof of valu
               <div id="pillars-admin" class="dynamic-list"></div>
             </div>
           </div> <!-- END EXPERIENCE -->
+          <!-- ── SUB-SECTION: WHAT'S COMING ── -->
+          <div id="sub-identity-coming" class="sub-identity-section" style="display:none;">
+            <div class="manager-card primary-card">
+              <div class="section-title">What's Coming <em>Section Copy</em></div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Section Num</label>
+                  <input type="text" id="coming-section-num" placeholder="06 / What's coming">
+                </div>
+                <div class="form-group">
+                  <label>Section Title</label>
+                  <input type="text" id="coming-title" placeholder="Date. Venue. [[Lineup.]]">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea id="coming-desc" rows="2" placeholder="We're locking in the details..."></textarea>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Visual Badge Label</label>
+                  <input type="text" id="coming-visual-label" placeholder="REVEALING">
+                </div>
+                <div class="form-group">
+                  <label>Visual Badge Subtitle</label>
+                  <input type="text" id="coming-visual-sub" placeholder="Soon">
+                </div>
+              </div>
+            </div>
+
+            <div class="manager-card">
+              <div class="section-title">Coming <em>Checklist</em></div>
+              
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Item 1 Label</label>
+                  <input type="text" id="coming-item1-label" placeholder="Theme & manifesto">
+                </div>
+                <div class="form-group">
+                  <label>Item 1 Status</label>
+                  <input type="text" id="coming-item1-status" placeholder="✓ Live">
+                </div>
+                
+                <div class="form-group">
+                  <label>Item 2 Label</label>
+                  <input type="text" id="coming-item2-label" placeholder="Speaker submissions">
+                </div>
+                <div class="form-group">
+                  <label>Item 2 Status</label>
+                  <input type="text" id="coming-item2-status" placeholder="✓ Open">
+                </div>
+                
+                <div class="form-group">
+                  <label>Item 3 Label</label>
+                  <input type="text" id="coming-item3-label" placeholder="Date announcement">
+                </div>
+                <div class="form-group">
+                  <label>Item 3 Status</label>
+                  <input type="text" id="coming-item3-status" placeholder="Wave 01">
+                </div>
+                
+                <div class="form-group">
+                  <label>Item 4 Label</label>
+                  <input type="text" id="coming-item4-label" placeholder="Venue reveal">
+                </div>
+                <div class="form-group">
+                  <label>Item 4 Status</label>
+                  <input type="text" id="coming-item4-status" placeholder="Wave 01">
+                </div>
+                
+                <div class="form-group">
+                  <label>Item 5 Label</label>
+                  <input type="text" id="coming-item5-label" placeholder="Full lineup">
+                </div>
+                <div class="form-group">
+                  <label>Item 5 Status</label>
+                  <input type="text" id="coming-item5-status" placeholder="Wave 02">
+                </div>
+                
+                <div class="form-group">
+                  <label>Item 6 Label</label>
+                  <input type="text" id="coming-item6-label" placeholder="Tickets & RSVP">
+                </div>
+                <div class="form-group">
+                  <label>Item 6 Status</label>
+                  <input type="text" id="coming-item6-status" placeholder="Wave 03">
+                </div>
+              </div>
+            </div>
+          </div> <!-- END COMING -->
 
           <!-- ── SUB-SECTION: EXTRAS ── -->
           <div id="sub-identity-extras" class="sub-identity-section" style="display:none;">

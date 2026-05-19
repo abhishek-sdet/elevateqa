@@ -23,13 +23,74 @@ async function seedData() {
     id: 1,
     hero_headline: 'Elevate Quality. Prove value.',
     hero_tagline: "The first grand symposium for quality engineering in the age of AI — a one-day reckoning with what's real, what's hype, and what actually moves the needle.",
-    hero_eyebrow: 'QE × AI — The Proof of Value',
-    hero_edition: 'EDITION 01 — INAUGURAL',
-    event_date: 'Revealing soon',
+    hero_eyebrow: 'AI LED QUALITY ENGINEERING TECH SUMMIT · BY SDET TECH',
+    hero_edition: 'EDITION 02',
+    event_date: '8th August 2026',
     event_venue: 'Delhi NCR, India',
-    hero_meta: 'A SYMPOSIUM BY SDET TECHNOLOGIES / INDIA / 2026',
     hero_format: 'One day, two stages',
-    hero_audience: '200–500 QE leaders'
+    hero_audience: '200–500 QE leaders',
+    hero_meta: JSON.stringify({
+      heroMetaText: 'A SYMPOSIUM BY SDET TECHNOLOGIES / NOIDA, INDIA',
+      heroCtaText: 'Get your ticket →',
+      stat1Num: '2nd', stat1Lbl: 'Edition / Aug 2026',
+      stat2Num: '500+', stat2Lbl: 'QE Practitioners',
+      stat3Num: '8+', stat3Lbl: 'Hours of Signal',
+      stat4Num: '1', stat4Lbl: 'Theme. Proof of Value.',
+      ticker1: 'Elevate QA 2026',
+      ticker2: '[[AI-Led]] Quality Engineering',
+      ticker3: 'AI Led Quality Engineering Tech Summit',
+      ticker4: 'Attend the AI-Led QE Summit',
+      ticker5: '8th August 2026 — Noida',
+      ticker6: 'Speaker Submissions Open',
+      ticker7: '200–500 Attendees — Edition 02',
+      ticker8: 'Contact: elevateqa@sdettech.com',
+      ticker9: 'CFP Now Open',
+      navManifesto: 'Manifesto',
+      navMaturity: 'Why Now',
+      navExperience: 'Experience',
+      navAgenda: 'Agenda',
+      navSpeakers: 'Speakers',
+      navJoin: 'Participate',
+      manifestoSectionNum: '01 / MANIFESTO',
+      manifestoPill: 'Why now',
+      manifestoAside: 'A note from the founder.',
+      mapSectionNum: '02 / THE MAP',
+      maturityTitle: 'Where is your team on the [[AI-led QE]] curve?',
+      experienceSectionNum: '03 / THE EXPERIENCE',
+      pillarsTitle: 'A day built around [[signal,]] not noise.',
+      agendaSectionNum: '04 / AGENDA',
+      agendaSectionTitle: 'One day. No filler.',
+      speakersSectionNum: '05 / SPEAKERS',
+      speakersSectionTitle: 'The people on stage have shipped it.',
+      speakersIntro: 'Every speaker is a practitioner first.',
+      prizesHeadline: 'Speak well. Win big.',
+      prizesS1Num: '01', prizesS1Lbl: 'Speaker of the Event',
+      prizesS2Num: '03', prizesS2Lbl: 'Audience Awards',
+      prizesS3Num: '∞',  prizesS3Lbl: 'Surprise Prizes',
+      involveSectionNum: '07 / GET INVOLVED',
+      involveTitle: 'How to participate.',
+      involveCard1Title: 'Attend',
+      involveCard1Desc: 'Secure your seat at the most signal-dense QE summit of 2026. Free for qualified practitioners.',
+      involveCard1Link: '#register', involveCard1LinkText: 'Get your ticket →',
+      involveCard2Title: 'Speak',
+      involveCard2Desc: 'Submit a proposal. We select practitioners who show their work — no keynote decks, no vendor pitches.',
+      involveCard2LinkText: 'Submit a proposal →',
+      involveCard3Title: 'Sponsor',
+      involveCard3Desc: 'Put your brand in front of 500 quality engineering leaders. Custom packages available.',
+      involveCard3LinkText: 'Partner with us →',
+      footerTagline: 'AI-Led Quality Engineering. One day. No noise.',
+      footerLocation: 'Noida, Delhi NCR, India',
+      footerEdition: 'Elevate QA — Edition 02',
+      footerCopyright: '© 2026 SDET Technologies. All rights reserved.',
+      footerEmail: 'elevateqa@sdettech.com',
+      modalPriceScarcity: 'Limited seats — early access closing soon',
+      modalPriceOld: '', modalPriceNew: 'FREE',
+      modalPriceCaption: 'No cost. Practitioners only.',
+      modalPriceBtn: 'Confirm my seat →',
+      modalFormTitle: 'Confirm your Access',
+      modalFormDesc: 'Since this is a free pass, please provide your professional details to confirm your seat.',
+      admin_whitelist: ['abhishek.johri@sdettech.com', 'abhishekjohri150@gmail.com', 'elevateqa@sdettech.com']
+    })
   };
   const { error: sErr } = await supabase.from('site_content').upsert(siteContentData);
   if (sErr) console.error('Site Content error:', sErr);
@@ -38,7 +99,7 @@ async function seedData() {
   // 2. Manifesto
   const manifestoData = {
     id: '00000000-0000-0000-0000-000000000001',
-    content: `Everyone is talking about AI in quality engineering. Few are showing the proof.\n\nWe've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know what actually shipped to production and held up.\n\nElevate QA exists for the second conversation. The harder one. The one where engineers, leaders, and practitioners put real work on the table — what they tried, what broke, what changed the math.\n\nNo vendor pitches. No abstract theory. The proof of value, or it didn't happen.`
+    content: `Everyone is talking about AI in quality engineering. *Few are showing the proof.*\n\nWe've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know ==what actually shipped to production== and held up.\n\nElevate QA exists for the second conversation. The harder one. The one where engineers, leaders, and practitioners put real work on the table — what they tried, what broke, what changed the math.\n\nNo vendor pitches. No abstract theory. *The proof of value, or it didn't happen.*`
   };
   const { error: mErr } = await supabase.from('manifesto').upsert(manifestoData);
   if (mErr) console.error('Manifesto error:', mErr);
@@ -74,16 +135,19 @@ async function seedData() {
 
   // 6. Agenda
   const agendaData = [
-    { time: '09:00', tag: 'Opens', title: 'Registration & morning coffee', desc: 'Pick up your badge, meet the early arrivals, find your tribe before the day begins.', display_order: 0 },
-    { time: '10:00', tag: 'Opening Keynote', title: 'The proof of value: what AI in QE has actually delivered', desc: 'A grounded look at where AI has paid off in quality engineering — and where the receipts are still missing.', display_order: 1 },
-    { time: '11:00', tag: 'Track Sessions', title: 'Parallel deep-dives across two stages', desc: 'Self-healing automation, AI-driven test generation, intelligent triage, risk-based prioritization. Engineers showing real implementations.', display_order: 2 },
-    { time: '13:00', tag: 'Break', title: 'Lunch & networking', desc: "Curated tables by topic — sit with people working on the problems you're working on.", display_order: 3 },
-    { time: '14:30', tag: 'Keynote Panel', title: 'The candid panel: hype vs. reality', desc: "Practitioners and leaders go on record about what's overhyped, what's underrated, and where the field goes next.", display_order: 4 },
-    { time: '15:30', tag: 'Workshops', title: 'Hands-on working sessions', desc: 'Bring a laptop. Leave with code, frameworks, and concrete starting points for your own AI-led QE program.', display_order: 5 },
-    { time: '17:30', tag: 'Awards', title: 'Speaker of the Event & recognition', desc: "The day's best voice gets headline prizes. Audience awards, surprises, applause that means something.", display_order: 6 },
-    { time: '18:30', tag: 'Reception', title: 'Closing reception & after hours', desc: 'Drinks, conversations, and the connections that outlast the agenda.', display_order: 7 }
+    { time_slot: '09:00', title: 'Registration & morning coffee||Opens||Pick up your badge, meet the early arrivals, find your tribe before the day begins.', display_order: 0 },
+    { time_slot: '10:00', title: 'The proof of value: what AI in QE has actually delivered||Opening Keynote||A grounded look at where AI has paid off in quality engineering — and where the receipts are still missing.', display_order: 1 },
+    { time_slot: '11:00', title: 'Parallel deep-dives across two stages||Track Sessions||Self-healing automation, AI-driven test generation, intelligent triage, risk-based prioritization. Engineers showing real implementations.', display_order: 2 },
+    { time_slot: '13:00', title: "Lunch & networking||Break||Curated tables by topic — sit with people working on the problems you're working on.", display_order: 3 },
+    { time_slot: '14:30', title: "The candid panel: hype vs. reality||Keynote Panel||Practitioners and leaders go on record about what's overhyped, what's underrated, and where the field goes next.", display_order: 4 },
+    { time_slot: '15:30', title: 'Hands-on working sessions||Workshops||Bring a laptop. Leave with code, frameworks, and concrete starting points for your own AI-led QE program.', display_order: 5 },
+    { time_slot: '17:30', title: "Speaker of the Event & recognition||Awards||The day's best voice gets headline prizes. Audience awards, surprises, applause that means something.", display_order: 6 },
+    { time_slot: '18:30', title: 'Closing reception & after hours||Reception||Drinks, conversations, and the connections that outlast the agenda.', display_order: 7 }
   ];
-  for (const a of agendaData) await supabase.from('agenda').insert(a);
+  for (const a of agendaData) {
+    const { error } = await supabase.from('agenda').insert(a);
+    if (error) console.error('Agenda insert error:', error);
+  }
   console.log('✅ Agenda seeded.');
 
   // 7. Speakers

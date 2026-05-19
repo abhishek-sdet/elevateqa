@@ -106,13 +106,44 @@ export async function loadAllData() {
     fetchTable('registrations')
   ]);
 
-  const combined = transformSiteContent(site_content || {});
+  const combined = transformSiteContent(site_content || {}) || {};
   const visuals = transformBranding(branding || {});
+
+  const combinedSite = {
+    ...(site_content || {}),
+    ...(branding || {})
+  };
+
+  // Explicitly map branding fields onto siteContent returned to UI
+  combined.logoUrl = combinedSite.logo_url || combinedSite.logoUrl || '';
+  combined.logo_height = combinedSite.logo_height || 48;
+  combined.primary_color = combinedSite.primary_color || '#d4ff3a';
+  combined.accent_color = combinedSite.accent_color || '#d4ff3a';
+  combined.heroBg = combinedSite.hero_bg_url || combinedSite.heroBg || '';
+  combined.strip01Img = combinedSite.strip_img_1 || combinedSite.strip01Img || '';
+  combined.strip01Cap = (combinedSite.strip_cap_1 !== undefined && combinedSite.strip_cap_1 !== null) ? combinedSite.strip_cap_1 : (combinedSite.strip01Cap || '');
+  combined.strip02Img = combinedSite.strip_img_2 || combinedSite.strip02Img || '';
+  combined.strip02Cap = (combinedSite.strip_cap_2 !== undefined && combinedSite.strip_cap_2 !== null) ? combinedSite.strip_cap_2 : (combinedSite.strip02Cap || '');
+  combined.strip03Img = combinedSite.strip_img_3 || combinedSite.strip03Img || '';
+  combined.strip03Cap = (combinedSite.strip_cap_3 !== undefined && combinedSite.strip_cap_3 !== null) ? combinedSite.strip_cap_3 : (combinedSite.strip03Cap || '');
   
   localStorage.setItem('elevate_site_content', JSON.stringify(combined));
   localStorage.setItem('elevate_visuals', JSON.stringify(visuals));
   if (speakers) localStorage.setItem('elevate_speakers', JSON.stringify(speakers));
-  if (agenda) localStorage.setItem('elevate_agenda', JSON.stringify(agenda));
+  if (agenda) {
+    agenda.forEach(a => {
+      if (a.title && a.title.includes('||')) {
+        const parts = a.title.split('||');
+        a.title = parts[0] || '';
+        a.tag = parts[1] || '';
+        a.desc = parts[2] || '';
+      } else {
+        a.tag = '';
+        a.desc = '';
+      }
+    });
+    localStorage.setItem('elevate_agenda', JSON.stringify(agenda));
+  }
   if (maturity_stages) localStorage.setItem('elevate_maturity_stages', JSON.stringify(maturity_stages));
   if (pillars) localStorage.setItem('elevate_experience_pillars', JSON.stringify(pillars));
   if (manifesto) localStorage.setItem('elevate_manifesto', JSON.stringify([{ content: manifesto.content || '' }]));
@@ -206,6 +237,10 @@ export async function saveBranding(data) {
     id: '00000000-0000-0000-0000-000000000001',
     logo_url: data.logoUrl,
     logo_height: parseInt(data.logoHeight) || 48,
+    hero_bg_url: data.heroBg,
+    strip_img_1: data.stripImg1, strip_cap_1: data.stripCap1,
+    strip_img_2: data.stripImg2, strip_cap_2: data.stripCap2,
+    strip_img_3: data.stripImg3, strip_cap_3: data.stripCap3,
     primary_color: data.primaryColor || '#d4ff3a',
     accent_color: data.accentColor || '#d4ff3a'
   };
@@ -241,11 +276,10 @@ export async function saveSpeaker(s) {
 }
 
 export async function saveAgendaItem(a) {
+  const packedTitle = `${a.title || ''}||${a.tag || ''}||${a.desc || ''}`;
   const dbData = {
     time_slot: a.time || '',
-    tag: a.tag || '',
-    title: a.title || '',
-    desc: a.desc || '',
+    title: packedTitle,
     display_order: a.display_order || 0
   };
   if (a.id && a.id.length > 10) dbData.id = a.id;

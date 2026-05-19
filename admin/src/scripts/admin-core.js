@@ -537,6 +537,10 @@ window.saveAll = async () => {
     results.push(await saveBranding({
       logoUrl: window._visualData.logo,
       logoHeight: getVal('visual-logo-height'),
+      heroBg: window._visualData.heroBg,
+      stripImg1: window._visualData.strip01Img, stripCap1: getVal('strip-01-caption'),
+      stripImg2: window._visualData.strip02Img, stripCap2: getVal('strip-02-caption'),
+      stripImg3: window._visualData.strip03Img, stripCap3: getVal('strip-03-caption'),
       primaryColor: getVal('set-color-primary'),
       accentColor: getVal('set-color-accent')
     }));

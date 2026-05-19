@@ -20,8 +20,8 @@
   --body: 'Manrope', sans-serif;
   --mono: 'JetBrains Mono', monospace;
   /* PADDING */
-  --pad-x: clamp(1.25rem, 5vw, 8rem);
-  --pad-y: clamp(3rem, 8vw, 8rem);
+  --pad-x: clamp(1.25rem, 5vw, 10rem);
+  --pad-y: clamp(3rem, 8vw, 10rem);
   --pad-mobile: 1.25rem;
   --section-gap: clamp(4rem, 10vw, 12rem);
   --section-gap-mobile: 3.5rem;

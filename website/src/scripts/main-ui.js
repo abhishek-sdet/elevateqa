@@ -71,13 +71,12 @@ const escapeHtml = (value) => {
 };
 window.escapeHtml = window.escapeHtml || escapeHtml;
 
-// parseAccent: ONLY wraps [[...]] tokens with span.accent — input is escaped first.
-// IMPORTANT: This function is used on admin-authored content where intentional HTML em tags
-// are part of the design. We escape input then re-introduce ONLY our marker pattern.
 const parseAccent = (str) => {
   if (!str) return '';
-  // Preserve <em>…</em> as design intent, but escape anything else
-  return String(str).replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>');
+  return String(str)
+    .replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>')
+    .replace(/==(.*?)==/g, '<span class="highlight">$1</span>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
 };
 
 // ─── MODAL INTERACTIONS ──────────────────────────────────────────────────────
@@ -345,10 +344,10 @@ function syncEverything() {
         if (img && item.img) img.src = item.img;
         if (cap) {
           const wrapper = cap.closest('.caption');
-          if (item.cap === '') {
+          if (!item.cap || item.cap.trim() === '') {
             cap.textContent = '';
             if (wrapper) wrapper.style.display = 'none';
-          } else if (item.cap) {
+          } else {
             cap.textContent = item.cap;
             if (wrapper) wrapper.style.display = '';
           }
@@ -365,6 +364,8 @@ export function initNav() {
   const menuBtn = document.getElementById('menu-toggle');
   const navLinks = document.getElementById('nav-links');
   if (!menuBtn || !navLinks) return;
+  if (menuBtn.dataset.navInit) return;
+  menuBtn.dataset.navInit = 'true';
 
   menuBtn.addEventListener('click', () => {
     const isOpen = menuBtn.classList.toggle('open');   // CSS uses .open
@@ -384,7 +385,7 @@ export function initNav() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function startNavAndSync() {
   initNav();
   // Perform initial render from localStorage cache immediately
   syncEverything();
@@ -392,8 +393,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('storage', (e) => {
     if (e.key && e.key.startsWith('elevate_')) syncEverything();
   });
-  // NOTE: initCloudSync() is called by main-core.js after all scripts load
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startNavAndSync);
+} else {
+  startNavAndSync();
+}
 
 // ─── AGENDA ─────────────────────────────────────────────────────────────────
 function renderAgenda(agenda) {
@@ -401,16 +407,24 @@ function renderAgenda(agenda) {
   if (!timeline) return;
   const data = (agenda && Array.isArray(agenda) && agenda.length > 0) ? agenda : DEFAULT_AGENDA;
   timeline.innerHTML = data.map(item => {
-    const isFeatured = item.tag?.toLowerCase().includes('keynote');
-    const isBreak    = item.tag?.toLowerCase().includes('break') || item.tag?.toLowerCase().includes('tea') || item.tag?.toLowerCase().includes('lunch');
+    const titleLower = item.title?.toLowerCase() || '';
+    const tagLower = item.tag?.toLowerCase() || '';
+
+    const isFeatured = tagLower.includes('keynote') || tagLower.includes('closing') || titleLower.includes('keynote') || titleLower.includes('closing') || titleLower.includes('remarks') || titleLower.includes('remarks');
+    const isBreak = tagLower.includes('break') || tagLower.includes('tea') || tagLower.includes('lunch') || tagLower.includes('coffee') ||
+                    titleLower.includes('break') || titleLower.includes('tea') || titleLower.includes('lunch') || titleLower.includes('coffee');
+
     const rowClass   = `timeline-row reveal${isFeatured ? ' featured' : ''}${isBreak ? ' break' : ''}`;
+    const cleanTag = item.tag ? item.tag.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+    const tagClass = `tag${cleanTag ? ' tag-' + cleanTag : ''}`;
 
     return `
     <div class="${rowClass}">
       <div class="timeline-time">${escapeHtml(item.time_slot || item.time)}</div>
       <div class="timeline-content">
-        <span class="tag">${escapeHtml(item.tag)}</span>
+        <span class="${tagClass}" style="${item.tag ? '' : 'display:none;'}">${escapeHtml(item.tag)}</span>
         <h4>${parseAccent(item.title)}</h4>
+        ${item.speaker_name ? `<div class="timeline-speaker">By <strong>${escapeHtml(item.speaker_name)}</strong></div>` : ''}
         <p>${escapeHtml(item.desc || '')}</p>
       </div>
     </div>`;

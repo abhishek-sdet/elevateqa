@@ -265,7 +265,16 @@ function syncEverything() {
         const img = document.getElementById(`strip-img-${n}`);
         const cap = document.getElementById(`strip-cap-${n}`);
         if (img && item.img) img.src = item.img;
-        if (cap && item.cap) cap.textContent = item.cap;
+        if (cap) {
+          const wrapper = cap.closest('.caption');
+          if (!item.cap || item.cap.trim() === '') {
+            cap.textContent = '';
+            if (wrapper) wrapper.style.display = 'none';
+          } else {
+            cap.textContent = item.cap;
+            if (wrapper) wrapper.style.display = '';
+          }
+        }
       });
     }
   }

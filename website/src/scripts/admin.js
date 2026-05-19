@@ -22,10 +22,10 @@ const DEFAULT_SITE_CONTENT = {
   manifestoPill: "Why now",
   manifestoAside: "A note from the <br>founder.",
   manifestoLines: [
-    "Everyone is talking about AI in quality engineering. <em>Few are showing the proof.</em>",
-    "We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know <span class=\"highlight\">what actually shipped to production</span> and held up.",
+    "Everyone is talking about AI in quality engineering. *Few are showing the proof.*",
+    "We've watched the hype cycle. We've sat through the same demos. We know what an AI-generated test looks like — and we know ==what actually shipped to production== and held up.",
     "Elevate QA exists for the second conversation. The harder one. The one where engineers, leaders, and practitioners put real work on the table — what they tried, what broke, what changed the math.",
-    "No vendor pitches. No abstract theory. <em>The proof of value, or it didn't happen.</em>"
+    "No vendor pitches. No abstract theory. *The proof of value, or it didn't happen.*"
   ],
 
   // WHY NOW / MATURITY

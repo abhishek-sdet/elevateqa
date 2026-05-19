@@ -15,7 +15,7 @@ window.escapeHtml = function(value) {
 };
 
 // ─── MOBILE: SIDEBAR HAMBURGER TOGGLE ─────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+const startSidebarToggle = () => {
   const toggle = document.getElementById('sidebar-toggle');
   const sidebar = document.getElementById('admin-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
@@ -37,7 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.matchMedia('(max-width: 900px)').matches) setOpen(false);
     });
   });
-});
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startSidebarToggle);
+} else {
+  startSidebarToggle();
+}
+
 
 // ─── PATCH showSection TO SET aria-current ────────────────────────────────────
 (function wrapShowSection() {

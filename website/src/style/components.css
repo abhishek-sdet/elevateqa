@@ -5,12 +5,12 @@
   background: var(--bg);
   color: var(--accent);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px; /* INCREASED */
   font-weight: 500;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  padding: 6px 0;
-  z-index: 100;
+  padding: 8px 0; /* INCREASED */
+  z-index: 120;
   overflow: hidden;
   white-space: nowrap;
   border-bottom: 1px solid var(--line);
@@ -24,7 +24,7 @@
 /* NAV */
 nav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 22px; left: 0; right: 0;
   z-index: 110; 
   display: flex;
   justify-content: space-between;
@@ -35,11 +35,24 @@ nav {
 }
 
 nav.scrolled {
-  background: rgba(5, 5, 8, 0.8) !important;
-  backdrop-filter: var(--glass-blur);
+  background: transparent !important;
+  backdrop-filter: none;
   padding: 12px var(--pad-x);
   top: 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: none;
+}
+
+nav::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: 0; right: 0; bottom: -80px;
+  background: linear-gradient(to bottom, rgba(5,5,8,0.9) 30%, rgba(5,5,8,0.5) 70%, transparent 100%);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .logo {
@@ -55,16 +68,16 @@ nav.scrolled {
   display: block;
 }
 #site-logo-img {
-  height: 96px; /* Expanded for luxury brand prominence */
+  height: 112px; /* INCREASED */
   width: auto;
   transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 nav.scrolled #site-logo-img {
-  height: 64px; /* Balanced sleek scrolled size */
+  height: 76px; /* INCREASED */
 }
 #footer-logo-img {
-  height: clamp(80px, 9vw, 130px); /* Enhanced standout presentation in the footer */
+  height: clamp(90px, 10vw, 150px); /* INCREASED */
   width: auto;
 }
 .brand-top {
@@ -148,9 +161,14 @@ nav.scrolled #site-logo-img {
 .timeline-row.break::before { background: var(--accent-3); width: 12px; height: 12px; left: 74px; }
 .timeline-time { font-family: var(--mono); font-size: 14px; color: var(--ink-dim); letter-spacing: 0.05em; padding-top: 4px; }
 .timeline-content { padding-left: 40px; }
-.timeline-content .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 100px; margin-bottom: 12px; }
-.timeline-row.featured .timeline-content .tag { color: var(--accent-2); border-color: var(--accent-2); }
-.timeline-row.break .timeline-content .tag { color: var(--accent-3); border-color: var(--accent-3); }
+.timeline-content .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 100px; margin-bottom: 12px; transition: var(--transition-smooth); }
+.timeline-content .tag.tag-opens { color: var(--accent); border-color: var(--accent); }
+.timeline-content .tag.tag-opening { color: var(--accent-4); border-color: var(--accent-4); }
+.timeline-content .tag.tag-keynote { color: var(--accent-2); border-color: var(--accent-2); }
+.timeline-content .tag.tag-talk { color: rgba(255, 255, 255, 0.65); border-color: rgba(255, 255, 255, 0.2); }
+.timeline-content .tag.tag-panel { color: #d463ff; border-color: #d463ff; }
+.timeline-content .tag.tag-break { color: var(--accent-3); border-color: var(--accent-3); }
+.timeline-content .tag.tag-closing { color: var(--accent-2); border-color: var(--accent-2); }
 .timeline-content h4 { font-family: var(--display); font-size: clamp(22px, 2.2vw, 30px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px; }
 .timeline-content h4 em { font-style: italic; }
 .timeline-content p { font-size: 14px; color: var(--ink-dim); line-height: 1.55; max-width: 600px; }
@@ -184,9 +202,9 @@ nav.scrolled #site-logo-img {
 
 @media (max-width: 768px) {
   .ticker {
-    font-size: 8px;
-    padding: 4px 0;
-    letter-spacing: 0.25em;
+    font-size: 11px;
+    padding: 8px 0;
+    letter-spacing: 0.2em;
     text-align: center;
   }
   
@@ -227,15 +245,15 @@ nav.scrolled #site-logo-img {
     position: relative;
     z-index: 1001;
     background: var(--bg-2);
-    width: 52px;
-    height: 52px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--line-strong);
     transition: var(--transition-smooth);
   }
-  .menu-toggle span { width: 22px; }
+  .menu-toggle span { width: 20px; }
   .menu-toggle.open { background: var(--accent); border-color: var(--accent); }
   .menu-toggle.open span { background: #000; }
   
@@ -245,8 +263,9 @@ nav.scrolled #site-logo-img {
   }
   nav.scrolled {
     padding: 12px var(--pad-mobile);
-    background: rgba(5, 5, 8, 0.95) !important;
-    backdrop-filter: blur(20px);
+    background: transparent !important;
+    backdrop-filter: none;
+    border-bottom: none;
   }
 }
 
@@ -300,7 +319,7 @@ nav.scrolled #site-logo-img {
 
 @media (max-width: 600px) {
   .btn { padding: 14px 24px; font-size: 13px; }
-  #site-logo-img { height: 42px; }
+  #site-logo-img { height: 56px; }
 }
 
 /* CARDS */

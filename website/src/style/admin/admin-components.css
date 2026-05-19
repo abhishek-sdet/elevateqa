@@ -292,3 +292,104 @@ tr:last-child td { border-bottom: none; }
   }
   .toast { max-width: none; min-width: 0; }
 }
+
+/* AGENDA EDITOR ENHANCEMENTS */
+.agenda-admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+.agenda-item-index {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+}
+.agenda-item-index .index-num {
+  font-weight: 600;
+  color: var(--ink-deep);
+}
+.agenda-item-index .index-badge {
+  background: var(--bg-3);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  border: 1px solid var(--line-strong);
+  font-size: 10px;
+}
+.agenda-card-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+}
+@media (max-width: 900px) {
+  .agenda-card-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+.agenda-col-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-right: 1px solid var(--line);
+  padding-right: 32px;
+}
+@media (max-width: 900px) {
+  .agenda-col-meta {
+    border-right: none;
+    padding-right: 0;
+  }
+}
+.agenda-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Accent borders for dynamic items */
+.dynamic-item.border-opens { border-left: 4px solid var(--accent) !important; }
+.dynamic-item.border-opening { border-left: 4px solid var(--accent-4) !important; }
+.dynamic-item.border-keynote { border-left: 4px solid var(--accent-2) !important; }
+.dynamic-item.border-talk { border-left: 4px solid rgba(255, 255, 255, 0.3) !important; }
+.dynamic-item.border-panel { border-left: 4px solid #d463ff !important; }
+.dynamic-item.border-break { border-left: 4px solid var(--accent-3) !important; }
+.dynamic-item.border-closing { border-left: 4px solid var(--accent-2) !important; }
+.dynamic-item.border-custom { border-left: 4px solid var(--accent-4) !important; }
+
+/* Custom select dropdown style */
+.a-tag-select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  color: var(--ink);
+  border-radius: 12px;
+  font-family: var(--body);
+  font-size: 14px;
+  transition: 0.3s ease;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px;
+  padding-right: 40px;
+}
+.a-tag-select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent), 0 5px 15px rgba(0,0,0,0.2);
+}
+.a-tag-select option {
+  background: var(--bg-2);
+  color: var(--ink);
+}
+

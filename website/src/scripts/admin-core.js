@@ -110,7 +110,7 @@ window.showConfirm = (message, title = 'Are you sure?', btnText = 'PROCEED') => 
   });
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
+const initAdmin = async () => {
   console.log('[ElevateQA] Admin Core Initialized (Supabase Mode)');
   const data = await loadAllData();
   if (data) {
@@ -181,7 +181,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => preloader.remove(), 600);
     }
   }, 400);
-});
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdmin);
+} else {
+  initAdmin();
+}
+
 
 window.showPass = (id, name, email) => {
   const modal = document.getElementById('qr-modal');
@@ -652,7 +659,7 @@ window.saveAll = async () => {
   btn.disabled = true;
 
   try {
-    const getVal = (id) => { const el = document.getElementById(id); return el ? (el.value.trim() || el.placeholder || '') : ''; };
+    const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
 
     await saveSiteContent({
       heroHeadline: getVal('hero-headline'),
@@ -798,18 +805,22 @@ window.saveAll = async () => {
     }
 
     const agendaElements = Array.from(document.querySelectorAll('#agenda-list .dynamic-item'));
-    const agendaData = agendaElements.map((el, i) => ({
-      el: el,
-      data: {
-        id: el.getAttribute('data-id') || undefined,
-        time: el.querySelector('.a-time').value,
-        tag: el.querySelector('.a-tag').value,
-        title: el.querySelector('.a-title').value,
-        speaker_name: el.querySelector('.a-speaker').value,
-        desc: el.querySelector('.a-desc').value,
-        display_order: i
-      }
-    }));
+    const agendaData = agendaElements.map((el, i) => {
+      const selectVal = el.querySelector('.a-tag-select')?.value || 'Talk';
+      const tag = selectVal === 'Custom' ? (el.querySelector('.a-tag-custom')?.value || '') : selectVal;
+      return {
+        el: el,
+        data: {
+          id: el.getAttribute('data-id') || undefined,
+          time: el.querySelector('.a-time').value,
+          tag: tag,
+          title: el.querySelector('.a-title').value,
+          speaker_name: el.querySelector('.a-speaker').value,
+          desc: el.querySelector('.a-desc').value,
+          display_order: i
+        }
+      };
+    });
     await syncTableDeletes('agenda', agendaData.map(a => a.data.id));
     for (const a of agendaData) {
       const newId = await saveAgendaItem(a.data);
@@ -1309,23 +1320,113 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
   container.appendChild(div);
 };
 
+window.updateAgendaIndexes = () => {
+  const items = document.querySelectorAll('#agenda-list .dynamic-item');
+  items.forEach((item, idx) => {
+    const badge = item.querySelector('.index-badge');
+    if (badge) badge.textContent = `${idx + 1}`;
+  });
+};
+
+window.handleAgendaTagChange = (selectEl) => {
+  const item = selectEl.closest('.dynamic-item');
+  const customInput = item.querySelector('.a-tag-custom');
+  const tagVal = selectEl.value;
+  
+  if (tagVal === 'Custom') {
+    customInput.style.display = 'block';
+    customInput.focus();
+  } else {
+    customInput.style.display = 'none';
+  }
+  
+  // Remove existing border-* classes
+  const classes = Array.from(item.classList);
+  classes.forEach(c => {
+    if (c.startsWith('border-')) item.classList.remove(c);
+  });
+  
+  const targetTag = tagVal === 'Custom' ? (customInput.value || 'Custom') : tagVal;
+  const cleanTag = targetTag.toLowerCase().replace(/[^a-z0-9]/g, '');
+  item.classList.add(`border-${cleanTag}`);
+};
+
 window.addAgendaItem = (data = { id: null, time: '', tag: '', title: '', desc: '', speaker_name: '' }) => {
   const container = document.getElementById('agenda-list');
   if (!container) return;
   const div = document.createElement('div');
   div.className = 'dynamic-item';
   div.setAttribute('data-id', data.id || '');
+  
+  const tagsList = ['Opens', 'Opening', 'Keynote', 'Talk', 'Panel', 'Break', 'Closing'];
+  const tagVal = data.tag || 'Talk';
+  const isCustom = !tagsList.includes(tagVal) && tagVal !== '';
+  
+  const cleanTag = (isCustom ? 'custom' : tagVal).toLowerCase().replace(/[^a-z0-9]/g, '');
+  div.classList.add(`border-${cleanTag}`);
+
+  const optionsHtml = tagsList.map(t => 
+    `<option value="${t}" ${tagVal === t ? 'selected' : ''}>${t}</option>`
+  ).join('') + `<option value="Custom" ${isCustom ? 'selected' : ''}>Custom...</option>`;
+
   div.innerHTML = `
-    <div class="form-grid-2">
-      <div class="form-group"><label>Time</label><input type="text" class="a-time" value="${data.time || data.time_slot || ''}" placeholder="09:00"></div>
-      <div class="form-group"><label>Tag</label><input type="text" class="a-tag" value="${data.tag || ''}" placeholder="Keynote"></div>
+    <div class="agenda-admin-header">
+      <div class="agenda-item-index">
+        <span class="index-num">SESSION</span>
+        <span class="index-badge">#</span>
+      </div>
+      <button class="btn-del" onclick="this.closest('.dynamic-item').remove(); window.updateAgendaIndexes();" title="Delete Session">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      </button>
     </div>
-    <div class="form-group"><label>Topic Title</label><input type="text" class="a-title" value="${data.title || ''}" placeholder="The Proof of Value"></div>
-    <div class="form-group"><label>Speaker Name</label><input type="text" class="a-speaker" value="${data.speaker_name || ''}" placeholder="John Doe"></div>
-    <div class="form-group"><label>Description</label><textarea class="a-desc" rows="2">${data.desc || ''}</textarea></div>
-    <button class="btn-remove" onclick="this.parentElement.remove()">&times;</button>
+    
+    <div class="agenda-card-grid">
+      <div class="agenda-col-meta">
+        <div class="form-group">
+          <label>Time Slot</label>
+          <input type="text" class="a-time" value="${data.time || data.time_slot || ''}" placeholder="09:00 – 09:30">
+        </div>
+        
+        <div class="form-group">
+          <label>Category Tag</label>
+          <select class="a-tag-select" onchange="window.handleAgendaTagChange(this)">
+            ${optionsHtml}
+          </select>
+          <input type="text" class="a-tag-custom" value="${isCustom ? tagVal : ''}" placeholder="Enter Custom Tag" style="margin-top: 10px; display: ${isCustom ? 'block' : 'none'};">
+        </div>
+        
+        <div class="form-group">
+          <label>Speaker Name</label>
+          <input type="text" class="a-speaker" value="${data.speaker_name || ''}" placeholder="John Doe (Optional)">
+        </div>
+      </div>
+      
+      <div class="agenda-col-main">
+        <div class="form-group">
+          <label>Topic Title</label>
+          <input type="text" class="a-title" value="${data.title || ''}" placeholder="The Proof of Value">
+        </div>
+        
+        <div class="form-group">
+          <label>Session Description</label>
+          <textarea class="a-desc" rows="5" placeholder="Session details and highlights...">${data.desc || ''}</textarea>
+        </div>
+      </div>
+    </div>
   `;
   container.appendChild(div);
+
+  const customInput = div.querySelector('.a-tag-custom');
+  customInput.addEventListener('input', () => {
+    const classes = Array.from(div.classList);
+    classes.forEach(c => {
+      if (c.startsWith('border-')) div.classList.remove(c);
+    });
+    const cleanTag = customInput.value.toLowerCase().replace(/[^a-z0-9]/g, '') || 'custom';
+    div.classList.add(`border-${cleanTag}`);
+  });
+
+  window.updateAgendaIndexes();
 };
 
 window.addMaturityStage = (data = { id: null, label: '', name: '', pct: '', desc: '' }) => {

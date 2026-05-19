@@ -4,6 +4,7 @@ import puppeteer from 'puppeteer';
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });
+  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
   await page.goto('http://localhost:5174', { waitUntil: 'networkidle2' });
   
   await page.evaluate(() => {
@@ -13,7 +14,7 @@ import puppeteer from 'puppeteer';
   
   // Scroll to Experience section
   await page.evaluate(() => {
-    const el = document.getElementById('experience');
+    const el = document.querySelector('.image-strip');
     if (el) el.scrollIntoView();
   });
   
