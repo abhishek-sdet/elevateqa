@@ -265,7 +265,9 @@ function syncEverything() {
     const navItems = ['manifesto', 'maturity', 'experience', 'agenda', 'speakers', 'join'];
     navItems.forEach(item => {
       const key = 'nav' + item.charAt(0).toUpperCase() + item.slice(1);
-      setHtml('nav-' + item, site[key]);
+      if (site[key] && site[key].trim() !== '') {
+        setHtml('nav-' + item, site[key]);
+      }
     });
 
     // Stats Bar
@@ -359,7 +361,7 @@ function syncEverything() {
   renderSpeakers(speakers);
 }
 
-function initNav() {
+export function initNav() {
   const menuBtn = document.getElementById('menu-toggle');
   const navLinks = document.getElementById('nav-links');
   if (!menuBtn || !navLinks) return;

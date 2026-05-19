@@ -220,7 +220,7 @@ nav.scrolled #site-logo-img {
     line-height: 1;
     text-align: center;
   }
-  .nav-links.active a { opacity: 1; transform: translateY(0); }
+  .nav-links.active a { opacity: 1 !important; transform: translateY(0) !important; }
   
   .menu-toggle {
     display: flex;

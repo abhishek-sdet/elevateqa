@@ -1,7 +1,7 @@
 import { initCloudSync } from './main-sync.js';
 import { supabase } from './supabase-config.js';
 import { sendAttendeeEmail } from './email-service.js';
-import { DEFAULT_MATURITY, DEFAULT_PILLARS, DEFAULT_AGENDA, DEFAULT_SPEAKERS } from './main-ui.js';
+import { DEFAULT_MATURITY, DEFAULT_PILLARS, DEFAULT_AGENDA, DEFAULT_SPEAKERS, initNav } from './main-ui.js';
 
 
 // ─── UTIL: HTML ESCAPE ──────────────────────────────────────────────────────
@@ -239,7 +239,9 @@ window.syncEverything = () => {
     const navs = ['manifesto', 'maturity', 'experience', 'agenda', 'speakers', 'join'];
     navs.forEach(n => {
       const key = 'nav' + n.charAt(0).toUpperCase() + n.slice(1);
-      setHtml(`nav-${n}`, site[key]);
+      if (site[key] && site[key].trim() !== '') {
+        setHtml(`nav-${n}`, site[key]);
+      }
     });
   }
 
@@ -511,6 +513,7 @@ window.shareOnLinkedIn = function() {
 document.addEventListener('DOMContentLoaded', () => {
   initAnimations();
   initCursor();
+  initNav(); // ← explicit call ensures hamburger works regardless of module load order
   
   // Helper to safely dismiss the preloader
   const dismissPreloader = () => {

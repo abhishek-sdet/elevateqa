@@ -314,13 +314,16 @@ export async function saveSpeaker(s) {
   let res;
   if (validId) {
     dbData.id = validId;
-    res = await supabase.from('speakers').upsert([dbData]);
+    res = await supabase.from('speakers').upsert([dbData]).select('id');
   } else {
-    res = await supabase.from('speakers').insert([dbData]);
+    res = await supabase.from('speakers').insert([dbData]).select('id');
   }
   
-  if (res.error) console.error('[Supabase] Speaker Save Error:', res.error);
-  return !res.error;
+  if (res.error) {
+    console.error('[Supabase] Speaker Save Error:', res.error);
+    return null;
+  }
+  return res.data && res.data[0] ? res.data[0].id : null;
 }
 
 export async function saveAgendaItem(a) {
@@ -335,11 +338,16 @@ export async function saveAgendaItem(a) {
   let res;
   if (validId) {
     dbData.id = validId;
-    res = await supabase.from('agenda').upsert([dbData]);
+    res = await supabase.from('agenda').upsert([dbData]).select('id');
   } else {
-    res = await supabase.from('agenda').insert([dbData]);
+    res = await supabase.from('agenda').insert([dbData]).select('id');
   }
-  return !res.error;
+  
+  if (res.error) {
+    console.error('[Supabase] Agenda Save Error:', res.error);
+    return null;
+  }
+  return res.data && res.data[0] ? res.data[0].id : null;
 }
 
 export async function saveMaturityStage(item) {
@@ -353,13 +361,16 @@ export async function saveMaturityStage(item) {
 
   let res;
   if (validId) {
-    dbData.id = validId; // Note: maturity_stages id is integer, but string integers are parsed by Postgres
-    res = await supabase.from('maturity_stages').upsert([dbData]);
+    dbData.id = validId;
+    res = await supabase.from('maturity_stages').upsert([dbData]).select('id');
   } else {
-    res = await supabase.from('maturity_stages').insert([dbData]);
+    res = await supabase.from('maturity_stages').insert([dbData]).select('id');
   }
-  if (res.error && res.error.code === '42P01') return true;
-  return !res.error;
+  if (res.error) {
+    console.error('[Supabase] Maturity Stage Save Error:', res.error);
+    return null;
+  }
+  return res.data && res.data[0] ? res.data[0].id : null;
 }
 
 export async function savePillar(item) {
@@ -373,12 +384,15 @@ export async function savePillar(item) {
   let res;
   if (validId) {
     dbData.id = validId;
-    res = await supabase.from('pillars').upsert([dbData]);
+    res = await supabase.from('pillars').upsert([dbData]).select('id');
   } else {
-    res = await supabase.from('pillars').insert([dbData]);
+    res = await supabase.from('pillars').insert([dbData]).select('id');
   }
-  if (res.error && res.error.code === '42P01') return true;
-  return !res.error;
+  if (res.error) {
+    console.error('[Supabase] Pillar Save Error:', res.error);
+    return null;
+  }
+  return res.data && res.data[0] ? res.data[0].id : null;
 }
 
 export async function deleteItem(table, id) {

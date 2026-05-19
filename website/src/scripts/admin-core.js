@@ -414,12 +414,12 @@ function populateUI(data) {
   setVal('footer-copyright', sc.footerCopyright);
   setVal('footer-email', sc.footerEmail);
 
-  setVal('nav-manifesto', sc.navManifesto);
-  setVal('nav-maturity', sc.navMaturity);
-  setVal('nav-experience', sc.navExperience);
-  setVal('nav-agenda', sc.navAgenda);
-  setVal('nav-speakers', sc.navSpeakers);
-  setVal('nav-join', sc.navJoin);
+  setVal('nav-manifesto-input', sc.navManifesto);
+  setVal('nav-maturity-input', sc.navMaturity);
+  setVal('nav-experience-input', sc.navExperience);
+  setVal('nav-agenda-input', sc.navAgenda);
+  setVal('nav-speakers-input', sc.navSpeakers);
+  setVal('nav-join-input', sc.navJoin);
 
   setVal('modal-price-scarcity', sc.modalPriceScarcity);
   setVal('modal-price-old', sc.modalPriceOld);
@@ -722,12 +722,12 @@ window.saveAll = async () => {
       footerCopyright: getVal('footer-copyright'),
       footerEmail: getVal('footer-email'),
 
-      navManifesto: getVal('nav-manifesto'),
-      navMaturity: getVal('nav-maturity'),
-      navExperience: getVal('nav-experience'),
-      navAgenda: getVal('nav-agenda'),
-      navSpeakers: getVal('nav-speakers'),
-      navJoin: getVal('nav-join'),
+      navManifesto: getVal('nav-manifesto-input'),
+      navMaturity: getVal('nav-maturity-input'),
+      navExperience: getVal('nav-experience-input'),
+      navAgenda: getVal('nav-agenda-input'),
+      navSpeakers: getVal('nav-speakers-input'),
+      navJoin: getVal('nav-join-input'),
 
       modalPriceScarcity: getVal('modal-price-scarcity'),
       modalPriceOld: getVal('modal-price-old'),
@@ -774,51 +774,87 @@ window.saveAll = async () => {
       if (finalImg.startsWith('data:image')) { finalImg = ''; }
 
       return {
-        id: el.getAttribute('data-id') || undefined,
-        name: el.querySelector('.s-name').value,
-        role: el.querySelector('.s-role').value,
-        title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '',
-        status: el.querySelector('.s-status').value,
-        img: finalImg,
-        display_order: i
+        el: el,
+        data: {
+          id: el.getAttribute('data-id') || undefined,
+          name: el.querySelector('.s-name').value,
+          role: el.querySelector('.s-role').value,
+          title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '',
+          status: el.querySelector('.s-status').value,
+          img: finalImg,
+          display_order: i
+        }
       };
     });
     
-    const speakers = await Promise.all(speakerPromises);
-    await syncTableDeletes('speakers', speakers.map(s => s.id));
-    for (const s of speakers) await saveSpeaker(s);
+    const speakersWithEl = await Promise.all(speakerPromises);
+    const speakersData = speakersWithEl.map(s => s.data);
+    await syncTableDeletes('speakers', speakersData.map(s => s.id));
+    for (const s of speakersWithEl) {
+      const newId = await saveSpeaker(s.data);
+      if (newId) {
+        s.el.setAttribute('data-id', newId);
+      }
+    }
 
-    const agenda = Array.from(document.querySelectorAll('#agenda-list .dynamic-item')).map((el, i) => ({
-      id: el.getAttribute('data-id') || undefined,
-      time: el.querySelector('.a-time').value,
-      tag: el.querySelector('.a-tag').value,
-      title: el.querySelector('.a-title').value,
-      speaker_name: el.querySelector('.a-speaker').value,
-      desc: el.querySelector('.a-desc').value,
-      display_order: i
+    const agendaElements = Array.from(document.querySelectorAll('#agenda-list .dynamic-item'));
+    const agendaData = agendaElements.map((el, i) => ({
+      el: el,
+      data: {
+        id: el.getAttribute('data-id') || undefined,
+        time: el.querySelector('.a-time').value,
+        tag: el.querySelector('.a-tag').value,
+        title: el.querySelector('.a-title').value,
+        speaker_name: el.querySelector('.a-speaker').value,
+        desc: el.querySelector('.a-desc').value,
+        display_order: i
+      }
     }));
-    await syncTableDeletes('agenda', agenda.map(a => a.id));
-    for (const a of agenda) await saveAgendaItem(a);
+    await syncTableDeletes('agenda', agendaData.map(a => a.data.id));
+    for (const a of agendaData) {
+      const newId = await saveAgendaItem(a.data);
+      if (newId) {
+        a.el.setAttribute('data-id', newId);
+      }
+    }
 
-    const maturity = Array.from(document.querySelectorAll('#maturity-stages-admin .dynamic-item')).map((el, i) => ({
-      id: el.getAttribute('data-id') || undefined,
-      label: el.querySelector('.mat-label').value,
-      name: el.querySelector('.mat-name').value,
-      pct: el.querySelector('.mat-pct').value,
-      desc: el.querySelector('.mat-desc').value,
-      display_order: i
+    const maturityElements = Array.from(document.querySelectorAll('#maturity-stages-admin .dynamic-item'));
+    const maturityData = maturityElements.map((el, i) => ({
+      el: el,
+      data: {
+        id: el.getAttribute('data-id') || undefined,
+        label: el.querySelector('.mat-label').value,
+        name: el.querySelector('.mat-name').value,
+        pct: el.querySelector('.mat-pct').value,
+        desc: el.querySelector('.mat-desc').value,
+        display_order: i
+      }
     }));
-    await syncTableDeletes('maturity_stages', maturity.map(m => m.id));
-    for (const m of maturity) await saveMaturityStage(m);
+    await syncTableDeletes('maturity_stages', maturityData.map(m => m.data.id));
+    for (const m of maturityData) {
+      const newId = await saveMaturityStage(m.data);
+      if (newId) {
+        m.el.setAttribute('data-id', newId);
+      }
+    }
 
-    const pillars = Array.from(document.querySelectorAll('#pillars-admin .dynamic-item')).map((el, i) => ({
-      id: el.getAttribute('data-id') || undefined,
-      title: el.querySelector('.pil-title').value,
-      desc: el.querySelector('.pil-desc').value,
-      display_order: i
+    const pillarsElements = Array.from(document.querySelectorAll('#pillars-admin .dynamic-item'));
+    const pillarsData = pillarsElements.map((el, i) => ({
+      el: el,
+      data: {
+        id: el.getAttribute('data-id') || undefined,
+        title: el.querySelector('.pil-title').value,
+        desc: el.querySelector('.pil-desc').value,
+        display_order: i
+      }
     }));
-    await syncTableDeletes('pillars', pillars.map(p => p.id));
-    for (const p of pillars) await savePillar(p);
+    await syncTableDeletes('pillars', pillarsData.map(p => p.data.id));
+    for (const p of pillarsData) {
+      const newId = await savePillar(p.data);
+      if (newId) {
+        p.el.setAttribute('data-id', newId);
+      }
+    }
 
     btn.innerHTML = originalText;
     btn.disabled = false;
@@ -1238,7 +1274,7 @@ window.handleBackspace = (el, e) => {
   }
 };
 
-window.addSpeakerItem = (data = { id: null, name: '', role: '', img: '', status: '' }) => {
+window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: '', status: '' }) => {
   const container = document.getElementById('speaker-list');
   if (!container) return;
   const div = document.createElement('div');
@@ -1264,7 +1300,8 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', img: '', status:
       </div>
       <div class="speaker-info-column">
         <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
-        <div class="form-group"><label>Role / Title</label><input type="text" class="s-role" value="${data.role}" placeholder="e.g. KEYNOTE"></div>
+        <div class="form-group"><label>Role Tag (e.g. KEYNOTE)</label><input type="text" class="s-role" value="${data.role}" placeholder="e.g. KEYNOTE"></div>
+        <div class="form-group"><label>Designation (e.g. Lead Engineer at Microsoft)</label><input type="text" class="s-title" value="${data.title || ''}" placeholder="e.g. Director of QE"></div>
         <div class="form-group"><label>Status Label</label><input type="text" class="s-status" value="${data.status || 'CONFIRMED'}" placeholder="e.g. KEYNOTE SPEAKER"></div>
       </div>
     </div>
