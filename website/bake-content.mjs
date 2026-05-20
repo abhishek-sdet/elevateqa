@@ -158,7 +158,7 @@ async function bakeContent() {
     `  try {`,
     `    var d=JSON.parse(${escapedData});`,
     `    for(var k in d){`,
-    `      if(Object.prototype.hasOwnProperty.call(d,k) && !localStorage.getItem(k)){`,
+    `      if(Object.prototype.hasOwnProperty.call(d,k)){`,
     `        localStorage.setItem(k, d[k]);`,
     `      }`,
     `    }`,
