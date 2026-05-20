@@ -101,13 +101,42 @@ function initAnimations() {
 function initCursor() {
   const cursor = document.querySelector('.cursor-branded');
   if (!cursor) return;
+  
+  let targetX = window.innerWidth / 2;
+  let targetY = window.innerHeight / 2;
+  let currentX = targetX;
+  let currentY = targetY;
+  let targetRot = 0;
+  let currentRot = 0;
+  let isMoving = false;
+  
   document.addEventListener('mousemove', (e) => {
-    cursor.style.left = e.clientX + 'px';
-    cursor.style.top = e.clientY + 'px';
+    targetX = e.clientX;
+    targetY = e.clientY;
     const dx = e.movementX || 0;
-    const rotation = Math.min(Math.max(dx * 0.5, -15), 15);
-    cursor.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+    targetRot = Math.min(Math.max(dx * 0.5, -15), 15);
+    isMoving = true;
   });
+  
+  function render() {
+    // Smooth interpolation (Lerp)
+    currentX += (targetX - currentX) * 0.2;
+    currentY += (targetY - currentY) * 0.2;
+    currentRot += (targetRot - currentRot) * 0.15;
+    
+    // Hardware accelerated translation
+    cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%) rotate(${currentRot}deg)`;
+    
+    // Smoothly decay rotation back to 0 when stopped
+    if (!isMoving) targetRot *= 0.9;
+    isMoving = false;
+    
+    requestAnimationFrame(render);
+  }
+  
+  // Start loop
+  requestAnimationFrame(render);
+  
   document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
   document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
 }

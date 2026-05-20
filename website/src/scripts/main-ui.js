@@ -177,7 +177,7 @@ function syncEverything() {
 
   const setHtml = (id, val) => {
     const el = document.getElementById(id);
-    if (el && val) el.innerHTML = parseAccent(val);
+    if (el && val != null) el.innerHTML = parseAccent(val);
   };
 
   if (site) {
@@ -215,13 +215,12 @@ function syncEverything() {
       if (ctaBtn) ctaBtn.innerHTML = `${ctaText} <span class="arrow">→</span>`;
     }
     
-    if (site.heroHeadline) {
+    if (site.heroHeadline != null) {
       const titleEl = document.getElementById('hero-title');
       if (titleEl) {
-        // Only render (and animate) the hero title ONCE — the first time.
-        // Subsequent syncEverything() calls skip innerHTML rewrite to prevent
-        // the CSS `rise` animation from re-triggering (double-animation bug).
-        if (!titleEl.dataset.animated) {
+        if (site.heroHeadline === '') {
+           titleEl.innerHTML = '';
+        } else if (!titleEl.dataset.animated) {
           titleEl.innerHTML = site.heroHeadline.split(/[|\n]/).filter(l => l.trim()).map(line => {
             return `<span class="title-line"><span>${parseAccent(line.trim())}</span></span>`;
           }).join('');
@@ -232,7 +231,11 @@ function syncEverything() {
 
     const setSplitHtml = (id, val) => {
       const el = document.getElementById(id);
-      if (!el || !val) return;
+      if (!el || val == null) return;
+      if (val === '') {
+        el.innerHTML = '';
+        return;
+      }
       if (val.includes(',')) {
         const parts = val.split(',');
         el.innerHTML = `${parts[0]}, <em>${parts.slice(1).join(',').trim()}</em>`;
