@@ -17,6 +17,7 @@
 }
 .ticker-track { display: inline-block; animation: ticker 50s linear infinite; padding-left: 100%; }
 .ticker-track span { margin-right: 60px; }
+.ticker-track span:empty { display: none; }
 .ticker-track span::before { content: '◆ '; opacity: 0.5; }
 .ticker .accent { color: var(--bg) !important; font-style: italic; font-weight: 700; }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-100%); } }
