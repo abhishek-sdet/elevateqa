@@ -306,7 +306,7 @@ function syncEverything() {
     setHtml('footer-edition',  site.footerEdition);
 
     // Ticker
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 9; i++) {
       setHtml(`ticker-${i}`, site[`ticker${i}`]);
     }
 
