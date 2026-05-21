@@ -242,12 +242,12 @@ section#coming { background: #000000 !important; color: #ffffff !important; bord
     margin-bottom: 0; 
     display: block;
   }
-  .founder-photo-wrapper { display: block; position: relative; width: 100%; }
+  .founder-photo-wrapper { display: block; position: relative; width: 100%; max-width: 320px; margin: 0 auto; }
   .founder-photo-wrapper img { aspect-ratio: 4 / 5; height: auto; object-position: center top; }
   
   #manifesto .section-head > div {
     width: 100%;
-    text-align: right;
+    text-align: left;
   }
   
   .proof-bar { 
