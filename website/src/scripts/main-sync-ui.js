@@ -296,7 +296,7 @@ window.syncEverything = () => {
           <div class="speaker-card speaker-cta-card reveal">
             <div class="silhouette" aria-hidden="true">+</div>
             <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
-            <div class="pitch">Have a story <em>worth telling?</em><br><a href="#join">Apply to speak ></a></div>
+            <div class="pitch">Have a story <em>worth telling?</em><br><a href="javascript:void(0)" onclick="window.openSpeakFlow()">Apply to speak ></a></div>
           </div>`;
       if (grid.innerHTML !== targetHtml) grid.innerHTML = targetHtml;
     }

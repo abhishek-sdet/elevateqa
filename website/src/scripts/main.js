@@ -37,8 +37,8 @@ window.closeChooser = () => {
 window.openAttendFlow = () => { closeChooser(); setTimeout(() => window.openModal(), 120); };
 
 window.openSpeakFlow = () => {
+  window.open('https://forms.office.com/r/eNjZMN831G', '_blank');
   closeChooser();
-  setTimeout(() => {
     const modal       = document.getElementById('regModal');
     const speakerView = document.getElementById('speaker-view');
     if (!modal) return;
