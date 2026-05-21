@@ -39,16 +39,6 @@ window.openAttendFlow = () => { closeChooser(); setTimeout(() => window.openModa
 window.openSpeakFlow = () => {
   window.open('https://forms.office.com/r/eNjZMN831G', '_blank');
   closeChooser();
-    const modal       = document.getElementById('regModal');
-    const speakerView = document.getElementById('speaker-view');
-    if (!modal) return;
-    resetModalViews();
-    if (speakerView) speakerView.style.display = 'block';
-    const sForm = speakerView ? speakerView.querySelector('form') : null;
-    if (sForm) sForm.reset();
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }, 120);
 };
 
 // ── MODAL HELPERS ─────────────────────────────────────────────────────────────
