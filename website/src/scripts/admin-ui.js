@@ -442,7 +442,7 @@ window.addPillarItem = (data = { id: null, title: '', desc: '' }) => {
 export function populateUI(data) {
   const setVal = (id, val) => {
     const el = document.getElementById(id);
-    if (el) el.value = (val !== undefined && val !== null) ? val : (el.placeholder || '');
+    if (el) el.value = (val !== undefined && val !== null && val !== '') ? val : (el.placeholder || '');
   };
 
   const sc = data.site_content || {};
