@@ -188,7 +188,7 @@ window.saveAll = async () => {
 
     // Maturity stages
     const maturityData = Array.from(document.querySelectorAll('#maturity-stages-admin .dynamic-item')).map((el, i) => ({
-      el, data: { id: el.getAttribute('data-id') || undefined, label: el.querySelector('.mat-label').value, name: el.querySelector('.mat-name').value, pct: el.querySelector('.mat-pct').value, desc: el.querySelector('.mat-desc').value, display_order: i }
+      el, data: { id: el.getAttribute('data-id') || undefined, name: el.querySelector('.mat-name').value, pct: el.querySelector('.mat-pct').value, desc: el.querySelector('.mat-desc').value, display_order: i }
     }));
     await syncTableDeletes('maturity_stages', maturityData.map(m => m.data.id));
     for (const m of maturityData) { const newId = await saveMaturityStage(m.data); if (newId) m.el.setAttribute('data-id', newId); }

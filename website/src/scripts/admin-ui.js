@@ -362,20 +362,49 @@ window.addAgendaItem = (data = { id: null, time: '', tag: '', title: '', desc: '
   window.updateAgendaIndexes();
 };
 
-window.addMaturityStage = (data = { id: null, label: '', name: '', pct: '', desc: '' }) => {
+window.addMaturityStage = (data = { id: null, name: '', pct: '', desc: '' }) => {
   const container = document.getElementById('maturity-stages-admin');
   if (!container) return;
+  const stageNum = container.querySelectorAll('.dynamic-item').length + 1;
+  const COLORS = ['#ffffff', 'var(--accent-3)', 'var(--accent-2)', 'var(--accent)'];
+  const color = COLORS[stageNum - 1] || 'var(--accent)';
+  const pctNum = String(data.pct || '').replace('%','').trim() || '0';
   const div = document.createElement('div');
-  div.className = 'dynamic-item';
+  div.className = 'dynamic-item maturity-admin-card';
   div.setAttribute('data-id', data.id || '');
   div.innerHTML = `
-    <div class="form-grid-2">
-      <div class="form-group"><label>Label (e.g. STAGE 01)</label><input type="text" class="mat-label" value="${data.label || ''}" placeholder="STAGE 01"></div>
-      <div class="form-group"><label>Stage Name</label><input type="text" class="mat-name" value="${data.name}" placeholder="Manual-first"></div>
+    <div class="dynamic-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="mat-stage-badge" style="background:rgba(255,255,255,0.04);border:1px solid var(--line-strong);border-radius:8px;padding:4px 12px;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--ink-dim);">STAGE 0${stageNum}</span>
+        <span class="mat-name-preview" style="font-family:var(--display);font-size:16px;font-weight:300;color:var(--ink);">${ data.name || 'Unnamed Stage' }</span>
+      </div>
+      <button class="btn-del" onclick="this.closest('.dynamic-item').remove()" title="Delete Stage">✕</button>
     </div>
-    <div class="form-group"><label>Percentage</label><input type="text" class="mat-pct" value="${data.pct}" placeholder="25%"></div>
-    <div class="form-group"><label>Description</label><textarea class="mat-desc" rows="3">${data.desc}</textarea></div>
-    <button class="btn-remove" onclick="this.parentElement.remove()">&times;</button>
+    <div class="form-grid-2" style="margin-bottom:20px;">
+      <div class="form-group">
+        <label>Stage Name <span style="color:var(--accent);">*</span></label>
+        <input type="text" class="mat-name" value="${data.name || ''}" placeholder="e.g. Manual-first"
+          oninput="this.closest('.dynamic-item').querySelector('.mat-name-preview').textContent = this.value || 'Unnamed Stage'">
+      </div>
+      <div class="form-group">
+        <label>Progress (% of orgs) <span style="color:var(--accent);">*</span></label>
+        <input type="text" class="mat-pct" value="${data.pct || ''}" placeholder="e.g. 25%"
+          oninput="const v=this.value.replace('%','').trim();const bar=this.closest('.dynamic-item').querySelector('.mat-meter-fill');if(bar){bar.style.width=(isNaN(v)?0:Math.min(v,100))+'%';}this.closest('.dynamic-item').querySelector('.mat-pct-preview').textContent=(v||'0')+'%';">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Description <span style="color:var(--accent);">*</span></label>
+      <textarea class="mat-desc" rows="3" placeholder="What does this stage look like in practice?">${data.desc || ''}</textarea>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px 20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;color:var(--ink-dim);text-transform:uppercase;">Live Preview — Progress Meter</span>
+        <span class="mat-pct-preview" style="font-family:var(--mono);font-size:11px;color:${color};font-weight:700;">~ ${pctNum}% of orgs surveyed</span>
+      </div>
+      <div style="background:var(--bg-3);border-radius:100px;height:6px;overflow:hidden;">
+        <div class="mat-meter-fill" style="height:100%;border-radius:100px;background:${color};width:${Math.min(parseFloat(pctNum)||0,100)}%;transition:width 0.4s ease;"></div>
+      </div>
+    </div>
   `;
   container.appendChild(div);
 };
@@ -383,16 +412,31 @@ window.addMaturityStage = (data = { id: null, label: '', name: '', pct: '', desc
 window.addPillarItem = (data = { id: null, title: '', desc: '' }) => {
   const container = document.getElementById('pillars-admin');
   if (!container) return;
+  const pilNum = container.querySelectorAll('.dynamic-item').length + 1;
   const div = document.createElement('div');
-  div.className = 'dynamic-item';
+  div.className = 'dynamic-item pillar-admin-card';
   div.setAttribute('data-id', data.id || '');
   div.innerHTML = `
-    <div class="form-group"><label>Pillar Title</label><input type="text" class="pil-title" value="${data.title}" placeholder="Continuous Testing"></div>
-    <div class="form-group"><label>Pillar Description</label><textarea class="pil-desc" rows="3">${data.desc}</textarea></div>
-    <button class="btn-remove" onclick="this.parentElement.remove()">&times;</button>
+    <div class="dynamic-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-dim);border-radius:8px;padding:4px 12px;">&gt; 0${pilNum}</span>
+        <span class="pil-title-preview" style="font-family:var(--display);font-size:15px;font-weight:300;color:var(--ink);">${data.title || 'Untitled Pillar'}</span>
+      </div>
+      <button class="btn-del" onclick="this.closest('.dynamic-item').remove()" title="Delete Pillar">✕</button>
+    </div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Pillar Title <span style="color:var(--accent);">*</span></label>
+      <input type="text" class="pil-title" value="${data.title || ''}" placeholder="e.g. Continuous Testing"
+        oninput="this.closest('.dynamic-item').querySelector('.pil-title-preview').textContent = this.value || 'Untitled Pillar'">
+    </div>
+    <div class="form-group">
+      <label>Pillar Description <span style="color:var(--accent);">*</span></label>
+      <textarea class="pil-desc" rows="3" placeholder="What happens in this pillar?">${data.desc || ''}</textarea>
+    </div>
   `;
   container.appendChild(div);
 };
+
 
 // ── populateUI ───────────────────────────────────────────────────────────────
 export function populateUI(data) {
