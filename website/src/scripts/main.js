@@ -1,599 +1,376 @@
+/**
+ * ELEVATE QA 2026 — MAIN ENTRY POINT
+ * =====================================
+ * This file is now a lean orchestrator. Business logic has been extracted to:
+ *   - main-animations.js  → MagneticElement, startCountUp, initAnimations, initCursor
+ *   - main-sync-ui.js     → syncEverything() — maps LocalStorage data to DOM
+ *   - main-sync.js        → initCloudSync() — Supabase real-time connector
+ *   - main-ui.js          → initNav(), DEFAULT_* constants
+ */
 import { initCloudSync } from './main-sync.js';
 import { supabase } from './supabase-config.js';
 import { sendAttendeeEmail } from './email-service.js';
 import { DEFAULT_MATURITY, DEFAULT_PILLARS, DEFAULT_AGENDA, DEFAULT_SPEAKERS, initNav } from './main-ui.js';
+import { initAnimations, initCursor } from './main-animations.js';
+import './main-sync-ui.js'; // registers window.syncEverything
 
-
-// ─── UTIL: HTML ESCAPE ──────────────────────────────────────────────────────
+// ── UTIL: HTML ESCAPE ────────────────────────────────────────────────────────
 window.escapeHtml = window.escapeHtml || function(value) {
   if (value === null || value === undefined) return '';
   return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 
-const lerp = (a, b, n) => (1 - n) * a + n * b;
+// ── CHOOSER FLOW ──────────────────────────────────────────────────────────────
+window.openChooser = (e) => {
+  if (e) e.preventDefault();
+  const chooser = document.getElementById('chooserModal');
+  if (chooser) { chooser.classList.add('active'); document.body.style.overflow = 'hidden'; }
+};
 
-class MagneticElement {
-  constructor(el, strength = 0.25) {
-    this.el = el;
-    this.strength = strength;
-    this.x = 0; this.y = 0;
-    this.targetX = 0; this.targetY = 0;
-    this.init();
-  }
-  init() {
-    window.addEventListener('mousemove', (e) => {
-      const rect = this.el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
-      
-      if (dist < 150) {
-        this.targetX = (e.clientX - centerX) * this.strength;
-        this.targetY = (e.clientY - centerY) * this.strength;
-      } else {
-        this.targetX = 0; this.targetY = 0;
-      }
-    });
-    this.animate();
-  }
-  animate() {
-    this.x = lerp(this.x, this.targetX, 0.1);
-    this.y = lerp(this.y, this.targetY, 0.1);
-    this.el.style.transform = `translate(${this.x}px, ${this.y}px)`;
-    requestAnimationFrame(() => this.animate());
-  }
-}
+window.closeChooser = () => {
+  const chooser = document.getElementById('chooserModal');
+  if (chooser) { chooser.classList.remove('active'); document.body.style.overflow = ''; }
+};
 
-function startCountUp(el) {
-  const target = parseInt(el.getAttribute('data-target'));
-  if (isNaN(target)) return;
-  const duration = 2000;
-  const start = 0;
-  const startTime = performance.now();
+window.openAttendFlow = () => { closeChooser(); setTimeout(() => window.openModal(), 120); };
 
-  function update(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const easeProgress = 1 - Math.pow(1 - progress, 4);
-    const current = Math.floor(easeProgress * (target - start) + start);
+window.openSpeakFlow = () => {
+  closeChooser();
+  setTimeout(() => {
+    const modal       = document.getElementById('regModal');
+    const speakerView = document.getElementById('speaker-view');
+    if (!modal) return;
+    resetModalViews();
+    if (speakerView) speakerView.style.display = 'block';
+    const sForm = speakerView ? speakerView.querySelector('form') : null;
+    if (sForm) sForm.reset();
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }, 120);
+};
 
-    el.textContent = current + (el.getAttribute('data-suffix') || '');
-    if (progress < 1) requestAnimationFrame(update);
-  }
-  requestAnimationFrame(update);
-}
-
-function initAnimations() {
-  const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -40px 0px' };
-
-  window.io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible', 'revealed');
-        if (entry.target.classList.contains('count-up')) startCountUp(entry.target);
-        if (entry.target.classList.contains('maturity-stage')) {
-          const fill = entry.target.querySelector('.meter-fill');
-          if (fill) {
-            let width = fill.getAttribute('data-width');
-            if (!width) {
-              const pctText = entry.target.querySelector('.pct')?.textContent || '';
-              const match = pctText.match(/(\d+)/);
-              width = match ? match[1] + '%' : '25%';
-            }
-            setTimeout(() => { 
-              fill.style.width = width; 
-              fill.style.setProperty('--meter-width', width);
-            }, 200);
-          }
-        }
-      }
-    });
-  }, observerOptions);
-
-  document.querySelectorAll('.reveal').forEach(el => window.io.observe(el));
-}
-
-function initCursor() {
-  const cursor = document.querySelector('.cursor-branded');
-  if (!cursor) return;
-  
-  let targetX = window.innerWidth / 2;
-  let targetY = window.innerHeight / 2;
-  let currentX = targetX;
-  let currentY = targetY;
-  let targetRot = 0;
-  let currentRot = 0;
-  let isMoving = false;
-  
-  document.addEventListener('mousemove', (e) => {
-    targetX = e.clientX;
-    targetY = e.clientY;
-    const dx = e.movementX || 0;
-    targetRot = Math.min(Math.max(dx * 0.5, -15), 15);
-    isMoving = true;
-  });
-  
-  function render() {
-    // Smooth interpolation (Lerp)
-    currentX += (targetX - currentX) * 0.2;
-    currentY += (targetY - currentY) * 0.2;
-    currentRot += (targetRot - currentRot) * 0.15;
-    
-    // Hardware accelerated translation
-    cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%) rotate(${currentRot}deg)`;
-    
-    // Smoothly decay rotation back to 0 when stopped
-    if (!isMoving) targetRot *= 0.9;
-    isMoving = false;
-    
-    requestAnimationFrame(render);
-  }
-  
-  // Start loop
-  requestAnimationFrame(render);
-  
-  document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
-  document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
-}
-
-// ─── SYNCHRONIZATION ENGINE ─────────────────────────────────────────────────
-window.syncEverything = () => {
-  console.log('[ElevateQA] 🔄 Running Global Sync...');
-  
-  const site = JSON.parse(localStorage.getItem('elevate_site_content'));
-  const visuals = JSON.parse(localStorage.getItem('elevate_visuals'));
-  const speakers = JSON.parse(localStorage.getItem('elevate_speakers')) || [];
-  const agenda = JSON.parse(localStorage.getItem('elevate_agenda')) || [];
-  const manifesto = JSON.parse(localStorage.getItem('elevate_manifesto')) || [];
-  const maturity = JSON.parse(localStorage.getItem('elevate_maturity_stages')) || [];
-  const pillars = JSON.parse(localStorage.getItem('elevate_pillars')) || [];
-
-  const setHtml = (id, val) => {
+// ── MODAL HELPERS ─────────────────────────────────────────────────────────────
+function resetModalViews() {
+  ['price-view','form-view','ticket-view','speaker-view','otp-view'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && val !== undefined && val !== null) {
-      const targetStr = String(val);
-      if (el.innerHTML !== targetStr) {
-        el.innerHTML = targetStr;
-      }
-    }
-  };
-  const parseAccent = (str) => String(str || '')
-    .replace(/\[\[(.*?)\]\]/g, '<span class="accent">$1</span>')
-    .replace(/==(.*?)==/g, '<span class="highlight">$1</span>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>');
-  const parseEm = (str) => String(str || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>').replace(/\|/g, '<br>');
-
-  if (visuals) {
-    const logoUrl = visuals.logo || './logo.png';
-    document.querySelectorAll('.logo img, #footer-logo-img, #site-logo-img').forEach(img => {
-      if (img.src !== logoUrl) {
-        img.src = logoUrl;
-        img.onerror = function() {
-          this.src = './logo.png';
-        };
-      }
-    });
-    if (visuals.primaryColor) {
-      document.documentElement.style.setProperty('--accent', visuals.primaryColor);
-    }
-    if (visuals.heroBg) {
-      const heroBg = document.querySelector('.hero-ambient img');
-      if (heroBg && heroBg.src !== visuals.heroBg) heroBg.src = visuals.heroBg;
-    }
-
-    // Experience image strip (strip-img-01/02/03 + captions)
-    if (Array.isArray(visuals.strip)) {
-      visuals.strip.forEach((item, i) => {
-        const n   = String(i + 1).padStart(2, '0');
-        const img = document.getElementById(`strip-img-${n}`);
-        const cap = document.getElementById(`strip-cap-${n}`);
-        if (img && item.img) img.src = item.img;
-        if (cap) {
-          const wrapper = cap.closest('.caption');
-          if (!item.cap || item.cap.trim() === '') {
-            cap.textContent = '';
-            if (wrapper) wrapper.style.display = 'none';
-          } else {
-            cap.textContent = item.cap;
-            if (wrapper) wrapper.style.display = '';
-          }
-        }
-      });
-    }
-  } else {
-    document.querySelectorAll('.logo img, #footer-logo-img, #site-logo-img').forEach(img => {
-      if (!img.src.includes('logo.png')) {
-        img.src = './logo.png';
-      }
-    });
-  }
-
-  if (site) {
-    // MIGRATION: Auto-fix heroEdition if it's EDITION 01 or INAUGURAL or empty
-    let heroEd = site.heroEdition || '';
-    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) {
-      site.heroEdition = 'Edition 2';
-    }
-
-    // MIGRATION: Auto-fix footerEdition if it's EDITION 01 or INAUGURAL or empty
-    let footerEd = site.footerEdition || '';
-    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) {
-      site.footerEdition = 'Edition 2';
-    }
-
-    // Hero
-    const headline = site.heroHeadline || 'Elevate Quality. | Prove value.';
-    const titleEl = document.getElementById('hero-title');
-    if (titleEl) {
-      const targetHtml = headline.split(/[|\n]/).filter(l => l.trim()).map(line => {
-        return `<span class="title-line"><span>${parseAccent(line)}</span></span>`;
-      }).join('');
-      if (titleEl.innerHTML !== targetHtml) {
-        titleEl.innerHTML = targetHtml;
-      }
-    }
-    setHtml('hero-tagline', parseAccent(site.heroTagline));
-    setHtml('hero-eyebrow', parseAccent(site.heroEyebrow));
-    setHtml('hero-edition', parseAccent(site.heroEdition));
-    setHtml('hero-format', parseEm(site.heroFormat));
-    setHtml('hero-audience', parseEm(site.heroAudience));
-    setHtml('hero-venue-bottom', parseEm(site.eventVenue));
-    setHtml('hero-date-bottom', parseEm(site.eventDate));
-
-    // Stats
-    const stats = [1, 2, 3, 4];
-    stats.forEach(i => {
-      const numEl = document.getElementById(`stat${i}-num`);
-      const lblEl = document.getElementById(`stat${i}-lbl`);
-      if (numEl) {
-        const val = (site[`stat${i}Num`] || '0').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-        if (numEl.innerHTML !== val) numEl.innerHTML = val;
-      }
-      if (lblEl) {
-        const val = (site[`stat${i}Lbl`] || '').replace(/\[\[(.*?)\]\]/g, '<em>$1</em>');
-        if (lblEl.innerHTML !== val) lblEl.innerHTML = val;
-      }
-    });
-
-    // Manifesto Metadata
-    setHtml('manifesto-section-num', site.manifestoSectionNum || '01 / Manifesto');
-    setHtml('manifesto-pill', site.manifestoPill || 'Why now');
-    setHtml('manifesto-aside-text', site.manifestoAside || 'A note from the <br>founder.');
-
-    setHtml('prizes-title', parseEm(site.prizesHeadline));
-    setHtml('prizes-s1-val', site.prizesS1Num); setHtml('prizes-s1-text', site.prizesS1Lbl);
-    setHtml('prizes-s2-val', site.prizesS2Num); setHtml('prizes-s2-text', site.prizesS2Lbl);
-    setHtml('prizes-s3-val', site.prizesS3Num); setHtml('prizes-s3-text', site.prizesS3Lbl);
-
-    let footerTagStr = site.footerTagline || "The proof of value, or it didn't happen.";
-    if (!footerTagStr.includes('<em>') && !footerTagStr.includes('*')) {
-      footerTagStr = footerTagStr.replace(/(or it didn't happen\.?)/i, '<em>$1</em>');
-    }
-    setHtml('footer-tagline', parseAccent(footerTagStr));
-    setHtml('footer-location', site.footerLocation);
-    setHtml('footer-edition', site.footerEdition);
-    setHtml('footer-copyright', site.footerCopyright);
-    const fEmail = document.getElementById('footer-email');
-    if (fEmail && site.footerEmail) {
-      const mailHtml = `<a href="mailto:${site.footerEmail}" style="color: var(--accent); font-weight: 600;">${site.footerEmail}</a>`;
-      if (fEmail.innerHTML !== mailHtml) fEmail.innerHTML = mailHtml;
-    }
-
-    // Navigation
-    const navs = ['manifesto', 'maturity', 'experience', 'agenda', 'speakers', 'join'];
-    navs.forEach(n => {
-      const key = 'nav' + n.charAt(0).toUpperCase() + n.slice(1);
-      if (site[key] && site[key].trim() !== '') {
-        setHtml(`nav-${n}`, site[key]);
-      }
-    });
-  }
-
-  if (manifesto && manifesto[0]) {
-    const wrap = document.getElementById('manifesto-text');
-    if (wrap && manifesto[0].content) {
-      const lines = manifesto[0].content.split(/[|\n]/).filter(l => l.trim());
-      const targetHtml = lines.map(line => `<p class="reveal">${parseAccent(line)}</p>`).join('');
-      if (wrap.innerHTML !== targetHtml) {
-        wrap.innerHTML = targetHtml;
-      }
-    }
-  }
-
-  const finalMaturity = (maturity && maturity.length > 0) ? maturity : DEFAULT_MATURITY;
-  if (finalMaturity.length > 0) {
-    const grid = document.getElementById('maturity-stages-grid');
-    if (grid) {
-      const COLORS = ['#ffffff', 'var(--accent-3)', 'var(--accent-2)', 'var(--accent)'];
-      const targetHtml = finalMaturity.map((m, i) => {
-        const pct = String(m.pct || '0').replace('%', '').trim();
-        const color = m.color || COLORS[i] || 'var(--accent)';
-        return `
-          <div class="maturity-stage reveal">
-            <div class="level"><span>STAGE 0${i+1}</span></div>
-            <div class="stage-name">${parseEm(m.name)}</div>
-            <p class="stage-desc">${m.desc}</p>
-            <div class="meter"><div class="meter-fill" style="width: 0%; background: ${color} !important;" data-width="${pct}%"></div></div>
-            <div class="pct">~ ${pct}% of orgs surveyed</div>
-          </div>`;
-      }).join('');
-      if (grid.innerHTML !== targetHtml) {
-        grid.innerHTML = targetHtml;
-      }
-    }
-  }
-
-  const finalPillars = (pillars && pillars.length > 0) ? pillars : DEFAULT_PILLARS;
-  if (finalPillars.length > 0) {
-    const grid = document.getElementById('pillars-grid');
-    if (grid) {
-      const ICONS = [
-        '<circle cx="24" cy="24" r="20"/><path d="M14 24 L22 32 L34 18"/>',
-        '<rect x="6" y="6" width="36" height="36" rx="2"/><path d="M14 18 L34 18 M14 24 L28 24 M14 30 L34 30"/>',
-        '<circle cx="14" cy="24" r="6"/><circle cx="34" cy="14" r="6"/><circle cx="34" cy="34" r="6"/><path d="M19 22 L29 16 M19 26 L29 32"/>',
-        '<path d="M24 6 L24 42 M6 24 L42 24"/><circle cx="24" cy="24" r="8"/>',
-        '<path d="M12 36 L12 12 L36 12 L36 28 L24 28 L12 36 Z"/>',
-        '<polygon points="24,6 28,18 40,18 30,26 34,38 24,30 14,38 18,26 8,18 20,18"/>'
-      ];
-      const targetHtml = finalPillars.map((p, i) => `
-        <div class="pillar reveal">
-          <div class="pillar-num">> 0${i+1}</div>
-          <div class="pillar-icon"><svg viewBox="0 0 48 48">${p.icon || ICONS[i] || ICONS[0]}</svg></div>
-          <h3>${parseEm(p.title)}</h3>
-          <p>${p.desc}</p>
-        </div>`).join('');
-      if (grid.innerHTML !== targetHtml) {
-        grid.innerHTML = targetHtml;
-      }
-    }
-  }
-
-  const finalAgenda = (agenda && agenda.length > 0) ? agenda : DEFAULT_AGENDA;
-  if (finalAgenda.length > 0) {
-    const timeline = document.querySelector('.timeline');
-    if (timeline) {
-      const targetHtml = finalAgenda.map(item => {
-        const titleLower = item.title?.toLowerCase() || '';
-        const tagLower = item.tag?.toLowerCase() || '';
-        
-        const isFeatured = tagLower.includes('keynote') || tagLower.includes('closing') || titleLower.includes('keynote') || titleLower.includes('closing') || titleLower.includes('remarks') || titleLower.includes('remarks');
-        const isBreak = tagLower.includes('break') || tagLower.includes('tea') || tagLower.includes('lunch') || tagLower.includes('coffee') ||
-                        titleLower.includes('break') || titleLower.includes('tea') || titleLower.includes('lunch') || titleLower.includes('coffee');
-        
-        const rowClass = `timeline-row reveal${isFeatured ? ' featured' : ''}${isBreak ? ' break' : ''}`;
-        const cleanTag = item.tag ? item.tag.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
-        const tagClass = `tag${cleanTag ? ' tag-' + cleanTag : ''}`;
-        const escapeHtml = (val) => String(val || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        return `
-        <div class="${rowClass}">
-          <div class="timeline-time">${item.time_slot || item.time}</div>
-          <div class="timeline-content">
-            <span class="${tagClass}" style="${item.tag ? '' : 'display:none;'}">${item.tag || ''}</span>
-            <h4>${parseEm(item.title)}</h4>
-            ${item.speaker_name ? `<div class="timeline-speaker">By <strong>${escapeHtml(item.speaker_name)}</strong></div>` : ''}
-            <p class="desc">${item.desc || ''}</p>
-          </div>
-        </div>`;
-      }).join('');
-      if (timeline.innerHTML !== targetHtml) {
-        timeline.innerHTML = targetHtml;
-      }
-    }
-  }
-
-  const finalSpeakers = (speakers && speakers.length > 0) ? speakers : DEFAULT_SPEAKERS;
-  if (finalSpeakers.length > 0) {
-    const grid = document.querySelector('.speakers-grid');
-    if (grid) {
-      const targetHtml = finalSpeakers.map((s, idx) => {
-        const photo = s.image_url || s.img;
-        return `
-        <div class="speaker-card reveal">
-          ${photo ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${photo}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
-          <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status || s.wave || 'CONFIRMED'}</span></div>
-          <div class="speaker-content">
-            <div class="name">${s.name}</div>
-            <div class="designation">${s.title || s.role || ''}</div>
-          </div>
-        </div>`;
-      }).join('') + `
-          <div class="speaker-card speaker-cta-card reveal">
-            <div class="silhouette" aria-hidden="true">+</div>
-            <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
-            <div class="pitch">Have a story <em>worth telling?</em><br><a href="#join">Apply to speak ></a></div>
-          </div>`;
-      if (grid.innerHTML !== targetHtml) {
-        grid.innerHTML = targetHtml;
-      }
-    }
-  }
-
-  // RE-OBSERVE NEW ELEMENTS
-  if (window.io) {
-    document.querySelectorAll('.reveal, .maturity-stage, .pillar').forEach(el => {
-      window.io.observe(el);
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
-        el.classList.add('visible', 'revealed');
-      }
-    });
-  }
-};
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+  const otpErr = document.getElementById('otp-error');
+  if (otpErr) otpErr.textContent = '';
+}
 
 window.openModal = (e) => {
   if (e) e.preventDefault();
   const modal = document.getElementById('regModal');
-  const priceView = document.getElementById('price-view');
-  const formView = document.getElementById('form-view');
-  const ticketView = document.getElementById('ticket-view');
-
-  // Clear previous data every time the form is opened
-  const regForm = document.querySelector('.reg-form');
+  if (!modal) return;
+  resetModalViews();
+  const regForm = modal.querySelector('.reg-form');
   if (regForm) regForm.reset();
-
-  if (modal) {
-    if (priceView) priceView.style.display = 'block';
-    if (formView) formView.style.display = 'none';
-    if (ticketView) ticketView.style.display = 'none';
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
+  const priceView = document.getElementById('price-view');
+  if (priceView) priceView.style.display = 'block';
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
 };
 
 window.closeModal = () => {
   const modal = document.getElementById('regModal');
-  if (modal) {
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-  }
+  if (modal) { modal.classList.remove('active'); document.body.style.overflow = ''; resetModalViews(); window.pendingRegistration = null; }
 };
 
 window.proceedToForm = function() {
   const priceView = document.getElementById('price-view');
-  const formView = document.getElementById('form-view');
+  const formView  = document.getElementById('form-view');
   if (priceView) priceView.style.display = 'none';
-  if (formView) formView.style.display = 'block';
+  if (formView)  formView.style.display  = 'block';
+};
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+window.showToast = function(message, type = 'error') {
+  const existing = document.getElementById('eq-toast');
+  if (existing) existing.remove();
+  const icons  = { error: '⚠', success: '✓', info: '🔔' };
+  const colors = {
+    error:   { bg: '#1a0a08', border: '#ff5a36', glow: 'rgba(255,90,54,0.25)' },
+    success: { bg: '#0a1208', border: '#d4ff3a', glow: 'rgba(212,255,58,0.2)' },
+    info:    { bg: '#080d1a', border: '#5b8aff', glow: 'rgba(91,138,255,0.2)'  },
+  };
+  const c = colors[type] || colors.error;
+  const toast = document.createElement('div');
+  toast.id = 'eq-toast';
+  toast.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:${c.glow};border:1.5px solid ${c.border};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${icons[type] || icons.error}</div>
+      <div style="flex:1;font-size:13.5px;line-height:1.55;color:#e8e8f0;font-family:'Manrope',sans-serif;">${message}</div>
+      <button onclick="document.getElementById('eq-toast').remove()" style="background:none;border:none;cursor:pointer;padding:4px;color:#555570;font-size:18px;line-height:1;flex-shrink:0;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555570'">✕</button>
+    </div>
+  `;
+  Object.assign(toast.style, {
+    position: 'fixed', bottom: '28px', left: '50%',
+    transform: 'translateX(-50%) translateY(20px)', zIndex: '99999',
+    background: c.bg, border: `1px solid ${c.border}`, borderLeft: `4px solid ${c.border}`,
+    borderRadius: '10px', padding: '16px 20px',
+    minWidth: '320px', maxWidth: 'min(480px, calc(100vw - 40px))',
+    boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04), 0 0 24px ${c.glow}`,
+    opacity: '0', transition: 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)', pointerEvents: 'all',
+  });
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; }));
+  const timer = setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(10px)'; setTimeout(() => toast.remove(), 300); }, 5000);
+  toast.querySelector('button').addEventListener('click', () => clearTimeout(timer));
+};
+
+// ── OTP & REGISTRATION ────────────────────────────────────────────────────────
+window.pendingRegistration = null;
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://elevateqa-backend.up.railway.app';
+
+window.submitSpeakerForm = async (event) => {
+  if (event) event.preventDefault();
+  const btn = document.getElementById('speaker-submit-btn');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…'; }
+  const name        = (document.getElementById('speaker-name')?.value        || '').trim();
+  const email       = (document.getElementById('speaker-email')?.value       || '').trim();
+  const org         = (document.getElementById('speaker-org')?.value         || '').trim();
+  const designation = (document.getElementById('speaker-designation')?.value || '').trim();
+  const topic       = (document.getElementById('speaker-topic')?.value       || '').trim();
+  const bio         = (document.getElementById('speaker-bio')?.value         || '').trim();
+  const linkedin    = (document.getElementById('speaker-linkedin')?.value    || '').trim();
+  const phone       = (document.getElementById('speaker-phone')?.value       || '').trim();
+  window.pendingRegistration = { type: 'speak', name, email, phone, org, designation, topic, bio, linkedin };
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
+    document.getElementById('speaker-view').style.display = 'none';
+    const otpView = document.getElementById('otp-view');
+    if (otpView) { otpView.querySelectorAll('.otp-box').forEach(b => b.value = ''); document.getElementById('otp-error').textContent = ''; otpView.style.display = 'flex'; }
+    const targetEmail = document.getElementById('otp-target-email');
+    if (targetEmail) targetEmail.textContent = email;
+    window.initOTPInputs();
+  } catch (error) {
+    console.error('OTP Send Error:', error);
+    showToast(error.message || 'Failed to send OTP. Please try again.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+  }
 };
 
 window.generateTicket = async function(event) {
   if (event) event.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const org = document.getElementById('reg-org').value;
+  const name        = document.getElementById('reg-name').value;
+  const email       = document.getElementById('reg-email').value;
+  const org         = document.getElementById('reg-org').value;
   const designation = document.getElementById('reg-designation').value;
-  const linkedin = document.getElementById('reg-linkedin').value;
-
-  // Show loading state
+  const linkedin    = document.getElementById('reg-linkedin').value;
+  const phone       = document.getElementById('reg-phone')?.value || '';
   const btn = document.querySelector('#form-view button[type="submit"]');
   const originalBtnText = btn ? btn.innerHTML : '';
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Generating...';
-  }
-
-  let dbId = null;
-  let shortId = null;
-
-  // Save to Supabase FIRST to get the UUID
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending OTP...'; }
   try {
-    // 1. Check if the email already exists in the database
-    const { data: existingUser, error: checkError } = await supabase
-      .from('registrations')
-      .select('id')
-      .eq('email', email)
-      .limit(1);
-      
+    const { data: existingUser } = await supabase.from('registrations').select('id').eq('email', email).limit(1);
     if (existingUser && existingUser.length > 0) {
-      alert('This email is already registered. Please use a different professional email.');
+      showToast('This email is already registered. Please use a different professional email.', 'error');
       if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
       return;
     }
-
-    // 2. Insert new registration
-    // Supabase will reject the insert if we pass columns that don't exist yet in the database.
-    // We omit designation & linkedin here, but still pass them to the email webhook later!
-    const { data, error } = await supabase.from('registrations').insert([
-      { name, email, company: org, status: 'confirmed' }
-    ]).select();
-
-    if (error) {
-      console.error('[ElevateQA] Error saving registration:', error);
-      alert('Failed to register. Please try again.');
-      if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
-      return;
-    }
-    
-    if (data && data.length > 0) {
-      dbId = data[0].id;
-      // Make a nice short ID for display (first 8 chars of UUID)
-      shortId = 'EQ26-' + dbId.split('-')[0].toUpperCase();
-    }
-  } catch(e) {
-    console.error('[ElevateQA] Registration exception:', e);
-    alert('An unexpected error occurred. Please try again.');
-    if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
-    return;
-  }
-
-  // Restore button just in case
-  if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
-
-  // Update UI with the confirmed ID
-  document.getElementById('ticket-name').textContent = name;
-  document.getElementById('ticket-org').textContent = org;
-  
-  const idDisplay = document.getElementById('ticket-id-val') || document.getElementById('ticket-id-display');
-  if (idDisplay) idDisplay.textContent = `PASS ID: ${shortId}`;
-
-  const qrEl = document.getElementById('qrcode');
-  if (qrEl) {
-    qrEl.innerHTML = '';
-    if (typeof QRCode !== 'undefined') {
-      new QRCode(qrEl, {
-        text: `ELEVATE-QA:${dbId}|${name}|${org}`,
-        width: 160,
-        height: 160,
-        colorDark: "#0b0b10",
-        colorLight: "#ffffff"
-      });
-    }
-  }
-
-  document.getElementById('form-view').style.display = 'none';
-  document.getElementById('ticket-view').style.display = 'block';
-
-  // SEND ACTUAL EMAIL VIA EMAILJS
+  } catch(e) { console.warn('DB check failed or unavailable:', e); }
   try {
-    await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
-    const statusWrap = document.getElementById('email-status-wrap');
-    if (statusWrap) {
-      statusWrap.innerHTML = '<div class="email-status success">✓ Ticket sent to ' + escapeHtml(email) + '</div>';
+    const response = await fetch(`${BACKEND_URL}/api/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
+    window.pendingRegistration = { type: 'attend', name, email, phone, org, designation, linkedin };
+    document.getElementById('form-view').style.display = 'none';
+    const otpView = document.getElementById('otp-view');
+    if (otpView) { otpView.querySelectorAll('.otp-box').forEach(b => b.value = ''); document.getElementById('otp-error').textContent = ''; otpView.style.display = 'flex'; }
+    const targetEmail = document.getElementById('otp-target-email');
+    if (targetEmail) targetEmail.textContent = email;
+    window.initOTPInputs();
+  } catch (error) {
+    console.error('OTP Send Error:', error);
+    showToast(error.message || 'Failed to send OTP. Please try again.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
+  }
+};
+
+window.resendOTP = function() {
+  if (window.pendingRegistration && window.pendingRegistration.email) {
+    fetch(`${BACKEND_URL}/api/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: window.pendingRegistration.email }) })
+      .then(res => res.json()).then(data => {
+        if (data.success) showToast('A new code has been sent to your email.', 'success');
+        else showToast('Failed to resend code: ' + data.error, 'error');
+      }).catch(() => showToast('Error resending OTP. Please try again.', 'error'));
+  }
+};
+
+window.initOTPInputs = function() {
+  const boxes = Array.from(document.querySelectorAll('.otp-box'));
+  if (!boxes.length) return;
+  boxes.forEach((box, i) => { const fresh = box.cloneNode(true); box.parentNode.replaceChild(fresh, box); boxes[i] = fresh; });
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', (e) => {
+      box.value = box.value.replace(/\D/g, '').slice(-1);
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace') { if (!box.value && i > 0) { boxes[i-1].value = ''; boxes[i-1].focus(); } }
+      else if (e.key === 'ArrowLeft'  && i > 0)              boxes[i-1].focus();
+      else if (e.key === 'ArrowRight' && i < boxes.length-1) boxes[i+1].focus();
+      else if (e.key === 'Enter') window.verifyOTP();
+    });
+    box.addEventListener('focus', () => box.select());
+  });
+  boxes[0].addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+    pasted.split('').forEach((ch, idx) => { if (boxes[idx]) boxes[idx].value = ch; });
+    boxes[Math.min(pasted.length, boxes.length-1)].focus();
+  });
+  setTimeout(() => boxes[0].focus(), 100);
+};
+
+window.verifyOTP = async function() {
+  const inputs = Array.from(document.querySelectorAll('.otp-box'));
+  const code   = inputs.map(i => i.value).join('');
+  if (code.length < 6) { document.getElementById('otp-error').textContent = 'Please enter the full 6-digit code.'; return; }
+  const btn = document.getElementById('otp-verify-btn');
+  const originalText = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Verifying...';
+  document.getElementById('otp-error').textContent = '';
+  const { type, email, name, phone, org, designation, linkedin, topic, bio } = window.pendingRegistration;
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Verification failed');
+    if (type === 'speak') {
+      try {
+        const { error } = await supabase.from('speaker_applications').insert([{ name, email, phone, company: org, designation, topic, bio, linkedin, status: 'pending' }]);
+        if (error) console.warn('[ElevateQA] Speaker DB insert skipped:', error.message);
+      } catch(err) { console.warn('[ElevateQA] Speaker DB unavailable:', err); }
+      document.getElementById('otp-view').style.display = 'none';
+      const speakerView = document.getElementById('speaker-view');
+      if (speakerView) {
+        speakerView.style.display = 'block';
+        speakerView.innerHTML = `<div style="text-align:center;padding:40px 0 20px;"><div style="font-size:56px;margin-bottom:20px;">🎤</div><h2>Application <em>Received!</em></h2><p style="color:var(--ink-dim);margin-top:16px;line-height:1.7;font-size:14px;max-width:360px;margin-left:auto;margin-right:auto;">Thank you, <strong>${window.escapeHtml(name)}</strong>! We've received your application to speak at Elevate QA 2026.<br><br>Our team will review your submission and reach out to you at <strong>${window.escapeHtml(email)}</strong>.</p><button class="btn btn-primary" onclick="closeModal()" style="margin-top:32px;width:100%;">Close ✓</button></div>`;
+      }
+      return;
     }
-  } catch(e) {
-    console.error('Failed to send email:', e);
-    const statusWrap = document.getElementById('email-status-wrap');
-    if (statusWrap) {
-      statusWrap.innerHTML = '<div class="email-status error" style="color:var(--accent-red)">⚠ Error sending email</div>';
+    // Attend flow
+    let dbId = null, shortId = null;
+    const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, status: 'confirmed' }]).select();
+    if (error) throw error;
+    if (data && data.length > 0) { dbId = data[0].id; shortId = 'EQ26-' + dbId.split('-')[0].toUpperCase(); }
+    document.getElementById('ticket-name').textContent = name;
+    document.getElementById('ticket-org').textContent  = org;
+    const idDisplay = document.getElementById('ticket-id-val') || document.getElementById('ticket-id-display');
+    if (idDisplay) idDisplay.textContent = `PASS ID: ${shortId}`;
+    const qrEl = document.getElementById('qrcode');
+    if (qrEl) {
+      qrEl.innerHTML = '';
+      if (typeof QRCode !== 'undefined') new QRCode(qrEl, { text: `ELEVATE-QA:${dbId}|${name}|${org}`, width: 160, height: 160, colorDark: '#0b0b10', colorLight: '#ffffff' });
     }
+    document.getElementById('otp-view').style.display    = 'none';
+    document.getElementById('ticket-view').style.display = 'block';
+    try {
+      await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
+      const statusWrap = document.getElementById('email-status-wrap');
+      if (statusWrap) statusWrap.innerHTML = '<div class="email-status success">✓ Ticket sent to ' + escapeHtml(email) + '</div>';
+    } catch(e) {
+      console.error('Failed to send email:', e);
+      const statusWrap = document.getElementById('email-status-wrap');
+      if (statusWrap) statusWrap.innerHTML = '<div class="email-status error" style="color:var(--accent-red)">⚠ Error sending email</div>';
+    }
+  } catch (error) {
+    console.error('OTP Verification Error:', error);
+    const otpErrEl = document.getElementById('otp-error');
+    const msg = error.message || '';
+    if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('no otp') || msg.toLowerCase().includes('not found')) {
+      if (otpErrEl) otpErrEl.textContent = 'Code expired — click "Resend Code" to get a new one.';
+      const resendBtn = document.getElementById('otp-resend-btn');
+      if (resendBtn) { resendBtn.style.color = '#ff5a36'; resendBtn.style.fontWeight = '700'; setTimeout(() => { resendBtn.style.color = ''; resendBtn.style.fontWeight = ''; }, 3000); }
+    } else {
+      if (otpErrEl) otpErrEl.textContent = 'Incorrect code. Please check and try again.';
+    }
+    const otpInputs = document.getElementById('otp-inputs');
+    if (otpInputs) { otpInputs.style.animation = 'none'; otpInputs.offsetHeight; otpInputs.style.animation = 'otpShake 0.4s ease'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
   }
 };
 
 window.downloadPremiumTicket = function() {
   const qrImg = document.querySelector('#qrcode img');
-  if (qrImg) {
-    const link = document.createElement('a');
-    link.href = qrImg.src;
-    link.download = 'ElevateQA26-Pass.png';
-    link.click();
-  } else {
-    // Fallback for canvas-based QRCode
+  if (qrImg) { const link = document.createElement('a'); link.href = qrImg.src; link.download = 'ElevateQA26-Pass.png'; link.click(); }
+  else {
     const qrCanvas = document.querySelector('#qrcode canvas');
-    if (qrCanvas) {
-      const link = document.createElement('a');
-      link.href = qrCanvas.toDataURL();
-      link.download = 'ElevateQA26-Pass.png';
-      link.click();
-    }
+    if (qrCanvas) { const link = document.createElement('a'); link.href = qrCanvas.toDataURL(); link.download = 'ElevateQA26-Pass.png'; link.click(); }
   }
 };
 
 window.shareOnLinkedIn = function() {
   const url = encodeURIComponent('https://elevateqa.sdettech.com/');
-  const title = encodeURIComponent('I just claimed my free pass for Elevate QA 2026!');
   window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=600');
 };
 
+window.copyLink = function(e) {
+  if (e) e.preventDefault();
+  const btn = document.getElementById('copyLink');
+  const url = window.location.href;
+  const applyFeedback = () => {
+    if (btn) { const orig = btn.textContent; btn.textContent = 'Copied! ✓'; btn.style.color = '#b8ff57'; setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2500); }
+  };
+  navigator.clipboard.writeText(url).then(applyFeedback).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    applyFeedback();
+  });
+};
+
+// ── IMAGE CAROUSEL ─────────────────────────────────────────────────────────────
+(function initCarousel() {
+  const carousel = document.querySelector('.img-carousel');
+  if (!carousel) return;
+  const track   = document.getElementById('carousel-track');
+  const slides  = carousel.querySelectorAll('.img-carousel-slide');
+  const dots    = document.querySelectorAll('.carousel-dot');
+  const btnPrev = document.getElementById('carousel-prev');
+  const btnNext = document.getElementById('carousel-next');
+  let current   = 0, autoTimer = null;
+  const total   = slides.length;
+
+  function goTo(index) {
+    current = (index + total) % total;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+  function startAuto() { clearInterval(autoTimer); autoTimer = setInterval(next, 4500); }
+  function stopAuto()  { clearInterval(autoTimer); }
+
+  if (btnNext) btnNext.addEventListener('click', () => { next(); startAuto(); });
+  if (btnPrev) btnPrev.addEventListener('click', () => { prev(); startAuto(); });
+  dots.forEach(dot => dot.addEventListener('click', () => { goTo(+dot.dataset.index); startAuto(); }));
+  carousel.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { prev(); startAuto(); } if (e.key === 'ArrowRight') { next(); startAuto(); } });
+  let touchStartX = 0;
+  carousel.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+  carousel.addEventListener('touchend',   e => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 40) { diff > 0 ? next() : prev(); startAuto(); } }, { passive: true });
+  carousel.addEventListener('mouseenter', stopAuto);
+  carousel.addEventListener('mouseleave', startAuto);
+  goTo(0); startAuto();
+})();
+
+// ── APP STARTUP ───────────────────────────────────────────────────────────────
 const startApp = () => {
   initAnimations();
   initCursor();
-  initNav(); // ← explicit call ensures hamburger works regardless of module load order
-  
-  // Helper to safely dismiss the preloader
+  initNav();
+
   const dismissPreloader = () => {
     const preloader = document.getElementById('page-preloader');
     if (preloader && !preloader.classList.contains('fade-out')) {
@@ -602,35 +379,19 @@ const startApp = () => {
     }
   };
 
-  // 1. Immediately sync UI with cached data for instantaneous LCP (0ms perceived load)
-  if (typeof window.syncEverything === 'function') {
-    window.syncEverything();
-  }
+  if (typeof window.syncEverything === 'function') window.syncEverything();
+  if (localStorage.getItem('elevate_site_content')) dismissPreloader();
 
-  // 2. If cached data already exists, dismiss the preloader instantly so the user sees the page immediately
-  if (localStorage.getItem('elevate_site_content')) {
-    dismissPreloader();
-  }
+  initCloudSync().then(() => dismissPreloader()).catch(() => dismissPreloader());
 
-  // 3. Revalidate in the background from Supabase
-  initCloudSync().then(() => {
-    // If the user didn't have cached data previously, dismiss the preloader now
-    dismissPreloader();
-  }).catch(() => {
-    dismissPreloader();
-  });
-  
   let syncTimeout;
   window.addEventListener('storage', (e) => {
     if (e.key && e.key.startsWith('elevate_')) {
       clearTimeout(syncTimeout);
-      syncTimeout = setTimeout(() => {
-        window.syncEverything();
-      }, 100);
+      syncTimeout = setTimeout(() => window.syncEverything(), 100);
     }
   });
 
-  // Failsafe preloader removal (reduced to 5 seconds to prevent frozen screen if offline)
   setTimeout(dismissPreloader, 5000);
 };
 
@@ -639,4 +400,3 @@ if (document.readyState === 'loading') {
 } else {
   startApp();
 }
-

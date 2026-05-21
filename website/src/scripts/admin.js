@@ -433,6 +433,13 @@ function loadAllData() {
   setVal('hero-format',   site.heroFormat);
   setVal('hero-audience', site.heroAudience);
 
+  setVal('nav-manifesto-input',  site.navManifesto);
+  setVal('nav-maturity-input',   site.navMaturity);
+  setVal('nav-experience-input', site.navExperience);
+  setVal('nav-agenda-input',     site.navAgenda);
+  setVal('nav-speakers-input',   site.navSpeakers);
+  setVal('nav-join-input',       site.navJoin);
+
   // 3. Manifesto Force-Load
   const manifestoPill = site.manifestoPill || DEFAULT_SITE_CONTENT.manifestoPill;
   const manifestoAside = site.manifestoAside || DEFAULT_SITE_CONTENT.manifestoAside;
@@ -824,6 +831,14 @@ function saveAll() {
     heroFormat:     getVal('hero-format'),
     heroAudience:   getVal('hero-audience'),
     
+    navManifesto:   getVal('nav-manifesto-input'),
+    navMaturity:    getVal('nav-maturity-input'),
+    navExperience:  getVal('nav-experience-input'),
+    navAgenda:      getVal('nav-agenda-input'),
+    navSpeakers:    getVal('nav-speakers-input'),
+    navJoin:        getVal('nav-join-input'),
+
+
     manifestoPill:  getVal('manifesto-pill'),
     manifestoAside: getVal('manifesto-aside'),
     manifestoLines: getVal('manifesto-lines').split('\n').filter(l => l.trim()),

@@ -1,6 +1,6 @@
 .finale {
   position: relative;
-  padding: 120px var(--pad-x) 60px;
+  padding: 48px var(--pad-x) 32px;
   background: #000;
   overflow: hidden;
   border-top: 1px solid var(--line-strong);
@@ -32,18 +32,18 @@
 }
 
 .finale-mark img {
-  height: clamp(80px, 9vw, 130px);
+  height: clamp(40px, 5vw, 64px);
   width: auto;
-  margin: 0 auto 32px;
+  margin: 0 auto 24px;
   filter: drop-shadow(0 0 35px rgba(212, 255, 58, 0.18));
 }
 
 .finale-tag {
   font-family: var(--display);
-  font-size: clamp(24px, 4vw, 42px);
+  font-size: clamp(16px, 2.5vw, 24px);
   font-weight: 300;
-  letter-spacing: -0.03em;
-  margin-bottom: 80px;
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
   color: #fff;
 }
 
@@ -60,9 +60,9 @@ footer {
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
+  gap: 24px;
   text-align: left;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .footer-col .label {
@@ -116,8 +116,8 @@ footer {
 }
 
 @media (max-width: 600px) {
-  .finale { padding: var(--space-xl-mobile) 20px 40px; }
-  .finale-tag { margin-bottom: 48px; font-size: 26px; }
+  .finale { padding: 48px 20px 32px; }
+  .finale-tag { margin-bottom: 32px; font-size: 20px; }
   .footer-grid { grid-template-columns: 1fr; gap: 32px; text-align: center; }
   .footer-bottom { flex-direction: column; gap: 24px; padding: 40px 0; }
 }

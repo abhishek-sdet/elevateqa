@@ -76,3 +76,43 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('[ElevateQA] initCloudSync not found — sync module may not have loaded.');
   }
 });
+
+// ─── COPY LINK ───────────────────────────────────────────────────────────────
+// Global function called via onclick="copyLink(event)" in involve.html
+window.copyLink = function(e) {
+  if (e) e.preventDefault();
+  const btn = document.getElementById('copyLink');
+  const url = window.location.href;
+
+  navigator.clipboard.writeText(url).then(() => {
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = 'Copied! ✓';
+      btn.style.color = '#b8ff57';
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.style.color = '';
+      }, 2500);
+    }
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = 'Copied! ✓';
+      btn.style.color = '#b8ff57';
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.style.color = '';
+      }, 2500);
+    }
+  });
+};
+

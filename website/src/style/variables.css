@@ -27,7 +27,7 @@
   --section-gap-mobile: 3.5rem;
 
   /* FLUID TYPOGRAPHY - ELITE FLUID SCALE */
-  --font-display-lg: clamp(2.5rem, 8vw, 7.5rem);
+  --font-display-lg: clamp(1.8rem, 4.2vw, 3.8rem);
   --font-display-md: clamp(1.8rem, 5vw, 4.5rem);
   --font-display-sm: clamp(1.5rem, 3.5vw, 2.8rem);
   --font-h1: var(--font-display-lg);

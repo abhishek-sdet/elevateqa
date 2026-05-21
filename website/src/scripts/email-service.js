@@ -1,42 +1,41 @@
 /**
  * ELEVATE QA 2026 - EMAIL SERVICE
- * Handles professional communications for attendees and support.
+ * Uses custom Node.js Backend for Limitless Email
  */
+
+const BACKEND_URL = 'http://localhost:3000'; // Change to deployed URL in prod
 
 export const sendAttendeeEmail = async (attendeeData) => {
   const { name, email, company, ticketId, dbId, designation, linkedin } = attendeeData;
 
-  console.log(`[ElevateQA] Sending data to Power Automate Webhook for ${email}...`);
+  console.log(`[ElevateQA] Sending ticket generation request to Backend for ${email}...`);
 
   try {
-    // Make.com Custom Webhook URL (Elevate QA → Microsoft 365 Outlook)
-    const WEBHOOK_URL = "https://hook.eu1.make.com/schsepn7tlcj8oujqgzlt2p9v1w56o8d";
-
-    if (WEBHOOK_URL === "PASTE_YOUR_POWER_AUTOMATE_URL_HERE") {
-      console.warn("Webhook URL not set yet. Skipping email delivery.");
-      return { success: true, warning: "Webhook URL not configured" };
-    }
-
     const payload = {
-      attendeeName: name,
-      attendeeEmail: email,
-      companyName: company,
-      ticketId: ticketId,
+      name,
+      email,
+      company,
+      ticketId,
       designation: designation || '',
       linkedin: linkedin || '',
       qrData: `ELEVATE-QA:${dbId}|${name}|${company}`
     };
 
-    const response = await fetch(WEBHOOK_URL, {
+    const response = await fetch(`${BACKEND_URL}/api/send-ticket`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.error || 'Failed to send ticket email');
+    }
 
-    console.log("[ElevateQA] Webhook triggered successfully:", response.status);
+    console.log("[ElevateQA] Ticket Email sent successfully.");
     return response;
   } catch (err) {
-    console.error("[ElevateQA] Webhook delivery failed:", err);
+    console.error("[ElevateQA] Ticket delivery failed:", err);
     throw err;
   }
 };

@@ -41,14 +41,25 @@
 
           <div class="manager-card">
             <div class="section-title">Hero <em>Atmosphere</em></div>
-            <div class="form-group">
-              <label>Hero Background Image <span class="label-hint">(1920x1080 Recommended)</span></label>
-              <div class="img-upload-wrap" onclick="triggerVisualUpload('hero-bg')">
-                <img id="preview-hero-bg" src="" style="display:none;">
-                <div class="placeholder" id="placeholder-hero-bg">📸 CLICK TO UPLOAD</div>
-                <input type="file" id="upload-hero-bg" hidden onchange="handleVisualUpload(this, 'hero-bg')">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Hero Background Image <span class="label-hint">(1920x1080 Recommended)</span></label>
+                <div class="img-upload-wrap" onclick="triggerVisualUpload('hero-bg')">
+                  <img id="preview-hero-bg" src="" style="display:none;">
+                  <div class="placeholder" id="placeholder-hero-bg">📸 CLICK TO UPLOAD</div>
+                  <input type="file" id="upload-hero-bg" hidden onchange="handleVisualUpload(this, 'hero-bg')">
+                </div>
+                <a id="download-hero-bg" href="" target="_blank" class="download-link" style="display:none; margin-top: 10px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); cursor: pointer;" download>⬇ Download Hero Image</a>
               </div>
-              <a id="download-hero-bg" href="" target="_blank" class="download-link" style="display:none; margin-top: 10px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); cursor: pointer;" download>⬇ Download Hero Image</a>
+              <div class="form-group">
+                <label>Founder Photo <span class="label-hint">(Manifesto Section)</span></label>
+                <div class="img-upload-wrap" onclick="triggerVisualUpload('founder')">
+                  <img id="preview-founder" src="" style="display:none;">
+                  <div class="placeholder" id="placeholder-founder">📸 CLICK TO UPLOAD</div>
+                  <input type="file" id="upload-founder" hidden onchange="handleVisualUpload(this, 'founder')">
+                </div>
+                <a id="download-founder" href="" target="_blank" class="download-link" style="display:none; margin-top: 10px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); cursor: pointer;" download>⬇ Download Photo</a>
+              </div>
             </div>
           </div>
 

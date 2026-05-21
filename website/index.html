@@ -7,7 +7,7 @@
   <meta name="description" content="Elevate QA 2026 — The AI-Led Quality Engineering Tech Summit. A one-day symposium for QE leaders. Delhi NCR, India, August 2026.">
 
   <!-- SECURITY HEADERS -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' 'unsafe-inline' file: blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; style-src 'self' 'unsafe-inline' file: https://fonts.googleapis.com; font-src 'self' file: https://fonts.gstatic.com; img-src 'self' data: file: blob: https: https://images.unsplash.com; connect-src 'self' file: https://cdn.jsdelivr.net https://*.supabase.co wss://*.supabase.co https://api.emailjs.com https://hook.eu1.make.com; worker-src 'self' file: blob:; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' 'unsafe-inline' file: blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; style-src 'self' 'unsafe-inline' file: https://fonts.googleapis.com; font-src 'self' file: https://fonts.gstatic.com; img-src 'self' data: file: blob: https: https://images.unsplash.com; connect-src 'self' file: https://cdn.jsdelivr.net https://*.supabase.co wss://*.supabase.co http://localhost:3000 https://elevateqa-backend.up.railway.app; worker-src 'self' file: blob:; base-uri 'self'; form-action 'self';">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -131,12 +131,17 @@
     {{> coming }}
     {{> involve }}
   </main>
+  <!-- Floating CTA Button -->
+  <button class="floating-cta" onclick="openChooser(event)" aria-label="Speak or Attend Elevate QA">
+    <span class="icon">🎟</span> <span class="text">Join the Event</span>
+  </button>
+
   {{> modal }}
   {{> footer }}
 
   <!-- App Scripts -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <!-- EmailJS removed — using custom Node.js backend for all email sending -->
   <script type="module" src="src/scripts/main.js"></script>
 </body>
 </html>

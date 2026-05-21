@@ -177,7 +177,7 @@ function syncEverything() {
 
   const setHtml = (id, val) => {
     const el = document.getElementById(id);
-    if (el && val != null) el.innerHTML = parseAccent(val);
+    if (el && val != null && String(val).trim() !== '') el.innerHTML = parseAccent(val);
   };
 
   if (site) {
@@ -281,14 +281,21 @@ function syncEverything() {
     setHtml('experience-section-num',   site.experienceSectionNum   || '03 / The Experience');
     setHtml('experience-section-title', site.experienceSectionTitle || 'A day built around <em>signal,</em> not noise.');
     
-    // Get Involved
+    /* 
+    setHtml('involve-section-num', site.involveSectionNum || '07 / Get Involved');
     setHtml('involve-title',       site.involveTitle);
     setHtml('involve-card1-title', site.involveCard1Title);
     setHtml('involve-card1-desc',  site.involveCard1Desc);
+    if (site.involveCard1LinkText) setHtml('involve-card1-link', site.involveCard1LinkText);
+    
     setHtml('involve-card2-title', site.involveCard2Title);
     setHtml('involve-card2-desc',  site.involveCard2Desc);
+    if (site.involveCard2LinkText) setHtml('involve-card2-link', site.involveCard2LinkText);
+    
     setHtml('involve-card3-title', site.involveCard3Title);
     setHtml('involve-card3-desc',  site.involveCard3Desc);
+    if (site.involveCard3LinkText) setHtml('copyLink', site.involveCard3LinkText);
+    */
 
     // Coming Soon
     setHtml('coming-title', site.comingTitle);
@@ -302,8 +309,9 @@ function syncEverything() {
 
     // Footer
     setHtml('footer-tagline',  site.footerTagline);
-    setHtml('footer-location', site.footerLocation);
-    setHtml('footer-edition',  site.footerEdition);
+    setHtml('footer-location', site.footerLocation || 'Delhi-NCR, India');
+    setHtml('footer-edition',  site.footerEdition || 'Edition 2');
+    setHtml('footer-copyright', site.footerCopyright || '<a href="https://sdettech.com" rel="noopener noreferrer">SDET Tech</a>');
 
     // Ticker
     for (let i = 1; i <= 9; i++) {

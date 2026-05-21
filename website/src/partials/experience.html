@@ -1,18 +1,3 @@
-    <div class="image-strip" role="region" aria-label="Event visuals">
-        <div class="img-cell reveal">
-            <img id="strip-img-01" src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1200&q=80" alt="A large professional audience engaged in a technical session" loading="lazy" decoding="async" />
-            <div class="caption"><span class="num">01</span><span id="strip-cap-01">The room. Curated, not crowded.</span></div>
-        </div>
-        <div class="img-cell reveal">
-            <img id="strip-img-02" src="https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=1000&q=80" alt="Speaker presenting a deep-dive session on a high-fidelity stage" loading="lazy" decoding="async" />
-            <div class="caption"><span class="num">02</span><span id="strip-cap-02">The stage. Built for proof.</span></div>
-        </div>
-        <div class="img-cell reveal">
-            <img id="strip-img-03" src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80" alt="A group of quality engineers collaborating on a technical problem" loading="lazy" decoding="async" />
-            <div class="caption"><span class="num">03</span><span id="strip-cap-03">The conversation. Where careers compound.</span></div>
-        </div>
-    </div>
-
     <section id="experience" aria-labelledby="experience-title">
         <div class="section-head reveal">
             <div>
@@ -54,8 +39,52 @@
             <div class="pillar reveal">
                 <div class="pillar-num">→ 06</div>
                 <div class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><polygon points="24,6 28,18 40,18 30,26 34,38 24,30 14,38 18,26 8,18 20,18"/></svg></div>
-                <h3>Recognition <em>& prizes</em></h3>
+                <h3>Recognition <em>&amp; prizes</em></h3>
                 <p>Speaker of the event, audience awards, and surprises throughout the day. We celebrate the people pushing the field — loudly.</p>
             </div>
         </div>
     </section>
+
+    <!-- IMAGE CAROUSEL SECTION -->
+    <div class="carousel-section">
+        <div class="img-carousel" role="region" aria-label="Event visuals">
+            <div class="img-carousel-track" id="carousel-track">
+                <div class="img-carousel-slide">
+                    <img id="strip-img-01" src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1400&q=80" alt="A large professional audience engaged in a technical session" loading="lazy" decoding="async" />
+                    <div class="carousel-caption" id="caption-wrapper-01">
+                        <span class="carousel-cap-num">01</span>
+                        <span class="carousel-cap-text" id="strip-cap-01">The room. Curated, not crowded.</span>
+                    </div>
+                </div>
+                <div class="img-carousel-slide">
+                    <img id="strip-img-02" src="https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=1400&q=80" alt="Speaker presenting a deep-dive session on a high-fidelity stage" loading="lazy" decoding="async" />
+                    <div class="carousel-caption" id="caption-wrapper-02">
+                        <span class="carousel-cap-num">02</span>
+                        <span class="carousel-cap-text" id="strip-cap-02">The stage. Built for proof.</span>
+                    </div>
+                </div>
+                <div class="img-carousel-slide">
+                    <img id="strip-img-03" src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1400&q=80" alt="A group of quality engineers collaborating on a technical problem" loading="lazy" decoding="async" />
+                    <div class="carousel-caption" id="caption-wrapper-03">
+                        <span class="carousel-cap-num">03</span>
+                        <span class="carousel-cap-text" id="strip-cap-03">The conversation. Where careers compound.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation arrows -->
+            <button class="carousel-btn carousel-btn-prev" id="carousel-prev" aria-label="Previous image">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+            </button>
+            <button class="carousel-btn carousel-btn-next" id="carousel-next" aria-label="Next image">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,6 15,12 9,18"/></svg>
+            </button>
+        </div>
+
+        <!-- Dot indicators OUTSIDE the carousel so they aren't clipped -->
+        <div class="carousel-dots" id="carousel-dots">
+            <button class="carousel-dot active" data-index="0" aria-label="Slide 1"></button>
+            <button class="carousel-dot" data-index="1" aria-label="Slide 2"></button>
+            <button class="carousel-dot" data-index="2" aria-label="Slide 3"></button>
+        </div>
+    </div>
