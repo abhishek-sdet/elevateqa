@@ -84,7 +84,7 @@ window.showConfirm = (message, title = 'Are you sure?', btnText = 'PROCEED') => 
 
 // ── Section navigation ───────────────────────────────────────────────────────
 window.showSection = (target) => {
-  const validSections = ['attendance','identity','agenda','speakers','visuals','intelligence','settings'];
+  const validSections = ['attendance','email','identity','agenda','speakers','visuals','intelligence','settings'];
   const activeId = validSections.includes(target) ? target : 'attendance';
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
   const activeNav = document.getElementById(`nav-${activeId}`);
@@ -96,6 +96,7 @@ window.showSection = (target) => {
   history.replaceState(null, '', `#${activeId}`);
   const titles = {
     attendance:   ['Attendee Command',  'Real-time registration tracking and verification.'],
+    email:        ['Email Center',      'Dispatch custom blasts to attendees or specific lists.'],
     identity:     ['Site Identity',     'Manage taglines, hero content, and about sections.'],
     agenda:       ['Event Agenda',      'Organize sessions, timestamps, and topics.'],
     speakers:     ['Speaker Roster',    'Curate your featured voices and credentials.'],
@@ -599,3 +600,104 @@ function _renderImgPreview(id, url) {
   const dlLink = document.getElementById(`download-${id}`);
   if (dlLink && url) { dlLink.href = url; dlLink.style.display = 'inline-block'; }
 }
+
+// ── Email Center Logic ───────────────────────────────────────────────────────
+window.toggleCustomEmailInput = () => {
+  const target = document.querySelector('input[name="email-target"]:checked').value;
+  const customContainer = document.getElementById('custom-emails-container');
+  if (target === 'custom') {
+    customContainer.style.display = 'block';
+  } else {
+    customContainer.style.display = 'none';
+  }
+};
+
+window.sendCustomEmail = async () => {
+  const subject = document.getElementById('email-subject').value.trim();
+  const message = document.getElementById('email-message').value.trim();
+  const target = document.querySelector('input[name="email-target"]:checked').value;
+  const statusMsg = document.getElementById('email-status-msg');
+  
+  if (!subject || !message) {
+    statusMsg.style.color = 'var(--accent-red)';
+    statusMsg.textContent = 'Please enter both a subject and a message.';
+    return;
+  }
+
+  let targetEmails = [];
+
+  if (target === 'custom') {
+    const customInput = document.getElementById('custom-emails-input').value.trim();
+    if (!customInput) {
+      statusMsg.style.color = 'var(--accent-red)';
+      statusMsg.textContent = 'Please enter at least one custom email address.';
+      return;
+    }
+    // Parse comma separated emails
+    targetEmails = customInput.split(',').map(e => e.trim()).filter(e => e);
+  } else {
+    // Fetch all attendees from the registrations table
+    statusMsg.style.color = 'var(--text-dim)';
+    statusMsg.textContent = 'Fetching attendee list...';
+    try {
+      const { supabaseClient } = await import('./admin-supabase.js');
+      const { data, error } = await supabaseClient.from('registrations').select('email').neq('status', 'cancelled');
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        statusMsg.style.color = 'var(--accent-red)';
+        statusMsg.textContent = 'No attendees found.';
+        return;
+      }
+      targetEmails = data.map(row => row.email).filter(e => e);
+    } catch (err) {
+      console.error('Error fetching attendees:', err);
+      statusMsg.style.color = 'var(--accent-red)';
+      statusMsg.textContent = 'Error fetching attendees from database.';
+      return;
+    }
+  }
+
+  if (targetEmails.length === 0) {
+    statusMsg.style.color = 'var(--accent-red)';
+    statusMsg.textContent = 'No valid email addresses found.';
+    return;
+  }
+
+  statusMsg.style.color = 'var(--text-dim)';
+  statusMsg.textContent = `Sending to ${targetEmails.length} recipient(s)...`;
+  document.getElementById('btn-send-email').disabled = true;
+
+  try {
+    const FINAL_BACKEND_URL = 'http://localhost:3000';
+
+    const response = await fetch(`${FINAL_BACKEND_URL}/api/send-custom-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject,
+        message,
+        targetEmails
+      })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.error || 'Failed to send custom email');
+    }
+
+    statusMsg.style.color = 'var(--accent)';
+    statusMsg.textContent = `Success! Email blast sent to ${targetEmails.length} recipient(s).`;
+    
+    // Clear the form after sending
+    document.getElementById('email-subject').value = '';
+    document.getElementById('email-message').value = '';
+    if (target === 'custom') document.getElementById('custom-emails-input').value = '';
+
+  } catch (err) {
+    console.error('Error sending custom email:', err);
+    statusMsg.style.color = 'var(--accent-red)';
+    statusMsg.textContent = 'Error sending email: ' + err.message;
+  } finally {
+    document.getElementById('btn-send-email').disabled = false;
+  }
+};
