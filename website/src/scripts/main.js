@@ -43,7 +43,7 @@ window.openSpeakFlow = () => {
 
 // ── MODAL HELPERS ─────────────────────────────────────────────────────────────
 function resetModalViews() {
-  ['price-view','form-view','ticket-view','speaker-view','otp-view'].forEach(id => {
+  ['price-view','form-view','ticket-view','otp-view'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -115,38 +115,6 @@ window.showToast = function(message, type = 'error') {
 // ── OTP & REGISTRATION ────────────────────────────────────────────────────────
 window.pendingRegistration = null;
 const BACKEND_URL = '/.netlify/functions';
-
-window.submitSpeakerForm = async (event) => {
-  if (event) event.preventDefault();
-  const btn = document.getElementById('speaker-submit-btn');
-  const originalText = btn ? btn.innerHTML : '';
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…'; }
-  const name        = (document.getElementById('speaker-name')?.value        || '').trim();
-  const email       = (document.getElementById('speaker-email')?.value       || '').trim();
-  const org         = (document.getElementById('speaker-org')?.value         || '').trim();
-  const designation = (document.getElementById('speaker-designation')?.value || '').trim();
-  const topic       = (document.getElementById('speaker-topic')?.value       || '').trim();
-  const bio         = (document.getElementById('speaker-bio')?.value         || '').trim();
-  const linkedin    = (document.getElementById('speaker-linkedin')?.value    || '').trim();
-  const phone       = (document.getElementById('speaker-phone')?.value       || '').trim();
-  window.pendingRegistration = { type: 'speak', name, email, phone, org, designation, topic, bio, linkedin };
-  try {
-    const response = await fetch(`${BACKEND_URL}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
-    document.getElementById('speaker-view').style.display = 'none';
-    const otpView = document.getElementById('otp-view');
-    if (otpView) { otpView.querySelectorAll('.otp-box').forEach(b => b.value = ''); document.getElementById('otp-error').textContent = ''; otpView.style.display = 'flex'; }
-    const targetEmail = document.getElementById('otp-target-email');
-    if (targetEmail) targetEmail.textContent = email;
-    window.initOTPInputs();
-  } catch (error) {
-    console.error('OTP Send Error:', error);
-    showToast(error.message || 'Failed to send OTP. Please try again.', 'error');
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-  }
-};
 
 window.generateTicket = async function(event) {
   if (event) event.preventDefault();
@@ -235,19 +203,7 @@ window.verifyOTP = async function() {
     const response = await fetch(`${BACKEND_URL}/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Verification failed');
-    if (type === 'speak') {
-      try {
-        const { error } = await supabase.from('speaker_applications').insert([{ name, email, phone, company: org, designation, topic, bio, linkedin, status: 'pending' }]);
-        if (error) console.warn('[ElevateQA] Speaker DB insert skipped:', error.message);
-      } catch(err) { console.warn('[ElevateQA] Speaker DB unavailable:', err); }
-      document.getElementById('otp-view').style.display = 'none';
-      const speakerView = document.getElementById('speaker-view');
-      if (speakerView) {
-        speakerView.style.display = 'block';
-        speakerView.innerHTML = `<div style="text-align:center;padding:40px 0 20px;"><div style="font-size:56px;margin-bottom:20px;">🎤</div><h2>Application <em>Received!</em></h2><p style="color:var(--ink-dim);margin-top:16px;line-height:1.7;font-size:14px;max-width:360px;margin-left:auto;margin-right:auto;">Thank you, <strong>${window.escapeHtml(name)}</strong>! We've received your application to speak at Elevate QA 2026.<br><br>Our team will review your submission and reach out to you at <strong>${window.escapeHtml(email)}</strong>.</p><button class="btn btn-primary" onclick="closeModal()" style="margin-top:32px;width:100%;">Close ✓</button></div>`;
-      }
-      return;
-    }
+    
     // Attend flow
     let dbId = null, shortId = null;
     const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, status: 'confirmed' }]).select();

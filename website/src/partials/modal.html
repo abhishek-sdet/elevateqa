@@ -150,47 +150,6 @@
 
     </div>
 
-    <!-- STEP 3: SPEAKER APPLICATION FORM -->
-    <div id="speaker-view" style="display:none;">
-      <h2 id="speaker-form-title">Apply to <em>Speak</em></h2>
-      <p style="color:var(--ink-dim);font-size:13px;margin-bottom:24px;line-height:1.5;">Tell us about your work and what you'd like to present. We'll review and get back to you.</p>
-      <form class="reg-form" onsubmit="submitSpeakerForm(event)">
-        <div class="form-group">
-          <label for="speaker-name">Full Name</label>
-          <input type="text" id="speaker-name" name="name" autocomplete="name" required>
-        </div>
-        <div class="form-group">
-          <label for="speaker-email">Professional Email</label>
-          <input type="email" id="speaker-email" name="email" autocomplete="email" required>
-        </div>
-        <div class="form-group">
-          <label for="speaker-phone">Phone Number</label>
-          <input type="tel" id="speaker-phone" name="phone" autocomplete="tel" placeholder="+91 XXXXX XXXXX" required>
-        </div>
-        <div class="form-group">
-          <label for="speaker-org">Company / Organization</label>
-          <input type="text" id="speaker-org" name="organization" autocomplete="organization" required>
-        </div>
-        <div class="form-group">
-          <label for="speaker-designation">Current Role / Designation</label>
-          <input type="text" id="speaker-designation" name="designation" required>
-        </div>
-        <div class="form-group">
-          <label for="speaker-topic">Talk Title / Topic Idea</label>
-          <input type="text" id="speaker-topic" name="topic" placeholder="e.g. How we cut flaky tests by 80% using AI" required>
-        </div>
-        <div class="form-group">
-          <label for="speaker-bio">Brief Bio (2–3 sentences)</label>
-          <textarea id="speaker-bio" name="bio" rows="3" required style="background:var(--bg);border:1px solid var(--line);padding:14px;color:var(--ink);font-family:var(--body);font-size:14px;resize:vertical;transition:border-color 0.3s;"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="speaker-linkedin">LinkedIn Profile URL</label>
-          <input type="url" id="speaker-linkedin" name="linkedin" required>
-        </div>
-        <button type="submit" class="btn btn-primary" id="speaker-submit-btn" style="width:100%;margin-top:10px;">Submit Application →</button>
-      </form>
-      <button class="btn btn-secondary" onclick="openChooser(event);closeModal();" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--line);color:var(--ink-dim);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">← Back to Options</button>
-    </div>
 
     <!-- STEP: OTP VERIFICATION -->
     <div id="otp-view" style="display:none;">
