@@ -279,17 +279,27 @@
 .reg-form { display: flex; flex-direction: column; gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group label { font-family: var(--mono); font-size: 10px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; }
-.form-group input {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  padding: 14px;
+.form-group input, .form-group textarea {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  border-radius: 12px;
   color: var(--ink);
   font-family: var(--body);
-  font-size: 14px;
-  transition: border-color 0.3s;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-.form-group input:focus { border-color: var(--accent); outline: none; }
-
+.form-group input:hover, .form-group textarea:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--accent);
+  background: rgba(212, 255, 58, 0.02);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(212, 255, 58, 0.15);
+  outline: none;
+}
 .ticket-box {
   background: #f4f1ea;
   color: #0b0b10;
