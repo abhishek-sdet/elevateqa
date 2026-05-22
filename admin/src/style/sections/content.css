@@ -28,7 +28,7 @@ section#coming { background: #000000; }
 .coming-visual .orbit.c { bottom: 8%; left: 50%; transform: translateX(-50%); width: 10px; height: 10px; background: var(--accent-4); }
 .coming-visual .orbit.d { top: 50%; left: 4%; transform: translateY(-50%); background: var(--accent); }
 .coming-content h2 { font-family: var(--display); font-size: clamp(36px, 5vw, 64px); font-weight: 300; line-height: 1; letter-spacing: -0.03em; margin-bottom: 24px; }
-.coming-content h2 em { font-style: italic; color: var(--accent); }
+.coming-content h2 em, .coming-content h2 .accent { font-style: italic; color: var(--accent); }
 .coming-content p { color: var(--ink-dim); font-size: 17px; line-height: 1.6; margin-bottom: 24px; max-width: 480px; }
 .reveal-list { list-style: none; border-top: 1px solid var(--line); }
 .reveal-list li { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; }

@@ -114,9 +114,7 @@ window.showToast = function(message, type = 'error') {
 
 // ── OTP & REGISTRATION ────────────────────────────────────────────────────────
 window.pendingRegistration = null;
-const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000'
-  : 'https://elevateqa-backend.up.railway.app';
+const BACKEND_URL = '/.netlify/functions';
 
 window.submitSpeakerForm = async (event) => {
   if (event) event.preventDefault();
@@ -133,7 +131,7 @@ window.submitSpeakerForm = async (event) => {
   const phone       = (document.getElementById('speaker-phone')?.value       || '').trim();
   window.pendingRegistration = { type: 'speak', name, email, phone, org, designation, topic, bio, linkedin };
   try {
-    const response = await fetch(`${BACKEND_URL}/api/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    const response = await fetch(`${BACKEND_URL}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
     document.getElementById('speaker-view').style.display = 'none';
@@ -170,7 +168,7 @@ window.generateTicket = async function(event) {
     }
   } catch(e) { console.warn('DB check failed or unavailable:', e); }
   try {
-    const response = await fetch(`${BACKEND_URL}/api/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    const response = await fetch(`${BACKEND_URL}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
     window.pendingRegistration = { type: 'attend', name, email, phone, org, designation, linkedin };
@@ -190,7 +188,7 @@ window.generateTicket = async function(event) {
 
 window.resendOTP = function() {
   if (window.pendingRegistration && window.pendingRegistration.email) {
-    fetch(`${BACKEND_URL}/api/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: window.pendingRegistration.email }) })
+    fetch(`${BACKEND_URL}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: window.pendingRegistration.email }) })
       .then(res => res.json()).then(data => {
         if (data.success) showToast('A new code has been sent to your email.', 'success');
         else showToast('Failed to resend code: ' + data.error, 'error');
@@ -234,7 +232,7 @@ window.verifyOTP = async function() {
   document.getElementById('otp-error').textContent = '';
   const { type, email, name, phone, org, designation, linkedin, topic, bio } = window.pendingRegistration;
   try {
-    const response = await fetch(`${BACKEND_URL}/api/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
+    const response = await fetch(`${BACKEND_URL}/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Verification failed');
     if (type === 'speak') {

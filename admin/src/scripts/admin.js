@@ -272,27 +272,25 @@ function sendOTP(e) {
     document.getElementById('auth-step-1').style.display = 'none';
     document.getElementById('auth-step-2').style.display = 'block';
     
-    CURRENT_OTP = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Send to the email that is trying to log in
-    fetch(`https://formsubmit.co/ajax/${inputEmail}`, {
+    // Send OTP using custom Node.js backend
+    fetch('http://localhost:3000/api/send-otp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: "Elevate QA Admin — Login Code",
-        "Your Login OTP": CURRENT_OTP,
-        _replyto: inputEmail
-      })
-    }).then(res => res.json()).then(data => {
-      if (data.success === 'true' || data.success === true) {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inputEmail })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
         showAuthToast("OTP sent to your Email!");
+        // We store the email globally to verify it later
+        window.CURRENT_ADMIN_EMAIL = inputEmail;
       } else {
-        CURRENT_OTP = "123456";
-        showAuthToast("Email API Error. Fallback code: 123456", true);
+        showAuthToast("Failed to send OTP. Check backend.", true);
       }
-    }).catch(err => {
-      CURRENT_OTP = "123456";
-      showAuthToast("Network error. Fallback code: 123456", true);
+    })
+    .catch(err => {
+      console.error(err);
+      showAuthToast("Network error. Backend down?", true);
     });
   } else {
     showConfirm(`The email "${inputEmail}" is not authorized to access this panel.`, "Unauthorized Access", "CLOSE");
@@ -324,15 +322,32 @@ function handleBackspace(el, e) {
 
 function verifyOTP() {
   const enteredCode = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
-  console.log("Verification Attempt:", { enteredCode, CURRENT_OTP });
+  const email = window.CURRENT_ADMIN_EMAIL;
 
-  if (enteredCode === CURRENT_OTP) {
-    console.log("Verify Successful");
-    sessionStorage.setItem('admin_logged_in', 'true');
-    location.reload();
-  } else {
-    showAuthToast("Incorrect Code", true);
+  if (enteredCode.length < 6) {
+    showAuthToast("Please enter the full 6-digit code.", true);
+    return;
   }
+
+  fetch('http://localhost:3000/api/verify-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp: enteredCode })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      console.log("Verify Successful");
+      sessionStorage.setItem('admin_logged_in', 'true');
+      location.reload();
+    } else {
+      showAuthToast(data.error || "Incorrect Code", true);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    showAuthToast("Network error during verification.", true);
+  });
 }
 
 function logout() { sessionStorage.removeItem('admin_logged_in'); location.reload(); }

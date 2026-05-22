@@ -70,6 +70,10 @@ CREATE TABLE IF NOT EXISTS public.registrations (
 
 -- Aggressive Migration: Ensure 'company' exists even if table was created earlier
 ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS company text;
+ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS phone text;
+ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS designation text;
+ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS linkedin text;
+ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS status text DEFAULT 'confirmed';
 
 -- Migration: Rename organization to company if it exists from older versions
 DO $$ 
@@ -143,6 +147,21 @@ ALTER TABLE public.branding ADD COLUMN IF NOT EXISTS strip_cap_3 text;
 CREATE TABLE IF NOT EXISTS public.manifesto (
   id uuid PRIMARY KEY DEFAULT '00000000-0000-0000-0000-000000000001',
   content text
+);
+
+-- 9. speaker_applications
+CREATE TABLE IF NOT EXISTS public.speaker_applications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz DEFAULT now(),
+  name text NOT NULL,
+  email text NOT NULL,
+  phone text,
+  company text,
+  designation text,
+  topic text,
+  bio text,
+  linkedin text,
+  status text DEFAULT 'pending'
 );
 
 -- ═══════════════════════════════════════════════════════════════════════════

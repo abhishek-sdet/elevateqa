@@ -667,12 +667,10 @@ window.sendCustomEmail = async () => {
   statusMsg.textContent = `Sending to ${targetEmails.length} recipient(s)...`;
   document.getElementById('btn-send-email').disabled = true;
 
-  try {
-    const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                        ? 'http://localhost:3000' 
-                        : 'https://elevateqa-backend.up.railway.app';
+    try {
+    const BACKEND_URL = '/.netlify/functions';
     
-    const response = await fetch(`${BACKEND_URL}/api/send-custom-email`, {
+    const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
