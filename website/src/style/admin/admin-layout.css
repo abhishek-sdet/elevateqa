@@ -13,6 +13,7 @@ body {
 /* SIDEBAR NAVIGATION */
 .sidebar { 
   width: 320px; 
+  flex-shrink: 0;
   background: var(--bg-2);
   border-right: 1px solid var(--line); 
   padding: 48px 24px; /* Reduced padding for better fit */
@@ -66,6 +67,7 @@ body {
 /* MAIN DASHBOARD AREA */
 .main-content { 
   flex: 1; display: flex; flex-direction: column; height: 100vh; 
+  min-width: 0;
   background: radial-gradient(circle at 100% 0%, #0d0d14 0%, #050508 100%);
 }
 .top-header { 
