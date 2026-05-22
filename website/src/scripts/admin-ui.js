@@ -668,9 +668,11 @@ window.sendCustomEmail = async () => {
   document.getElementById('btn-send-email').disabled = true;
 
   try {
-    const FINAL_BACKEND_URL = 'http://localhost:3000';
-
-    const response = await fetch(`${FINAL_BACKEND_URL}/api/send-custom-email`, {
+    const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                        ? 'http://localhost:3000' 
+                        : 'https://elevateqa-backend.up.railway.app';
+    
+    const response = await fetch(`${BACKEND_URL}/api/send-custom-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
