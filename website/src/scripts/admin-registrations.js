@@ -74,14 +74,16 @@ window.renderAttendees = (registrations) => {
         <td>${p.company     || '—'}</td>
         <td>${p.designation || '—'}</td>
         <td>${p.email || '—'}</td>
-        <td>${p.mobile || '—'}</td>
+        <td>${p.phone || '—'}</td>
         <td>${linkedinLink}</td>
         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '—'}</td>
         <td>${isPresent ? '<span class="badge" style="background:var(--accent); color:#000;">Present</span>' : '<span class="badge">Verified</span>'}</td>
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
-        <td style="text-align: right;">
-          <button class="btn-mini" onclick="resetAttendeeStatus('${p.id}')" title="Reset Status to Verified" style="color:var(--ink-main); border-color:rgba(255,255,255,0.2); margin-right: 4px;">↻</button>
-          <button class="btn-mini" onclick="deleteAttendee('${p.id}')" title="Delete Registration" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2);">✕</button>
+        <td>
+          <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button class="btn-mini" onclick="resetAttendeeStatus('${p.id}')" title="Reset Status to Verified" style="color:var(--ink-main); border-color:rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">↻</button>
+            <button class="btn-mini" onclick="deleteAttendee('${p.id}')" title="Delete Registration" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">✕</button>
+          </div>
         </td>
       </tr>
     `;
