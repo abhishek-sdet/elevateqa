@@ -397,6 +397,17 @@ export async function savePillar(item) {
   return res.data && res.data[0] ? res.data[0].id : null;
 }
 
+export async function updateRegistrationStatus(id, status) {
+  try {
+    const { error } = await supabase.from('registrations').update({ status }).eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error('Error updating status:', err);
+    return false;
+  }
+}
+
 export async function deleteItem(table, id) {
   const { error } = await supabase
     .from(table)
