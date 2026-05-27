@@ -73,14 +73,23 @@
 }
 
 @media (max-width: 768px) {
-  .prizes-strip { padding: 64px 24px !important; }
-  .prizes-strip h2 { font-size: 30px !important; margin-bottom: 40px !important; line-height: 1.15 !important; }
+  .prizes-strip { padding: 48px 24px !important; }
+  .prizes-strip h2 { font-size: 26px !important; margin-bottom: 24px !important; line-height: 1.15 !important; }
   .prizes-stats { 
-    flex-direction: column !important; 
-    gap: 32px !important; 
-    align-items: center !important;
+    flex-direction: row !important; 
+    gap: 24px 16px !important; 
+    align-items: flex-start !important;
+    justify-content: center !important;
   }
-  .prizes-stats strong, .prizes-stats .num { font-size: 24px !important; margin-bottom: 8px !important; }
-  .prizes-stats > span, .prizes-stats .stat-item { font-size: 11px !important; }
+  .prizes-stats > span:nth-child(1), .prizes-stats .stat-item:nth-child(1),
+  .prizes-stats > span:nth-child(2), .prizes-stats .stat-item:nth-child(2) {
+    flex: 0 0 calc(50% - 12px) !important;
+  }
+  .prizes-stats > span:nth-child(3), .prizes-stats .stat-item:nth-child(3) {
+    flex: 0 0 100% !important;
+    margin-top: 8px !important;
+  }
+  .prizes-stats strong, .prizes-stats .num { font-size: 22px !important; margin-bottom: 6px !important; }
+  .prizes-stats > span, .prizes-stats .stat-item { font-size: 10px !important; }
   .prizes-strip::before, .prizes-strip::after { font-size: 10px !important; }
 }
