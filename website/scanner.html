@@ -11,6 +11,7 @@
   <!-- SUPABASE SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
+  <!-- html5-qrcode: fallback for older browsers only -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
@@ -23,7 +24,6 @@
       --ink-dim: #8a8794;
       --line: rgba(212, 255, 58, 0.1);
       --glass: rgba(12, 12, 18, 0.7);
-      
       --display: 'Fraunces', serif;
       --body: 'Manrope', sans-serif;
       --mono: 'JetBrains Mono', monospace;
@@ -36,7 +36,6 @@
       user-select: none;
     }
 
-    /* GRID BACKGROUND */
     .bg-grid {
       position: fixed; inset: 0;
       background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
@@ -44,12 +43,10 @@
       z-index: -1; opacity: 0.3;
     }
 
-    /* APP SHELL */
     .app-container {
       display: flex; flex-direction: column; height: 100%; position: relative;
     }
 
-    /* TOP BAR */
     .top-bar {
       padding: 24px; display: flex; justify-content: space-between; align-items: center;
       background: linear-gradient(to bottom, var(--bg), transparent);
@@ -64,22 +61,28 @@
       letter-spacing: 0.05em; color: var(--accent); display: flex; align-items: center; gap: 6px;
     }
     .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
-
     @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-    /* CAMERA VIEWPORT */
     .scanner-viewport {
       flex: 1; position: relative; background: #000;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
+
+    /* Native BarcodeDetector path */
+    #native-video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: none;
+    }
+    #native-canvas { display: none; }
+
+    /* html5-qrcode fallback */
     #qr-reader { width: 100% !important; height: 100% !important; border: none !important; }
     #qr-reader video { object-fit: cover !important; }
     #qr-reader__scan_region { padding: 0 !important; }
     #qr-reader__dashboard { display: none !important; }
     #qr-reader img { display: none !important; }
 
-    /* HUD OVERLAY */
     .hud {
       position: absolute; inset: 0; z-index: 10; pointer-events: none;
       display: flex; align-items: center; justify-content: center;
@@ -104,12 +107,11 @@
       position: absolute; top: 0; left: 20px; right: 20px; height: 2px;
       background: linear-gradient(90deg, transparent, var(--accent), transparent);
       box-shadow: 0 0 20px var(--accent);
-      animation: scanAnim 3s ease-in-out infinite;
+      animation: scanAnim 1.5s ease-in-out infinite;
       display: none;
     }
     @keyframes scanAnim { 0%, 100% { top: 15%; opacity: 0.2; } 50% { top: 85%; opacity: 1; } }
 
-    /* CONTROLS */
     .scanner-controls {
       position: absolute; bottom: 60px; left: 0; right: 0;
       display: flex; flex-direction: column; align-items: center; gap: 24px; z-index: 50;
@@ -135,7 +137,6 @@
     }
     .icon-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-    /* RESULTS OVERLAY */
     .result-overlay {
       position: fixed; inset: 0; z-index: 500;
       background: rgba(5,5,8,0.95); backdrop-filter: blur(20px);
@@ -156,12 +157,9 @@
       position: relative;
     }
     
-    /* PAYTM-STYLE CHECKMARK */
     .checkmark-svg {
-      width: 80px; height: 80px;
-      display: block; stroke-width: 5; stroke: currentColor;
-      stroke-miterlimit: 10;
-      stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      width: 80px; height: 80px; display: block; stroke-width: 5; stroke: currentColor;
+      stroke-miterlimit: 10; stroke-dasharray: 1000; stroke-dashoffset: 1000;
       animation: drawCheck 0.8s cubic-bezier(0.65, 0, 0.45, 1) forwards 0.2s;
     }
     .check-circle {
@@ -173,7 +171,6 @@
       stroke-dasharray: 48; stroke-dashoffset: 48;
       animation: drawCheck 0.4s cubic-bezier(0.65, 0, 0.45, 1) forwards 0.5s;
     }
-    
     @keyframes drawCheck { to { stroke-dashoffset: 0; } }
     @keyframes outline { to { stroke-dashoffset: 0; } }
     
@@ -211,7 +208,6 @@
     }
     .next-btn:active { background: #fff; color: #000; }
 
-    /* LOCK SCREEN */
     .lock-screen {
       position: fixed; inset: 0; z-index: 1000; background: var(--bg);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -239,13 +235,11 @@
 
     #lock-error { color: var(--accent-red); font-size: 12px; margin-top: 16px; display: none; font-family: var(--mono); }
 
-    /* FLASH EFFECT */
     .flash {
       position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000;
     }
     .flash.active { animation: flashEffect 0.5s ease-out; }
     @keyframes flashEffect { 0% { opacity: 1; } 100% { opacity: 0; } }
-
   </style>
 </head>
 <body>
@@ -253,7 +247,6 @@
 <div class="bg-grid"></div>
 <div class="flash" id="flash"></div>
 
-<!-- LOCK SCREEN -->
 <div class="lock-screen" id="lock-screen">
   <div class="lock-card">
     <div class="lock-logo">Elevate<span>Scanner</span></div>
@@ -273,6 +266,10 @@
   </header>
 
   <main class="scanner-viewport">
+    <!-- Native BarcodeDetector path: raw video element -->
+    <video id="native-video" playsinline autoplay muted></video>
+    <canvas id="native-canvas"></canvas>
+    <!-- html5-qrcode fallback container -->
     <div id="qr-reader"></div>
     <div class="hud">
       <div class="scan-guide" id="guide">
@@ -295,7 +292,6 @@
     </div>
   </div>
 
-  <!-- RESULT OVERLAY -->
   <div class="result-overlay" id="result-overlay">
     <div class="result-card" id="result-card">
       <div class="result-icon" id="res-icon">✓</div>
@@ -309,27 +305,42 @@
 </div>
 
 <script>
-  // SUPABASE INITIALIZATION (Direct CDN approach for reliability)
+  // SUPABASE INITIALIZATION
   const SUPABASE_URL = 'https://wbgxcadajmdjxfhsgose.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
   let supabaseClient = null;
 
   try {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    window.supabaseInstance = supabaseClient;
-  } catch (e) {
-    console.error("Supabase Init Error:", e);
-  }
+  } catch (e) { console.error("Supabase Init Error:", e); }
 
-  let html5QrCode = null;
   let isScanning = false;
   let isProcessing = false;
   let torchOn = false;
   let lastScanned = '';
   let lastScannedTime = 0;
-  const COOLDOWN = 1500; // Aggressive reset for high throughput
+  const COOLDOWN = 1500;
 
-  // 1. ACCESS CONTROL
+  // ── ENGINE DETECTION ─────────────────────────────────────────────────────────
+  // Native BarcodeDetector is available on:
+  //   iOS 17+ Safari, Chrome 83+, Edge 83+, Samsung Internet
+  // Falls back to html5-qrcode for older browsers
+  const useNative = typeof BarcodeDetector !== 'undefined';
+  console.log(`[Scanner] Engine: ${useNative ? 'Native BarcodeDetector ✅ (Paytm-speed)' : 'html5-qrcode fallback'}`);
+
+  // Native engine refs
+  let nativeStream = null;
+  let nativeDetector = null;
+  let rafId = null;
+  let scanLoopActive = false;
+  const nativeVideo = document.getElementById('native-video');
+  const nativeCanvas = document.getElementById('native-canvas');
+  const nativeCtx = nativeCanvas.getContext('2d', { willReadFrequently: true });
+
+  // Fallback engine ref
+  let html5QrCode = null;
+
+  // ── ACCESS CONTROL ────────────────────────────────────────────────────────────
   function unlock() {
     const code = document.getElementById('access-code').value;
     if (code === 'Sdet@2026') {
@@ -358,7 +369,7 @@
     }
   }
 
-  // 2. SCANNER LOGIC
+  // ── SCANNER CONTROL ───────────────────────────────────────────────────────────
   async function toggleScan() {
     if (isScanning) await stopScan();
     else await startScan();
@@ -366,32 +377,11 @@
 
   async function startScan() {
     try {
-      if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
-      
-      const config = { 
-        fps: 15,
-        qrbox: (viewWidth, viewHeight) => {
-            const size = Math.min(viewWidth, viewHeight) * 0.75;
-            return { width: size, height: size };
-        },
-        aspectRatio: 1.0,
-        disableFlip: false,
-        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-        experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true
-        }
-      };
-
-      // iOS Safari Fix: Do NOT call getCameras() before start().
-      // getCameras() internally calls getUserMedia which consumes the iOS camera permission grant.
-      // Calling start() afterwards triggers a SECOND getUserMedia which iOS denies.
-      // Solution: Use facingMode directly — single getUserMedia call, works on all browsers.
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        config,
-        onScanSuccess
-      );
-      
+      if (useNative) {
+        await startNativeScan();
+      } else {
+        await startFallbackScan();
+      }
       isScanning = true;
       document.getElementById('toggle-btn').classList.add('active');
       document.getElementById('toggle-btn').querySelector('span').textContent = 'STOP SCANNER';
@@ -399,33 +389,104 @@
       document.getElementById('scan-line').style.display = 'block';
     } catch (e) {
       console.error("Camera start failed:", e);
-      // Show a more helpful error with the actual error details
-      const msg = e && e.message ? e.message : String(e);
-      alert("Camera access failed: " + msg + "\n\nPlease ensure you tapped 'Allow' when prompted.");
+      alert("Camera failed: " + (e && e.message ? e.message : String(e)));
     }
   }
 
-  async function stopScan() {
-    if (html5QrCode && isScanning) {
-      await html5QrCode.stop();
-      isScanning = false;
-      document.getElementById('toggle-btn').classList.remove('active');
-      document.getElementById('toggle-btn').querySelector('span').textContent = 'START SCANNER';
-      document.getElementById('guide').classList.remove('active');
-      document.getElementById('scan-line').style.display = 'none';
+  // ── NATIVE BARCODE DETECTOR PATH ─────────────────────────────────────────────
+  // This is the same API used internally by Paytm, PhonePe, Google Lens etc.
+  // It uses hardware-accelerated QR decoding, runs at full camera frame rate.
+  async function startNativeScan() {
+    // Single getUserMedia call — no getCameras() to avoid iOS double-permission issue
+    nativeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' },
+      audio: false
+    });
+
+    nativeVideo.srcObject = nativeStream;
+    nativeVideo.style.display = 'block';
+    await nativeVideo.play();
+
+    nativeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+    scanLoopActive = true;
+    scanFrameLoop();
+  }
+
+  async function scanFrameLoop() {
+    if (!scanLoopActive) return;
+
+    if (nativeVideo.readyState >= 2) { // HAVE_CURRENT_DATA or better
+      nativeCanvas.width = nativeVideo.videoWidth;
+      nativeCanvas.height = nativeVideo.videoHeight;
+      nativeCtx.drawImage(nativeVideo, 0, 0);
+
+      try {
+        const barcodes = await nativeDetector.detect(nativeCanvas);
+        if (barcodes.length > 0) {
+          await onScanSuccess(barcodes[0].rawValue);
+        }
+      } catch (_) { /* detection errors are non-fatal */ }
     }
+
+    // Schedule next frame — runs at display refresh rate (~60fps on iPhone)
+    rafId = requestAnimationFrame(scanFrameLoop);
+  }
+
+  // ── HTML5-QRCODE FALLBACK PATH ────────────────────────────────────────────────
+  async function startFallbackScan() {
+    if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+
+    const config = {
+      fps: 30,
+      qrbox: (w, h) => ({ width: Math.min(w, h) * 0.8, height: Math.min(w, h) * 0.8 }),
+      aspectRatio: 1.0,
+      disableFlip: false,
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+    };
+
+    // No getCameras() call — single getUserMedia (iOS Safari fix)
+    await html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess);
+  }
+
+  // ── STOP ──────────────────────────────────────────────────────────────────────
+  async function stopScan() {
+    isScanning = false;
+    scanLoopActive = false;
+
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (nativeStream) {
+      nativeStream.getTracks().forEach(t => t.stop());
+      nativeStream = null;
+    }
+    nativeVideo.srcObject = null;
+    nativeVideo.style.display = 'none';
+
+    if (html5QrCode) {
+      try { await html5QrCode.stop(); } catch (_) {}
+    }
+
+    document.getElementById('toggle-btn').classList.remove('active');
+    document.getElementById('toggle-btn').querySelector('span').textContent = 'START SCANNER';
+    document.getElementById('guide').classList.remove('active');
+    document.getElementById('scan-line').style.display = 'none';
   }
 
   async function toggleTorch() {
     if (!isScanning) return;
     try {
       torchOn = !torchOn;
-      await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+      if (nativeStream) {
+        const track = nativeStream.getVideoTracks()[0];
+        await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+      } else if (html5QrCode) {
+        await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+      }
       document.getElementById('torch-btn').classList.toggle('active', torchOn);
     } catch(e) {}
   }
 
-  // 3. PROCESSING
+  // ── PROCESSING ────────────────────────────────────────────────────────────────
   async function onScanSuccess(decodedText) {
     if (isProcessing) return;
     const now = Date.now();
@@ -437,7 +498,6 @@
 
     triggerFlash();
     if (navigator.vibrate) navigator.vibrate(100);
-
     await processTicket(decodedText);
   }
 
@@ -450,8 +510,8 @@
     }
 
     if (!supabaseClient) {
-        renderResult('error', 'ERROR', 'Database Error', 'Supabase client not initialized', 'ERROR');
-        return;
+      renderResult('error', 'ERROR', 'Database Error', 'Supabase client not initialized', 'ERROR');
+      return;
     }
 
     const ticketId = raw.replace('ELEVATE-QA:', '').split('|')[0].trim();
@@ -531,7 +591,6 @@
     setTimeout(() => { isProcessing = false; }, 500);
   }
 
-  // FLASH EFFECT
   function triggerFlash() {
     const f = document.getElementById('flash');
     f.classList.remove('active');
