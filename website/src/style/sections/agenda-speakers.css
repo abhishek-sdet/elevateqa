@@ -230,17 +230,21 @@
   }
 
   /* CTA card (SUBMISSIONS / OPEN) — accent color badges, visible on dark bg */
+  /* CTA card — intentionally dark on mobile to avoid forced-dark-mode inversion issues */
   .speaker-cta-card {
-    background: var(--accent) !important;
+    background: var(--bg-2) !important;
+    border: 1px solid rgba(212, 255, 58, 0.3) !important;
   }
   .speaker-cta-card .pitch,
-  .speaker-cta-card .pitch em,
   .speaker-cta-card a {
-    color: #000 !important;
+    color: #fff !important;
+  }
+  .speaker-cta-card .pitch em {
+    color: var(--accent) !important;
   }
   .speaker-cta-card .top > span {
     color: var(--accent) !important;
-    background: rgba(0, 0, 0, 0.35) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
     border-color: rgba(212, 255, 58, 0.3) !important;
     text-shadow: none !important;
   }
