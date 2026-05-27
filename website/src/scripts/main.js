@@ -122,7 +122,10 @@ window.generateTicket = async function(event) {
   const email       = document.getElementById('reg-email').value;
   const org         = document.getElementById('reg-org').value;
   const designation = document.getElementById('reg-designation').value;
-  const linkedin    = document.getElementById('reg-linkedin').value;
+  let linkedin      = document.getElementById('reg-linkedin').value.trim();
+  if (linkedin && !/^https?:\/\//i.test(linkedin)) {
+    linkedin = 'https://' + linkedin;
+  }
   const phone       = document.getElementById('reg-phone')?.value || '';
   const btn = document.querySelector('#form-view button[type="submit"]');
   const originalBtnText = btn ? btn.innerHTML : '';
@@ -263,16 +266,34 @@ window.shareOnLinkedIn = function() {
 
 window.copyLink = function(e) {
   if (e) e.preventDefault();
-  const btn = document.getElementById('copyLink');
+  const btn = document.getElementById('copyLink') || (e ? e.currentTarget : null);
   const url = window.location.href;
   const applyFeedback = () => {
-    if (btn) { const orig = btn.textContent; btn.textContent = 'Copied! ✓'; btn.style.color = '#b8ff57'; setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2500); }
+    if (btn) { 
+      // If it's the card itself, let's target the inner link or the card itself
+      const textEl = btn.id === 'copy-link-btn' || btn.id === 'copyLink' ? btn : (btn.querySelector('.link') || btn);
+      const orig = textEl.textContent; 
+      textEl.textContent = 'Copied! ✓'; 
+      textEl.style.color = '#b8ff57'; 
+      setTimeout(() => { textEl.textContent = orig; textEl.style.color = ''; }, 2500); 
+    }
+    if (window.showToast) {
+      window.showToast('Event invite link copied to clipboard!', 'success');
+    }
   };
-  navigator.clipboard.writeText(url).then(applyFeedback).catch(() => {
-    const ta = document.createElement('textarea'); ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(applyFeedback).catch(() => {
+      fallbackCopyTextToClipboard(url, applyFeedback);
+    });
+  } else {
+    fallbackCopyTextToClipboard(url, applyFeedback);
+  }
+  
+  function fallbackCopyTextToClipboard(text, cb) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    applyFeedback();
-  });
+    cb();
+  }
 };
 
 // ── IMAGE CAROUSEL ─────────────────────────────────────────────────────────────

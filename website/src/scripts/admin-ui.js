@@ -169,6 +169,7 @@ window.showIdentitySubSection = (subId) => {
       'speakers-section-num-input': sc.speakersSectionNum  || '05 / The Lineup',
       'speakers-section-title':     sc.speakersSectionTitle|| 'A roster built for proof.',
       'speakers-intro':             sc.speakersIntro       || "We're curating a lineup of keynote voices, practitioner breakouts, and community panels.",
+      'speakers-placeholder':       sc.speakersPlaceholder || 'To be revealed',
       'involve-section-num':        sc.involveSectionNum   || '07 / Get Involved',
       'involve-title':              sc.involveTitle        || 'How to participate.',
       'footer-email':               sc.footerEmail         || 'elevateqa@sdettech.com'
@@ -443,7 +444,7 @@ window.addPillarItem = (data = { id: null, title: '', desc: '' }) => {
 export function populateUI(data) {
   const setVal = (id, val) => {
     const el = document.getElementById(id);
-    if (el) el.value = (val !== undefined && val !== null && val !== '') ? val : (el.placeholder || '');
+    if (el) el.value = (val !== undefined && val !== null) ? val : (el.placeholder || '');
   };
 
   const sc = data.site_content || {};
@@ -451,9 +452,9 @@ export function populateUI(data) {
   // Migrations
   if (!sc.manifestoSectionNum) sc.manifestoSectionNum = '01 / MANIFESTO';
   let heroEd = sc.heroEdition || '';
-  if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) sc.heroEdition = 'Edition 2';
+  if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('EDITION 2') || heroEd.toUpperCase().includes('INAUGURAL')) sc.heroEdition = 'Edition 3';
   let footerEd = sc.footerEdition || '';
-  if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) sc.footerEdition = 'Edition 2';
+  if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('EDITION 2') || footerEd.toUpperCase().includes('INAUGURAL')) sc.footerEdition = 'Edition 3';
   if (sc.involveCard2Title === 'Host' || !sc.involveCard2Title) { sc.involveCard2Title = 'Attend'; sc.involveCard2LinkText = 'SECURE YOUR ELITE PASS &rarr;'; }
   if (!sc.involveCard1LinkText) sc.involveCard1LinkText = 'SUBMIT YOUR TALK &rarr;';
   if (!sc.involveCard3LinkText) sc.involveCard3LinkText = 'COPY EVENT INVITE &rarr;';
@@ -477,6 +478,7 @@ export function populateUI(data) {
   setVal('agenda-section-num', sc.agendaSectionNum); setVal('agenda-section-title', sc.agendaSectionTitle);
   setVal('speakers-section-num-input', sc.speakersSectionNum); setVal('speakers-section-title', sc.speakersSectionTitle);
   setVal('speakers-intro', sc.speakersIntro);
+  setVal('speakers-placeholder', sc.speakersPlaceholder || 'To be revealed');
   setVal('involve-section-num', sc.involveSectionNum); setVal('involve-title', sc.involveTitle);
   ['1','2','3'].forEach(n => {
     setVal(`involve-card${n}-title`, sc[`involveCard${n}Title`]); setVal(`involve-card${n}-desc`, sc[`involveCard${n}Desc`]);

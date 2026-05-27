@@ -112,6 +112,7 @@ window.saveAll = async () => {
       agendaSectionNum: getVal('agenda-section-num'), agendaSectionTitle: getVal('agenda-section-title'),
       speakersSectionNum: getVal('speakers-section-num-input'),
       speakersSectionTitle: getVal('speakers-section-title'), speakersIntro: getVal('speakers-intro'),
+      speakersPlaceholder: getVal('speakers-placeholder'),
       involveSectionNum: getVal('involve-section-num'), involveTitle: getVal('involve-title'),
       involveCard1Title: getVal('involve-card1-title'), involveCard1Desc: getVal('involve-card1-desc'),
       involveCard1Link: getVal('involve-card1-link'),   involveCard1LinkText: getVal('involve-card1-link-text'),

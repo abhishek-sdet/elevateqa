@@ -81,38 +81,34 @@ document.addEventListener('DOMContentLoaded', () => {
 // Global function called via onclick="copyLink(event)" in involve.html
 window.copyLink = function(e) {
   if (e) e.preventDefault();
-  const btn = document.getElementById('copyLink');
+  const btn = document.getElementById('copyLink') || (e ? e.currentTarget : null);
   const url = window.location.href;
-
-  navigator.clipboard.writeText(url).then(() => {
-    if (btn) {
-      const original = btn.textContent;
-      btn.textContent = 'Copied! ✓';
-      btn.style.color = '#b8ff57';
-      setTimeout(() => {
-        btn.textContent = original;
-        btn.style.color = '';
-      }, 2500);
+  const applyFeedback = () => {
+    if (btn) { 
+      const textEl = btn.id === 'copy-link-btn' || btn.id === 'copyLink' ? btn : (btn.querySelector('.link') || btn);
+      const orig = textEl.textContent; 
+      textEl.textContent = 'Copied! ✓'; 
+      textEl.style.color = '#b8ff57'; 
+      setTimeout(() => { textEl.textContent = orig; textEl.style.color = ''; }, 2500); 
     }
-  }).catch(() => {
-    // Fallback for older browsers
-    const ta = document.createElement('textarea');
-    ta.value = url;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    if (btn) {
-      const original = btn.textContent;
-      btn.textContent = 'Copied! ✓';
-      btn.style.color = '#b8ff57';
-      setTimeout(() => {
-        btn.textContent = original;
-        btn.style.color = '';
-      }, 2500);
+    if (window.showToast) {
+      window.showToast('Event invite link copied to clipboard!', 'success');
+    } else {
+      alert('Event invite link copied to clipboard!');
     }
-  });
+  };
+  
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(applyFeedback).catch(() => {
+      fallbackCopyTextToClipboard(url, applyFeedback);
+    });
+  } else {
+    fallbackCopyTextToClipboard(url, applyFeedback);
+  }
+  
+  function fallbackCopyTextToClipboard(text, cb) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    cb();
+  }
 };
-

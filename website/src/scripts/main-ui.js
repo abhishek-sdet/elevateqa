@@ -183,14 +183,20 @@ function syncEverything() {
   if (site) {
     // MIGRATION: Auto-fix heroEdition if it's EDITION 01 or INAUGURAL or empty
     let heroEd = site.heroEdition || '';
-    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) {
-      site.heroEdition = 'Edition 2';
+    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('EDITION 2') || heroEd.toUpperCase().includes('INAUGURAL')) {
+      site.heroEdition = 'Edition 3';
     }
 
     // MIGRATION: Auto-fix footerEdition if it's EDITION 01 or INAUGURAL or empty
     let footerEd = site.footerEdition || '';
-    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) {
-      site.footerEdition = 'Edition 2';
+    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('EDITION 2') || footerEd.toUpperCase().includes('INAUGURAL')) {
+      site.footerEdition = 'Edition 3';
+    }
+    if (site.stat1Num === '2nd' || site.stat1Num === '2' || !site.stat1Num) {
+      site.stat1Num = '3rd';
+    }
+    if (site.eventDate && !site.eventDate.includes('Saturday')) {
+      site.eventDate = 'Saturday, ' + site.eventDate;
     }
 
     setHtml('hero-eyebrow', site.heroEyebrow);
@@ -310,7 +316,7 @@ function syncEverything() {
     // Footer
     setHtml('footer-tagline',  site.footerTagline);
     setHtml('footer-location', site.footerLocation || 'Delhi-NCR, India');
-    setHtml('footer-edition',  site.footerEdition || 'Edition 2');
+    setHtml('footer-edition',  site.footerEdition || 'Edition 3');
     setHtml('footer-copyright', site.footerCopyright || '<a href="https://sdettech.com" rel="noopener noreferrer">SDET Tech</a>');
 
     // Ticker
@@ -448,7 +454,18 @@ function renderSpeakers(speakers) {
   // The .speaker-cta-card is static HTML; we prepend dynamic cards only.
   const grid = document.querySelector('.speakers-grid');
   if (!grid) return;
-  const data = (speakers && Array.isArray(speakers) && speakers.length > 0) ? speakers : DEFAULT_SPEAKERS;
+  const site = tryParse('elevate_site_content') || {};
+  let data = speakers;
+  if (data && Array.isArray(data) && data.length === 0) {
+    const placeholderText = site.speakersPlaceholder || 'To be revealed';
+    data = [
+      { name: placeholderText, role: 'KEYNOTE', wave: 'WAVE 01', silhouette: '01' },
+      { name: placeholderText, role: 'KEYNOTE', wave: 'WAVE 01', silhouette: '02' },
+      { name: placeholderText, role: 'KEYNOTE', wave: 'WAVE 01', silhouette: '03' }
+    ];
+  } else if (!data || !Array.isArray(data)) {
+    data = DEFAULT_SPEAKERS;
+  }
 
   // Remove any previously injected dynamic cards (not the static CTA card)
   grid.querySelectorAll('.speaker-card:not(.speaker-cta-card)').forEach(el => el.remove());

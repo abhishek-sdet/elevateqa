@@ -78,12 +78,18 @@ window.syncEverything = () => {
   if (site) {
     // MIGRATION: auto-fix edition strings
     let heroEd = site.heroEdition || '';
-    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('INAUGURAL')) {
-      site.heroEdition = 'Edition 2';
+    if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('EDITION 2') || heroEd.toUpperCase().includes('INAUGURAL')) {
+      site.heroEdition = 'Edition 3';
     }
     let footerEd = site.footerEdition || '';
-    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('INAUGURAL')) {
-      site.footerEdition = 'Edition 2';
+    if (!footerEd || footerEd.toUpperCase().includes('EDITION 01') || footerEd.toUpperCase().includes('EDITION 2') || footerEd.toUpperCase().includes('INAUGURAL')) {
+      site.footerEdition = 'Edition 3';
+    }
+    if (site.stat1Num === '2nd' || site.stat1Num === '2' || !site.stat1Num) {
+      site.stat1Num = '3rd';
+    }
+    if (site.eventDate && !site.eventDate.includes('Saturday')) {
+      site.eventDate = 'Saturday, ' + site.eventDate;
     }
 
     // Hero
@@ -176,7 +182,7 @@ window.syncEverything = () => {
     }
     setHtml('footer-tagline', parseAccent(footerTagStr));
     setHtml('footer-location', site.footerLocation || 'Delhi-NCR, India');
-    setHtml('footer-edition', site.footerEdition || 'Edition 2');
+    setHtml('footer-edition', site.footerEdition || 'Edition 3');
     setHtml('footer-copyright', site.footerCopyright || '<a href="https://sdettech.com" rel="noopener noreferrer">SDET Tech</a>');
     const fEmail = document.getElementById('footer-email');
     if (fEmail && site.footerEmail) {
@@ -277,7 +283,17 @@ window.syncEverything = () => {
   }
 
   // ── Speakers ───────────────────────────────────────────────────────────────
-  const finalSpeakers = (speakers && speakers.length > 0) ? speakers : DEFAULT_SPEAKERS;
+  let finalSpeakers = speakers;
+  if (finalSpeakers && Array.isArray(finalSpeakers) && finalSpeakers.length === 0) {
+    const placeholderText = site?.speakersPlaceholder || 'To be revealed';
+    finalSpeakers = [
+      { name: placeholderText, role: 'KEYNOTE', wave: 'WAVE 01', silhouette: '01' },
+      { name: placeholderText, role: 'KEYNOTE', wave: 'WAVE 01', silhouette: '02' },
+      { name: placeholderText, role: 'KEYNOTE', wave: 'WAVE 01', silhouette: '03' }
+    ];
+  } else if (!finalSpeakers || !Array.isArray(finalSpeakers)) {
+    finalSpeakers = DEFAULT_SPEAKERS;
+  }
   if (finalSpeakers.length > 0) {
     const grid = document.querySelector('.speakers-grid');
     if (grid) {

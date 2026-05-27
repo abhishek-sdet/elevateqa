@@ -93,7 +93,7 @@ export const handler = async (event, context) => {
                             <!-- Details -->
                             <div style="background: rgba(255,90,54,0.1); border-left: 3px solid #ff5a36; padding: 15px 20px; border-radius: 0 8px 8px 0; margin-bottom: 10px;">
                                 <div style="color: #ff5a36; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;">WHEN</div>
-                                <div style="color: #ffffff; font-size: 15px;">8th August 2026 &middot; 09:00 AM</div>
+                                <div style="color: #ffffff; font-size: 15px;">Saturday, 8th August 2026 &middot; 09:00 AM</div>
                             </div>
                             <div style="background: rgba(212,255,58,0.1); border-left: 3px solid #d4ff3a; padding: 15px 20px; border-radius: 0 8px 8px 0;">
                                 <div style="color: #d4ff3a; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;">WHERE</div>

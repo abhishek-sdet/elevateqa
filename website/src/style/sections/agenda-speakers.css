@@ -122,13 +122,14 @@
 .speaker-card:hover::before { opacity: 1; }
 
 .speaker-card .silhouette { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 160px; font-style: italic; color: rgba(255,255,255,0.03); font-weight: 300; pointer-events: none; user-select: none; }
-.speaker-card .top { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); display: flex; justify-content: space-between; position: relative; z-index: 2; opacity: 0.8; }
+.speaker-card .top { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; display: flex; justify-content: space-between; position: relative; z-index: 2; width: 100%; opacity: 0.95; }
+.speaker-card .top > span { color: var(--accent) !important; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
 .speaker-card .speaker-content { position: relative; z-index: 2; }
 .speaker-card .name { font-family: var(--display); font-size: 22px; font-weight: 400; font-style: italic; letter-spacing: -0.02em; line-height: 1; color: #fff; margin-bottom: 4px; }
 .speaker-card .name em { color: var(--accent); }
 .speaker-card .designation { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.9; }
 .speaker-photo-wrap { position: absolute; inset: 0; overflow: hidden; }
-.speaker-photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(11,11,16,0.9) 0%, transparent 50%); pointer-events: none; }
+.speaker-photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(11,11,16,0.95) 0%, transparent 40%), linear-gradient(to bottom, rgba(11,11,16,0.75) 0%, transparent 30%); pointer-events: none; }
 .speaker-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: grayscale(100%) brightness(0.8) contrast(1.1); transition: filter 0.8s var(--ease-out), transform 0.8s var(--ease-out); display: block; }
 .speaker-card:hover .speaker-photo { filter: grayscale(0%) brightness(1) contrast(1); transform: scale(1.05); }
 .speaker-has-photo .top, .speaker-has-photo .name, .speaker-has-photo .designation { text-shadow: 0 4px 12px rgba(0,0,0,0.9); }
@@ -136,6 +137,7 @@
 .speaker-cta-card { background: var(--accent); color: #000; border: none; }
 .speaker-cta-card .silhouette { color: rgba(0,0,0,0.05); }
 .speaker-cta-card .top { color: rgba(0,0,0,0.6); }
+.speaker-cta-card .top > span { color: #0b0b10 !important; text-shadow: none !important; }
 .speaker-cta-card .pitch { font-family: var(--display); font-size: 18px; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; position: relative; z-index: 2; color: #000; }
 .speaker-cta-card .pitch em { font-style: italic; opacity: 0.8; }
 .speaker-cta-card a { color: #000; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; font-weight: 700; }
