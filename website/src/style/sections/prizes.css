@@ -73,10 +73,14 @@
 }
 
 @media (max-width: 768px) {
-  .prizes-strip { padding: 40px 24px !important; }
-  .prizes-stats { gap: 32px !important; }
-  .prizes-strip h2 { font-size: 28px !important; margin-bottom: 24px !important; }
-  .prizes-stats strong, .prizes-stats .num { font-size: 20px !important; }
-  .prizes-stats > span, .prizes-stats .stat-item { font-size: 10px !important; }
+  .prizes-strip { padding: 64px 24px !important; }
+  .prizes-strip h2 { font-size: 30px !important; margin-bottom: 40px !important; line-height: 1.15 !important; }
+  .prizes-stats { 
+    flex-direction: column !important; 
+    gap: 32px !important; 
+    align-items: center !important;
+  }
+  .prizes-stats strong, .prizes-stats .num { font-size: 24px !important; margin-bottom: 8px !important; }
+  .prizes-stats > span, .prizes-stats .stat-item { font-size: 11px !important; }
   .prizes-strip::before, .prizes-strip::after { font-size: 10px !important; }
 }
