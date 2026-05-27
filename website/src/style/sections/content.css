@@ -200,19 +200,24 @@ section#coming { background: #000000 !important; color: #ffffff !important; bord
 .reveal-list li { 
   display: flex; 
   justify-content: space-between; 
-  align-items: center; 
-  padding: 12px 0; 
+  align-items: flex-start; 
+  padding: 16px 0; 
   border-bottom: 1px solid var(--line); 
   font-family: var(--mono); 
   font-size: 11px; 
   letter-spacing: 0.05em; 
   text-transform: uppercase; 
+  gap: 16px;
+  line-height: 1.4;
 }
 .reveal-list li .status { 
   color: var(--accent); 
   font-size: 11px; 
   letter-spacing: 0.12em; 
   font-weight: 600;
+  text-align: right;
+  flex: 1;
+  word-wrap: break-word;
 }
 .reveal-list li .status.pending { 
   color: var(--ink-dim); 
