@@ -392,19 +392,37 @@
         else cameraId = devices[0].id;
       }
 
-      // Balanced camera constraints to prevent OverconstrainedError on iOS Safari while retaining HD rendering
-      const cameraConstraints = cameraId ? {
-        deviceId: cameraId,
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        facingMode: "environment"
-      } : {
-        facingMode: "environment",
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      };
-
-      await html5QrCode.start(cameraConstraints, config, onScanSuccess);
+      // Bulletproof camera startup with robust fallbacks for iOS Safari compatibility
+      try {
+        // Tier 1: Ideal HD environment camera
+        await html5QrCode.start(
+          { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+          config,
+          onScanSuccess
+        );
+      } catch (err) {
+        console.warn("Tier 1 constraints failed, trying Tier 2 (basic environment mode)...", err);
+        try {
+          // Tier 2: Basic environment camera without custom resolution constraints
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess
+          );
+        } catch (err2) {
+          console.warn("Tier 2 constraints failed, trying Tier 3 (first device ID string)...", err2);
+          if (devices && devices.length) {
+            // Tier 3: First detected device ID as a direct string
+            await html5QrCode.start(
+              devices[0].id,
+              config,
+              onScanSuccess
+            );
+          } else {
+            throw err2;
+          }
+        }
+      }
       
       isScanning = true;
       document.getElementById('toggle-btn').classList.add('active');
