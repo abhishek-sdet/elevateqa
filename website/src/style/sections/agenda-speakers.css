@@ -134,28 +134,21 @@
 .speaker-card:hover .speaker-photo { filter: grayscale(0%) brightness(1) contrast(1); transform: scale(1.05); }
 .speaker-has-photo .top, .speaker-has-photo .name, .speaker-has-photo .designation { text-shadow: 0 4px 12px rgba(0,0,0,0.9); }
 
-.speaker-cta-card { background: var(--accent); color: #000; border: none; }
+.speaker-cta-card { background: var(--accent) !important; color: #000 !important; border: none; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .speaker-cta-card .silhouette { color: rgba(0,0,0,0.05); }
 .speaker-cta-card .top { color: rgba(0,0,0,0.6); }
 .speaker-cta-card .top > span { color: #0b0b10 !important; text-shadow: none !important; }
-.speaker-cta-card .pitch { font-family: var(--display); font-size: 18px; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; position: relative; z-index: 2; color: #000; transition: color 0.3s; }
-.speaker-cta-card .pitch em { font-style: italic; opacity: 0.8; color: #000; transition: color 0.3s; }
-.speaker-cta-card a { color: #000; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; font-weight: 700; transition: color 0.3s; }
+.speaker-cta-card .pitch { font-family: var(--display); font-size: 18px; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; position: relative; z-index: 2; color: #000 !important; }
+.speaker-cta-card .pitch em { font-style: italic; opacity: 1 !important; color: #000 !important; font-weight: 700; }
+.speaker-cta-card a { color: #000 !important; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; font-weight: 700; transition: opacity 0.3s; }
 
 /* HOVER STATE FOR DESKTOP CTA CARD */
-.speaker-cta-card { transition: all 0.3s ease; }
 .speaker-cta-card:hover { 
-  background: var(--bg-2); 
-  transform: translateY(-8px); 
-  box-shadow: 0 20px 40px rgba(212, 255, 58, 0.2); 
+  transform: translateY(-8px) scale(1.02); 
+  box-shadow: 0 15px 35px rgba(212, 255, 58, 0.45); 
 }
-.speaker-cta-card:hover .pitch,
-.speaker-cta-card:hover a { color: #fff; }
-.speaker-cta-card:hover .pitch em { color: var(--accent); opacity: 1; }
-.speaker-cta-card:hover .top > span { 
-  color: var(--accent) !important; 
-  background: rgba(0,0,0,0.5) !important; 
-  border-color: rgba(212,255,58,0.3) !important; 
+.speaker-cta-card:hover a {
+  opacity: 0.8;
 }
 
 
