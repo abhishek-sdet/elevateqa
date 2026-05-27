@@ -139,7 +139,7 @@
 .speaker-cta-card .top { color: rgba(0,0,0,0.6); }
 .speaker-cta-card .top > span { color: #0b0b10 !important; text-shadow: none !important; }
 .speaker-cta-card .pitch { font-family: var(--display); font-size: 18px; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; position: relative; z-index: 2; color: #000; }
-.speaker-cta-card .pitch em { font-style: italic; opacity: 0.8; }
+.speaker-cta-card .pitch em { font-style: italic; opacity: 0.8; color: #000; } /* must override .speaker-card .name em { color: var(--accent) } */
 .speaker-cta-card a { color: #000; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; font-weight: 700; }
 .speaker-cta-card:hover { background: #fff; transform: translateY(-8px); box-shadow: 0 20px 40px rgba(var(--accent-rgb), 0.3); }
 
@@ -186,6 +186,7 @@
   .speaker-card .top {
     position: absolute;
     top: 24px; left: 24px; right: 24px;
+    width: auto; /* override base width:100% — left+right:24px define bounds */
     justify-content: space-between;
     align-items: center;
     opacity: 1;
