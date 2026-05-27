@@ -23,15 +23,38 @@ window.escapeHtml = window.escapeHtml || function(value) {
 };
 
 // ── CHOOSER FLOW ──────────────────────────────────────────────────────────────
+function toggleFloatingCta(show) {
+  const cta = document.querySelector('.floating-cta');
+  if (cta) {
+    if (show) {
+      cta.style.opacity = '';
+      cta.style.pointerEvents = '';
+      cta.style.visibility = '';
+    } else {
+      cta.style.opacity = '0';
+      cta.style.pointerEvents = 'none';
+      cta.style.visibility = 'hidden';
+    }
+  }
+}
+
 window.openChooser = (e) => {
   if (e) e.preventDefault();
   const chooser = document.getElementById('chooserModal');
-  if (chooser) { chooser.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  if (chooser) { 
+    chooser.classList.add('active'); 
+    document.body.style.overflow = 'hidden'; 
+    toggleFloatingCta(false);
+  }
 };
 
 window.closeChooser = () => {
   const chooser = document.getElementById('chooserModal');
-  if (chooser) { chooser.classList.remove('active'); document.body.style.overflow = ''; }
+  if (chooser) { 
+    chooser.classList.remove('active'); 
+    document.body.style.overflow = ''; 
+    toggleFloatingCta(true);
+  }
 };
 
 window.openAttendFlow = () => { closeChooser(); setTimeout(() => window.openModal(), 120); };
@@ -63,11 +86,18 @@ window.openModal = (e) => {
   if (priceView) priceView.style.display = 'block';
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  toggleFloatingCta(false);
 };
 
 window.closeModal = () => {
   const modal = document.getElementById('regModal');
-  if (modal) { modal.classList.remove('active'); document.body.style.overflow = ''; resetModalViews(); window.pendingRegistration = null; }
+  if (modal) { 
+    modal.classList.remove('active'); 
+    document.body.style.overflow = ''; 
+    resetModalViews(); 
+    window.pendingRegistration = null; 
+    toggleFloatingCta(true);
+  }
 };
 
 window.proceedToForm = function() {

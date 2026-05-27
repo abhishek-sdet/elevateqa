@@ -659,3 +659,13 @@ nav.scrolled #site-logo-img {
 @keyframes btnSpin {
   to { transform: rotate(360deg); }
 }
+
+/* HIDE FLOATING CTA WHEN ANY MODAL IS ACTIVE (PREVENTS OVERLAPS) */
+body:has(#regModal.active) .floating-cta,
+body:has(#chooserModal.active) .floating-cta,
+body.modal-open .floating-cta {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  display: none !important;
+}

@@ -371,23 +371,42 @@
       const config = { 
         fps: 60,
         qrbox: (viewWidth, viewHeight) => {
-            const size = Math.min(viewWidth, viewHeight) * 0.6;
+            // Larger scan zone (80%) means instant capture without tight alignment
+            const size = Math.min(viewWidth, viewHeight) * 0.8;
             return { width: size, height: size };
         },
         aspectRatio: 1.0,
         disableFlip: true,
-        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+        experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true // Native hardware-accelerated scanning (0ms latency)
+        }
       };
 
       const devices = await Html5Qrcode.getCameras();
-      let cameraId = { facingMode: "environment" };
+      let cameraId = null;
       
       if (devices && devices.length) {
         const back = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment'));
         if (back) cameraId = back.id;
+        else cameraId = devices[0].id;
       }
 
-      await html5QrCode.start(cameraId, config, onScanSuccess);
+      // High-performance camera constraints for continuous autofocus & sharp HD resolution
+      const cameraConstraints = cameraId ? {
+        deviceId: { exact: cameraId },
+        width: { min: 1024, ideal: 1280, max: 1920 },
+        height: { min: 768, ideal: 720, max: 1080 },
+        facingMode: "environment",
+        focusMode: "continuous"
+      } : {
+        facingMode: "environment",
+        width: { min: 1024, ideal: 1280, max: 1920 },
+        height: { min: 768, ideal: 720, max: 1080 },
+        focusMode: "continuous"
+      };
+
+      await html5QrCode.start(cameraConstraints, config, onScanSuccess);
       
       isScanning = true;
       document.getElementById('toggle-btn').classList.add('active');
