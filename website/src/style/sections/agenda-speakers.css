@@ -187,17 +187,25 @@
     position: absolute;
     top: 24px; left: 24px; right: 24px;
     justify-content: space-between;
+    align-items: center;
     opacity: 1;
+    gap: 8px;
+    flex-wrap: nowrap;
   }
 
   .speaker-card .top > span {
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.5);
     backdrop-filter: blur(8px);
-    padding: 6px 12px;
+    -webkit-backdrop-filter: blur(8px);
+    padding: 5px 10px;
     border-radius: 100px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
     font-size: 9px;
     color: var(--accent) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 48%;
   }
 
   .speaker-card .speaker-content {
@@ -218,6 +226,14 @@
 
   .speaker-photo-wrap::after {
     background: linear-gradient(to top, rgba(5,5,8,0.95) 0%, rgba(5,5,8,0.5) 40%, transparent 100%);
+  }
+
+  /* CTA card (SUBMISSIONS / OPEN) — accent color badges, visible on dark bg */
+  .speaker-cta-card .top > span {
+    color: var(--accent) !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+    border-color: rgba(212, 255, 58, 0.3) !important;
+    text-shadow: none !important;
   }
   
   .involve-grid { 
