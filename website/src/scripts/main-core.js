@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (winScroll > 80) header.classList.add('scrolled');
       else header.classList.remove('scrolled');
     }
-  });
+  }, { passive: true });
 
   // 4. Start Cloud Sync (single entry point — fires after all scripts are loaded)
   if (typeof initCloudSync === 'function') {

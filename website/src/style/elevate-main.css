@@ -235,3 +235,25 @@ body::before {
   transform: scale(1.1);
   pointer-events: none;
 }
+
+/* MOBILE PERFORMANCE OVERRIDES - BUTTER SMOOTH SCROLLING */
+@media (max-width: 768px), (pointer: coarse) {
+  *, *::before, *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Fallback rich-contrast backgrounds for glass elements on mobile */
+  nav, 
+  .speaker-card, 
+  .maturity-card, 
+  .pillar-card, 
+  .involve-card, 
+  .premium-modal, 
+  .modal-content, 
+  .btn-secondary {
+    background-color: rgba(12, 12, 18, 0.96) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
