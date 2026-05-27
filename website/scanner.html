@@ -369,60 +369,28 @@
       if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
       
       const config = { 
-        fps: 60,
+        fps: 15,
         qrbox: (viewWidth, viewHeight) => {
-            // Larger scan zone (80%) means instant capture without tight alignment
-            const size = Math.min(viewWidth, viewHeight) * 0.8;
+            const size = Math.min(viewWidth, viewHeight) * 0.75;
             return { width: size, height: size };
         },
         aspectRatio: 1.0,
-        disableFlip: true,
+        disableFlip: false,
         formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
         experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true // Native hardware-accelerated scanning (0ms latency)
+            useBarCodeDetectorIfSupported: true
         }
       };
 
-      const devices = await Html5Qrcode.getCameras();
-      let cameraId = null;
-      
-      if (devices && devices.length) {
-        const back = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment'));
-        if (back) cameraId = back.id;
-        else cameraId = devices[0].id;
-      }
-
-      // Bulletproof camera startup with robust fallbacks for iOS Safari compatibility
-      try {
-        // Tier 1: Ideal HD environment camera
-        await html5QrCode.start(
-          { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
-          config,
-          onScanSuccess
-        );
-      } catch (err) {
-        console.warn("Tier 1 constraints failed, trying Tier 2 (basic environment mode)...", err);
-        try {
-          // Tier 2: Basic environment camera without custom resolution constraints
-          await html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            onScanSuccess
-          );
-        } catch (err2) {
-          console.warn("Tier 2 constraints failed, trying Tier 3 (first device ID string)...", err2);
-          if (devices && devices.length) {
-            // Tier 3: First detected device ID as a direct string
-            await html5QrCode.start(
-              devices[0].id,
-              config,
-              onScanSuccess
-            );
-          } else {
-            throw err2;
-          }
-        }
-      }
+      // iOS Safari Fix: Do NOT call getCameras() before start().
+      // getCameras() internally calls getUserMedia which consumes the iOS camera permission grant.
+      // Calling start() afterwards triggers a SECOND getUserMedia which iOS denies.
+      // Solution: Use facingMode directly — single getUserMedia call, works on all browsers.
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess
+      );
       
       isScanning = true;
       document.getElementById('toggle-btn').classList.add('active');
@@ -430,8 +398,10 @@
       document.getElementById('guide').classList.add('active');
       document.getElementById('scan-line').style.display = 'block';
     } catch (e) {
-      console.error(e);
-      alert("Camera access failed. Check permissions.");
+      console.error("Camera start failed:", e);
+      // Show a more helpful error with the actual error details
+      const msg = e && e.message ? e.message : String(e);
+      alert("Camera access failed: " + msg + "\n\nPlease ensure you tapped 'Allow' when prompted.");
     }
   }
 
