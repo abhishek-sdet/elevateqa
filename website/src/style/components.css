@@ -31,8 +31,8 @@ nav {
   justify-content: space-between;
   align-items: center;
   padding: 12px var(--pad-x);
-  transition: var(--transition-smooth);
-  background: transparent !important;
+  transition: background 0.4s ease, box-shadow 0.4s ease, padding 0.4s ease, top 0.4s ease;
+  background: transparent;
 }
 
 nav.scrolled {
@@ -45,22 +45,24 @@ nav.scrolled {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
 }
 
-nav::before {
-  content: '';
-  position: absolute;
-  top: -100px; left: 0; right: 0; bottom: -20px;
-  background: linear-gradient(to bottom, rgba(5,5,8,0.9) 30%, rgba(5,5,8,0.5) 70%, transparent 100%);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  z-index: -1;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-nav.scrolled::before {
-  opacity: 0;
+/* Desktop-only gradient fade behind nav — uses mask which mobile doesn't support */
+@supports (mask-image: linear-gradient(black, transparent)) {
+  nav::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: 0; right: 0; bottom: -20px;
+    background: linear-gradient(to bottom, rgba(5,5,8,0.9) 30%, rgba(5,5,8,0.5) 70%, transparent 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  nav.scrolled::before {
+    opacity: 0;
+  }
 }
 
 .logo {
@@ -272,13 +274,20 @@ nav.scrolled #site-logo-img {
   nav {
     padding: 16px var(--pad-mobile);
     justify-content: space-between;
+    top: 22px;
+    /* Solid background on mobile — backdrop-filter+mask not supported on Android */
+    background: rgba(8, 8, 12, 0.92) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
   nav.scrolled {
     padding: 8px var(--pad-mobile);
-    background: rgba(11, 11, 16, 0.96) !important;
+    top: 0;
+    background: rgba(8, 8, 12, 0.98) !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
   }
 }
