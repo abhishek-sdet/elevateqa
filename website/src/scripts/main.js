@@ -114,7 +114,9 @@ window.showToast = function(message, type = 'error') {
 
 // ── OTP & REGISTRATION ────────────────────────────────────────────────────────
 window.pendingRegistration = null;
-const BACKEND_URL = '/.netlify/functions';
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'https://elevateqa.sdettech.com/.netlify/functions'
+  : '/.netlify/functions';
 
 window.generateTicket = async function(event) {
   if (event) event.preventDefault();
