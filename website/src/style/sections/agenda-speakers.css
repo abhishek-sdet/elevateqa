@@ -230,6 +230,14 @@
   }
 
   /* CTA card (SUBMISSIONS / OPEN) — accent color badges, visible on dark bg */
+  .speaker-cta-card {
+    background: var(--accent) !important;
+  }
+  .speaker-cta-card .pitch,
+  .speaker-cta-card .pitch em,
+  .speaker-cta-card a {
+    color: #000 !important;
+  }
   .speaker-cta-card .top > span {
     color: var(--accent) !important;
     background: rgba(0, 0, 0, 0.35) !important;
