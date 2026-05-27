@@ -138,10 +138,25 @@
 .speaker-cta-card .silhouette { color: rgba(0,0,0,0.05); }
 .speaker-cta-card .top { color: rgba(0,0,0,0.6); }
 .speaker-cta-card .top > span { color: #0b0b10 !important; text-shadow: none !important; }
-.speaker-cta-card .pitch { font-family: var(--display); font-size: 18px; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; position: relative; z-index: 2; color: #000; }
-.speaker-cta-card .pitch em { font-style: italic; opacity: 0.8; color: #000; } /* must override .speaker-card .name em { color: var(--accent) } */
-.speaker-cta-card a { color: #000; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; font-weight: 700; }
-.speaker-cta-card:hover { background: #fff; transform: translateY(-8px); box-shadow: 0 20px 40px rgba(var(--accent-rgb), 0.3); }
+.speaker-cta-card .pitch { font-family: var(--display); font-size: 18px; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; position: relative; z-index: 2; color: #000; transition: color 0.3s; }
+.speaker-cta-card .pitch em { font-style: italic; opacity: 0.8; color: #000; transition: color 0.3s; }
+.speaker-cta-card a { color: #000; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; font-weight: 700; transition: color 0.3s; }
+
+/* HOVER STATE FOR DESKTOP CTA CARD */
+.speaker-cta-card { transition: all 0.3s ease; }
+.speaker-cta-card:hover { 
+  background: var(--bg-2); 
+  transform: translateY(-8px); 
+  box-shadow: 0 20px 40px rgba(212, 255, 58, 0.2); 
+}
+.speaker-cta-card:hover .pitch,
+.speaker-cta-card:hover a { color: #fff; }
+.speaker-cta-card:hover .pitch em { color: var(--accent); opacity: 1; }
+.speaker-cta-card:hover .top > span { 
+  color: var(--accent) !important; 
+  background: rgba(0,0,0,0.5) !important; 
+  border-color: rgba(212,255,58,0.3) !important; 
+}
 
 
 /* INVOLVE */
