@@ -4,8 +4,21 @@
  * Scroll/Nav/Menu logic lives in main-ui.js to avoid duplication.
  */
 
+// SCROLL-TO-TOP FIX: Prevent browser from jumping to #hash anchors on page load.
+// When the URL has a hash (e.g. #join), browsers auto-scroll to that element.
+// We override this so the site always opens from the very top.
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual'; // Disable browser's default scroll restoration
+}
+// Force scroll to top immediately — runs before DOMContentLoaded
+window.scrollTo(0, 0);
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Scroll to top once DOM is fully ready (catches any late browser scroll attempts)
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
   console.log('[ElevateQA] Core Active — Starting Initialization...');
+
 
   // 1. Reveal Observer (scroll-triggered animations)
   const revealOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
