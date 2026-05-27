@@ -110,8 +110,8 @@ window.syncEverything = () => {
     }
     setHtml('hero-format', parseEm(site.heroFormat));
     setHtml('hero-audience', parseEm(site.heroAudience));
-    setHtml('hero-venue-bottom', parseEm(site.eventVenue));
-    setHtml('hero-date-bottom', parseEm(site.eventDate));
+    setHtml('hero-venue', parseEm(site.eventVenue));
+    setHtml('hero-date', parseEm(site.eventDate));
 
     // Ticker
     for (let i = 1; i <= 9; i++) setHtml(`ticker-${i}`, site[`ticker${i}`]);
@@ -298,7 +298,8 @@ window.syncEverything = () => {
     const grid = document.querySelector('.speakers-grid');
     if (grid) {
       const targetHtml = finalSpeakers.map((s, idx) => {
-        const photo = s.image_url || s.img;
+        const rawPhoto = s.image_url || s.img;
+        const photo = (rawPhoto && !rawPhoto.includes('/admin')) ? rawPhoto : null;
         return `
         <div class="speaker-card reveal">
           ${photo ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${photo}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
@@ -309,10 +310,10 @@ window.syncEverything = () => {
           </div>
         </div>`;
       }).join('') + `
-          <div class="speaker-card speaker-cta-card reveal">
+          <div class="speaker-card speaker-cta-card reveal" onclick="window.openSpeakFlow()" style="cursor: pointer;">
             <div class="silhouette" aria-hidden="true">+</div>
             <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
-            <div class="pitch">Have a story <em>worth telling?</em><br><a href="javascript:void(0)" onclick="window.openSpeakFlow()">Apply to speak ></a></div>
+            <div class="pitch">Have a story <em>worth telling?</em><br><a href="javascript:void(0)">Apply to speak ></a></div>
           </div>`;
       if (grid.innerHTML !== targetHtml) grid.innerHTML = targetHtml;
     }

@@ -472,7 +472,7 @@ function renderSpeakers(speakers) {
 
   const fragment = document.createDocumentFragment();
   data.forEach((s, idx) => {
-    const hasPhoto = s.img && s.img.length > 10;
+    const hasPhoto = s.img && s.img.length > 10 && !s.img.includes('/admin');
     const card = document.createElement('div');
     card.className = 'speaker-card reveal' + (hasPhoto ? ' speaker-has-photo' : '');
     const safeImg = escapeHtml(s.img);

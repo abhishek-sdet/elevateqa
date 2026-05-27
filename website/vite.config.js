@@ -24,9 +24,10 @@ export default defineConfig({
     host: true,
     proxy: {
       '/.netlify/functions': {
-        target: 'https://elevateqa.sdettech.com',
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        rewrite: (path) => path.replace(/^\/\.netlify\/functions/, '/api')
       }
     }
   }

@@ -209,7 +209,7 @@ window.verifyOTP = async function() {
     
     // Attend flow
     let dbId = null, shortId = null;
-    const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, status: 'confirmed' }]).select();
+    const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, designation, linkedin, status: 'confirmed' }]).select();
     if (error) throw error;
     if (data && data.length > 0) { dbId = data[0].id; shortId = 'EQ26-' + dbId.split('-')[0].toUpperCase(); }
     document.getElementById('ticket-name').textContent = name;
