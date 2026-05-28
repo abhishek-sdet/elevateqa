@@ -391,9 +391,11 @@ window.downloadPremiumTicket = function() {
 };
 
 window.shareOnLinkedIn = function() {
-  const name = window.pendingRegistration?.name || '';
-  const greeting = name ? `I just claimed my free VIP entry pass to Elevate QA 2026! 🎟️` : `Join me at Elevate QA 2026! 🎟️`;
-  const shareText = `${greeting}\n\nLooking forward to joining 300+ Quality Engineering leaders this August at Holiday Inn, Mayur Vihar, New Delhi for a day of real signal, deep insights on AI-led Quality Engineering, and the Proof of Value.\n\nClaim your free pass before they sell out!\n\nRegister here: https://elevateqa.sdettech.com/\n\n#ElevateQA2026 #QualityEngineering #SoftwareTesting #SDET #AIinQA #TechSummit`;
+  const nameVal = document.getElementById('ticket-name')?.textContent || '';
+  const name = nameVal && nameVal !== '…' ? nameVal : (window.pendingRegistration?.name || '');
+  
+  const greeting = name ? `I am extremely excited to be a part of Elevate QA 2026! 🚀` : `I am excited to be a part of Elevate QA 2026! 🚀`;
+  const shareText = `${greeting}\n\nLooking forward to joining 300+ Quality Engineering leaders this August at Holiday Inn, Mayur Vihar, New Delhi for a day of real signal, deep insights on AI-led Quality Engineering, and the Proof of Value.\n\nIf you are a QE leader or practitioner, you should definitely claim your free spot before they sell out! 🎟️\n\nRegister here: https://elevateqa.sdettech.com/\n\n#ElevateQA2026 #QualityEngineering #SoftwareTesting #SDET #AIinQA #TechSummit #Leadership`;
   
   const shareUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(shareText)}`;
   window.open(shareUrl, '_blank', 'width=800,height=600');
