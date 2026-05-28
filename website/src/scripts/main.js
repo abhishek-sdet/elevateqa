@@ -244,6 +244,8 @@ window.verifyOTP = async function() {
     if (data && data.length > 0) { dbId = data[0].id; shortId = 'EQ26-' + dbId.split('-')[0].toUpperCase(); }
     document.getElementById('ticket-name').textContent = name;
     document.getElementById('ticket-org').textContent  = org;
+    const designEl = document.getElementById('ticket-designation');
+    if (designEl) designEl.textContent = designation || '';
     const idDisplay = document.getElementById('ticket-id-val') || document.getElementById('ticket-id-display');
     if (idDisplay) idDisplay.textContent = `PASS ID: ${shortId}`;
     const qrEl = document.getElementById('qrcode');
@@ -291,12 +293,67 @@ window.verifyOTP = async function() {
 };
 
 window.downloadPremiumTicket = function() {
-  const qrImg = document.querySelector('#qrcode img');
-  if (qrImg) { const link = document.createElement('a'); link.href = qrImg.src; link.download = 'ElevateQA26-Pass.png'; link.click(); }
-  else {
-    const qrCanvas = document.querySelector('#qrcode canvas');
-    if (qrCanvas) { const link = document.createElement('a'); link.href = qrCanvas.toDataURL(); link.download = 'ElevateQA26-Pass.png'; link.click(); }
+  const badgeEl = document.querySelector('.ticket-box');
+  if (!badgeEl) {
+    if (window.showToast) window.showToast('Badge card element not found!', 'error');
+    return;
   }
+  
+  const btn = document.getElementById('btn-download-ticket');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="email-spinner"></span> Creating Badge...';
+  }
+  
+  // Temporarily strip dashed print border for a completely clean downloaded PNG
+  const originalBorder = badgeEl.style.border;
+  badgeEl.style.border = 'none';
+  
+  html2canvas(badgeEl, {
+    scale: 3, // High resolution for perfect print crispness
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    logging: false
+  }).then(canvas => {
+    badgeEl.style.border = originalBorder;
+    
+    const name = window.pendingRegistration?.name || 'Attendee';
+    const cleanName = name.replace(/[^a-zA-Z0-9]/g, '_');
+    const link = document.createElement('a');
+    link.download = `ElevateQA2026-Badge-${cleanName}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    if (window.showToast) window.showToast('Attendee Badge downloaded successfully!', 'success');
+  }).catch(err => {
+    badgeEl.style.border = originalBorder;
+    console.error('Badge generation failure:', err);
+    if (window.showToast) window.showToast('Failed to build image, downloading QR code instead.', 'error');
+    
+    // Fallback: download QR image only
+    const qrImg = document.querySelector('#qrcode img');
+    if (qrImg) {
+      const link = document.createElement('a');
+      link.href = qrImg.src;
+      link.download = 'ElevateQA26-Pass-QR.png';
+      link.click();
+    } else {
+      const qrCanvas = document.querySelector('#qrcode canvas');
+      if (qrCanvas) {
+        const link = document.createElement('a');
+        link.href = qrCanvas.toDataURL();
+        link.download = 'ElevateQA26-Pass-QR.png';
+        link.click();
+      }
+    }
+  }).finally(() => {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
 };
 
 window.shareOnLinkedIn = function() {

@@ -93,37 +93,57 @@
       </div>
 
       <!-- The physical ticket card -->
-      <div class="ticket-box">
-        <!-- Hole punches -->
-        <div class="ticket-hole ticket-hole--left"></div>
-        <div class="ticket-hole ticket-hole--right"></div>
+      <div class="ticket-box-wrapper">
+        <div class="ticket-box">
+          <!-- Badge slot punch hanger visual -->
+          <div class="badge-slot-punch"></div>
 
-        <!-- Top section: pass info -->
-        <div class="ticket-top">
-          <div class="ticket-event-label">ELEVATE QA 2026</div>
-          <div class="ticket-meta-row">
-            <span>SATURDAY, 8 AUG 2026</span>
-            <span class="ticket-dot">·</span>
-            <span>NOIDA</span>
-            <span class="ticket-dot">·</span>
-            <span>FREE PASS</span>
+          <!-- Top section: Branded Event Header -->
+          <div class="badge-header">
+            <div class="badge-logo-container">
+              <svg viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="badge-logo-svg">
+                <!-- ELEVATE Text (White) -->
+                <text x="10" y="85" font-family="Fraunces, serif" font-size="72" font-weight="700" fill="white">ElevAte</text>
+                <!-- QA Text (Lime Green) -->
+                <text x="280" y="85" font-family="Manrope, sans-serif" font-size="72" font-weight="800" fill="#D4FF3A">QA</text>
+                <!-- Arrow Path (Lime Green) -->
+                <path d="M165 80C190 60 230 40 275 25M275 25L260 22M275 25L272 40" stroke="#D4FF3A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Badge Category Capsule -->
+          <div class="badge-category-wrap">
+            <span class="badge-category-pill">ATTENDEE</span>
+          </div>
+
+          <!-- Name + Org + Designation -->
+          <div class="badge-holder-info">
+            <div class="badge-name-label">ATTENDEE PASS</div>
+            <h1 class="badge-name" id="ticket-name">…</h1>
+            <div class="badge-org" id="ticket-org">…</div>
+            <div class="badge-designation" id="ticket-designation">…</div>
+          </div>
+
+          <!-- QR code section -->
+          <div class="badge-qrcode-section">
+            <div class="qrcode-container" id="qrcode"></div>
+          </div>
+
+          <!-- Footer metadata -->
+          <div class="badge-footer">
+            <div class="badge-meta-row">
+              <span>SATURDAY, 8 AUG 2026</span>
+              <span class="badge-dot">•</span>
+              <span>NOIDA</span>
+            </div>
+            <div class="badge-id" id="ticket-id-val">PASS ID: …</div>
           </div>
         </div>
-
-        <!-- Divider -->
-        <div class="ticket-dashes"></div>
-
-        <!-- Name + Org -->
-        <div class="ticket-holder-section">
-          <div class="ticket-info">Pass Holder<strong id="ticket-name">…</strong></div>
-          <div class="ticket-info">Organization<strong id="ticket-org">…</strong></div>
+        <!-- Help print caption -->
+        <div class="badge-print-tip">
+          ✂️ Cut along the dotted line for a perfect physical badge
         </div>
-
-        <!-- QR code -->
-        <div class="qrcode-container" id="qrcode"></div>
-
-        <!-- Pass ID -->
-        <div class="ticket-id-label" id="ticket-id-val">PASS ID: …</div>
       </div>
 
       <!-- Email status -->

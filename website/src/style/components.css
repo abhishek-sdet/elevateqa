@@ -36,13 +36,13 @@ nav {
 }
 
 nav.scrolled {
-  background: rgba(11, 11, 16, 0.96) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 10px var(--pad-x);
+  background: rgba(11, 11, 16, 0.90) !important;
+  backdrop-filter: blur(50px) !important;
+  -webkit-backdrop-filter: blur(50px) !important;
+  padding: 12px var(--pad-x) 28px var(--pad-x) !important;
   top: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
 /* Desktop-only gradient fade behind nav — uses mask which mobile doesn't support */
@@ -282,13 +282,13 @@ nav.scrolled #site-logo-img {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
   nav.scrolled {
-    padding: 8px var(--pad-mobile);
+    padding: 10px var(--pad-mobile) 24px var(--pad-mobile) !important;
     top: 0;
-    background: rgba(8, 8, 12, 0.98) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(8, 8, 12, 0.94) !important;
+    backdrop-filter: blur(40px) !important;
+    -webkit-backdrop-filter: blur(40px) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.8);
   }
 }
 
