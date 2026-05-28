@@ -173,6 +173,7 @@ window.generateTicket = async function(event) {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
     window.pendingRegistration = { type: 'attend', name, email, phone, org, designation, linkedin };
+    window.lastSentEmail = email; // Store it as a bulletproof global fallback
     document.getElementById('form-view').style.display = 'none';
     const otpView = document.getElementById('otp-view');
     if (otpView) { otpView.querySelectorAll('.otp-box').forEach(b => b.value = ''); document.getElementById('otp-error').textContent = ''; otpView.style.display = 'flex'; }
@@ -188,13 +189,46 @@ window.generateTicket = async function(event) {
 };
 
 window.resendOTP = function() {
-  if (window.pendingRegistration && window.pendingRegistration.email) {
-    fetch(`${BACKEND_URL}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: window.pendingRegistration.email }) })
-      .then(res => res.json()).then(data => {
-        if (data.success) showToast('A new code has been sent to your email.', 'success');
-        else showToast('Failed to resend code: ' + data.error, 'error');
-      }).catch(() => showToast('Error resending OTP. Please try again.', 'error'));
+  const email = (window.pendingRegistration && window.pendingRegistration.email) || 
+                window.lastSentEmail || 
+                (document.getElementById('reg-email') ? document.getElementById('reg-email').value.trim() : '');
+                
+  if (!email) {
+    if (window.showToast) window.showToast('Email address not found. Please re-enter your details.', 'error');
+    return;
   }
+  
+  const btn = document.getElementById('otp-resend-btn');
+  const originalText = btn ? btn.innerHTML : 'Resend Code';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = 'Sending...';
+  }
+  
+  fetch(`${BACKEND_URL}/send-otp`, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify({ email }) 
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => { throw new Error(err.error || 'Failed to resend code') });
+    }
+    return res.json();
+  })
+  .then(data => {
+    if (window.showToast) window.showToast('A new verification code has been sent to your email.', 'success');
+  })
+  .catch((err) => {
+    console.error('Resend OTP failure:', err);
+    if (window.showToast) window.showToast(err.message || 'Error resending verification code. Please try again.', 'error');
+  })
+  .finally(() => {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
 };
 
 window.initOTPInputs = function() {
