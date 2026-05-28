@@ -113,7 +113,7 @@ export const handler = async (event, context) => {
               Welcome, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              We are truly privileged to have you as part of <strong style="color:#ffffff;">Elevate QA 2026</strong> — India's premier, invite-only Quality Engineering forum. Your expertise and presence make this event extraordinary.
+              We are truly privileged to have you join us at <strong style="color:#ffffff;">Elevate QA 2026</strong> — India's premier, invite-only Quality Engineering conference. Your expertise and presence will make this event extraordinary.
             </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
               Your exclusive <strong style="color:#d4ff3a;">VIP Entry Pass</strong> is ready. Present the QR code below at the registration desk for priority check-in.
