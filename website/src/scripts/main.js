@@ -357,8 +357,12 @@ window.downloadPremiumTicket = function() {
 };
 
 window.shareOnLinkedIn = function() {
-  const url = encodeURIComponent('https://elevateqa.sdettech.com/');
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=600');
+  const name = window.pendingRegistration?.name || '';
+  const greeting = name ? `I just claimed my free VIP entry pass to Elevate QA 2026! 🎟️` : `Join me at Elevate QA 2026! 🎟️`;
+  const shareText = `${greeting}\n\nLooking forward to joining 300+ Quality Engineering leaders this August at Holiday Inn, Mayur Vihar, New Delhi for a day of real signal, deep insights on AI-led Quality Engineering, and the Proof of Value.\n\nClaim your free pass before they sell out!\n\nRegister here: https://elevateqa.sdettech.com/\n\n#ElevateQA2026 #QualityEngineering #SoftwareTesting #SDET #AIinQA #TechSummit`;
+  
+  const shareUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(shareText)}`;
+  window.open(shareUrl, '_blank', 'width=800,height=600');
 };
 
 window.copyLink = function(e) {
