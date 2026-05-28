@@ -95,7 +95,7 @@ export const handler = async (event, context) => {
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <tr>
                 <td align="center" style="padding: 36px 30px 30px 30px;">
-                  <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="38" style="display:block;margin:0 auto 14px auto;border:0;pointer-events:none;" />
+                  <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="68" style="display:block;margin:0 auto 14px auto;border:0;pointer-events:none;" />
                   <p style="margin:0;font-size:11px;font-family:Arial,sans-serif;color:#8e8e9a;letter-spacing:2px;text-transform:uppercase;line-height:1.5;text-align:center;font-weight:700;">
                     AI-Led &bull; Quality Engineering &bull; Proof of Value
                   </p>
