@@ -142,7 +142,10 @@ window.generateTicket = function(event) {
   const statusWrap = document.getElementById('email-status-wrap');
   if (statusWrap) {
     setTimeout(() => {
-      statusWrap.innerHTML = '<div class="email-status success">✓ Ticket sent to ' + email + '</div>';
+      statusWrap.innerHTML = `
+        <div class="email-status success" style="color: var(--accent); margin-bottom: 8px;">✓ Ticket sent to ${email}</div>
+        <div style="color: #ffffff; font-size: 13px; font-weight: 600; margin-top: 4px;">Thank you! We will see you at the event!</div>
+      `;
     }, 2000);
   }
 };

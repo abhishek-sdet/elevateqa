@@ -256,11 +256,21 @@ window.verifyOTP = async function() {
     try {
       await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
       const statusWrap = document.getElementById('email-status-wrap');
-      if (statusWrap) statusWrap.innerHTML = '<div class="email-status success">✓ Ticket sent to ' + escapeHtml(email) + '</div>';
+      if (statusWrap) {
+        statusWrap.innerHTML = `
+          <div class="email-status success" style="color: var(--accent); margin-bottom: 8px;">✓ Ticket sent to ${escapeHtml(email)}</div>
+          <div style="color: #ffffff; font-size: 13px; font-weight: 600; margin-top: 4px;">Thank you! We will see you at the event!</div>
+        `;
+      }
     } catch(e) {
       console.error('Failed to send email:', e);
       const statusWrap = document.getElementById('email-status-wrap');
-      if (statusWrap) statusWrap.innerHTML = '<div class="email-status error" style="color:var(--accent-red)">⚠ Error sending email</div>';
+      if (statusWrap) {
+        statusWrap.innerHTML = `
+          <div class="email-status error" style="color: #ff5a36; margin-bottom: 8px;">⚠ Error sending email, but your registration is secure!</div>
+          <div style="color: #ffffff; font-size: 13px; font-weight: 600; margin-top: 4px;">Thank you! We will see you at the event!</div>
+        `;
+      }
     }
   } catch (error) {
     console.error('OTP Verification Error:', error);

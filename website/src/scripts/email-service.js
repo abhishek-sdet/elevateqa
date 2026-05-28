@@ -3,7 +3,7 @@
  * Uses custom Node.js Backend for Limitless Email
  */
 
-const BACKEND_URL = 'http://localhost:3000'; // Change to deployed URL in prod
+const BACKEND_URL = 'https://elevateqa.netlify.app/.netlify/functions';
 
 export const sendAttendeeEmail = async (attendeeData) => {
   const { name, email, company, ticketId, dbId, designation, linkedin } = attendeeData;
@@ -21,7 +21,7 @@ export const sendAttendeeEmail = async (attendeeData) => {
       qrData: `ELEVATE-QA:${dbId}|${name}|${company}`
     };
 
-    const response = await fetch(`${BACKEND_URL}/api/send-ticket`, {
+    const response = await fetch(`${BACKEND_URL}/send-ticket`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
