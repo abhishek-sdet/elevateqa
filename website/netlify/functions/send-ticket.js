@@ -49,69 +49,105 @@ export const handler = async (event, context) => {
             to: email,
             subject: 'Your Official Pass — Elevate QA 2026',
             html: `
-                <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-                    <div style="max-width: 600px; margin: 0 auto; background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+                <div style="background-color: #050508; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #0b0b10; border-radius: 16px; border: 1.5px solid #22222d; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.9);">
                         
                         <!-- Header Section -->
-                        <div style="background-color: #d4ff3a; padding: 30px; text-align: center;">
-                            <h2 style="color: #0b0b10; margin: 0; font-size: 28px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                        <div style="background-color: #d4ff3a; padding: 36px 30px; text-align: center;">
+                            <h2 style="color: #050508; margin: 0; font-size: 30px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px; font-family: Arial, sans-serif;">
                                 Elevate QA 2026
                             </h2>
-                            <p style="color: #0b0b10; margin: 10px 0 0 0; font-size: 14px; font-weight: 600; opacity: 0.8; letter-spacing: 2px;">
+                            <p style="color: #050508; margin: 8px 0 0 0; font-size: 13px; font-weight: 700; opacity: 0.85; letter-spacing: 3px; text-transform: uppercase;">
                                 THE PROOF OF VALUE
                             </p>
                         </div>
                         
                         <!-- Body Section -->
-                        <div style="padding: 40px;">
-                            <h3 style="color: #ffffff; font-size: 22px; margin-top: 0; font-weight: 500;">
-                                You're in, <span style="color: #ff5a36; font-weight: 600;">${name}</span>.
+                        <div style="padding: 40px 35px; background-color: #0b0b10;">
+                            
+                            <h3 style="color: #ffffff; font-size: 24px; margin-top: 0; font-weight: 700; font-family: Arial, sans-serif; line-height: 1.3;">
+                                We are honored to welcome you, <span style="color: #d4ff3a; font-weight: 800;">${name}</span>.
                             </h3>
-                            <p style="color: #8b8b9b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                Your free pass has been officially generated. Please present the QR code below at the registration desk for seamless check-in.
+                            
+                            <p style="color: #ccccdb; font-size: 15px; line-height: 1.65; margin-bottom: 24px; font-family: Arial, sans-serif;">
+                                Your presence as an esteemed leader in Quality Engineering is our absolute privilege. Elevate QA 2026 is an exclusive, invite-only forum dedicated to practitioner-led value, real-world case studies, and authentic connection.
                             </p>
                             
-                            <!-- Ticket Card -->
-                            <div style="background: #1a1a24; border: 1px solid #333344; border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px;">
-                                <div style="display: inline-block; background: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                                    <!-- Embedded QR Code -->
-                                    <img src="cid:qrcode" alt="Your Pass QR Code" style="width: 200px; height: 200px; display: block;" />
-                                </div>
-                                <div style="text-align: left; border-top: 1px dashed #404050; padding-top: 20px; display: flex; justify-content: space-between;">
-                                    <div style="flex: 1;">
-                                        <div style="color: #555565; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">PASS HOLDER</div>
-                                        <div style="color: #ffffff; font-size: 16px; font-weight: 600;">${name}</div>
-                                        <div style="color: #8b8b9b; font-size: 13px;">${designation ? designation + ', ' : ''}${company}</div>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <div style="color: #555565; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">PASS ID</div>
-                                        <div style="color: #d4ff3a; font-size: 16px; font-family: monospace;">${ticketId}</div>
-                                    </div>
-                                </div>
-                            </div>
+                            <p style="color: #ccccdb; font-size: 15px; line-height: 1.65; margin-bottom: 32px; font-family: Arial, sans-serif;">
+                                Below is your official **VIP Entry Pass**. Please present this QR code at the desk for priority check-in and collection of your custom credentials.
+                            </p>
+                            
+                            <!-- Ticket Card (Standard HTML Table for Outlook Support) -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #12121c; border: 1.5px solid #2e2e3f; border-radius: 12px; margin-bottom: 35px; border-collapse: separate;">
+                                <tr>
+                                    <td align="center" style="padding: 30px 20px 20px 20px;">
+                                        <!-- QR Wrapper to prevent stretching -->
+                                        <table border="0" cellpadding="0" cellspacing="0" style="background-color: #ffffff; padding: 12px; border-radius: 8px;">
+                                            <tr>
+                                                <td align="center" valign="middle">
+                                                    <img src="cid:qrcode" alt="Your Pass QR Code" width="180" height="180" style="display: block; border: 0;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 25px 25px 25px;">
+                                        <!-- Perforation Line -->
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px dashed #44445c; margin-bottom: 20px;">
+                                            <tr><td></td></tr>
+                                        </table>
+                                        
+                                        <!-- Info Fields (Standard Table Columns) -->
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td align="left" valign="top" style="padding-right: 15px;">
+                                                    <div style="color: #a0a0b5; font-size: 10px; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold;">PASS HOLDER</div>
+                                                    <div style="color: #ffffff; font-size: 18px; font-family: Arial, sans-serif; font-weight: 800; margin-bottom: 3px;">${name}</div>
+                                                    <div style="color: #d4ff3a; font-size: 13px; font-family: Arial, sans-serif; font-weight: bold; margin-bottom: 2px;">${designation || ''}</div>
+                                                    <div style="color: #8b8b9b; font-size: 13px; font-family: Arial, sans-serif;">${company}</div>
+                                                </td>
+                                                <td align="right" valign="top" style="width: 140px; text-align: right;">
+                                                    <div style="color: #a0a0b5; font-size: 10px; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold;">PASS ID</div>
+                                                    <div style="color: #d4ff3a; font-size: 15px; font-family: Courier, monospace; font-weight: bold; letter-spacing: 0.5px;">${ticketId}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
 
-                            <!-- Details -->
-                            <div style="background: rgba(255,90,54,0.1); border-left: 3px solid #ff5a36; padding: 15px 20px; border-radius: 0 8px 8px 0; margin-bottom: 10px;">
-                                <div style="color: #ff5a36; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;">WHEN</div>
-                                <div style="color: #ffffff; font-size: 15px;">Saturday, 8th August 2026 &middot; 09:00 AM</div>
-                            </div>
-                            <div style="background: rgba(212,255,58,0.1); border-left: 3px solid #d4ff3a; padding: 15px 20px; border-radius: 0 8px 8px 0;">
-                                <div style="color: #d4ff3a; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;">WHERE</div>
-                                <div style="color: #ffffff; font-size: 15px;">Noida, Delhi NCR</div>
-                            </div>
+                            <!-- Details (Strict Table to render cleanly everywhere) -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 12px;">
+                                <tr>
+                                    <td style="background: rgba(255,90,54,0.08); border-left: 4px solid #ff5a36; padding: 16px 20px; border-radius: 0 8px 8px 0;">
+                                        <div style="color: #ff5a36; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: bold; font-family: Arial, sans-serif;">WHEN</div>
+                                        <div style="color: #ffffff; font-size: 15px; font-family: Arial, sans-serif; font-weight: bold;">Saturday, 8th August 2026 &middot; 09:00 AM</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="background: rgba(212,255,58,0.06); border-left: 4px solid #d4ff3a; padding: 16px 20px; border-radius: 0 8px 8px 0;">
+                                        <div style="color: #d4ff3a; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: bold; font-family: Arial, sans-serif;">WHERE</div>
+                                        <div style="color: #ffffff; font-size: 15px; font-family: Arial, sans-serif; font-weight: bold;">Noida, Delhi NCR</div>
+                                    </td>
+                                </tr>
+                            </table>
 
                         </div>
                         
                         <!-- Footer -->
-                        <div style="background: #0f0f13; padding: 20px; text-align: center; border-top: 1px solid #2a2a35;">
-                            <p style="color: #555565; font-size: 12px; margin: 0;">
-                                Keep this email safe. We look forward to seeing you at the symposium.<br><br>
+                        <div style="background-color: #050508; padding: 25px; text-align: center; border-top: 1px solid #22222d;">
+                            <p style="color: #66667d; font-size: 12px; margin: 0; font-family: Arial, sans-serif; line-height: 1.55;">
+                                Keep this invitation safe. We look forward to welcome you in person.<br>
                                 &copy; 2026 SDET Technologies.
                             </p>
                         </div>
                     </div>
                 </div>
-            `,
+            `,`,
             attachments: [
                 {
                     filename: 'qrcode.png',
