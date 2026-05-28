@@ -87,37 +87,48 @@ export function initAnimations() {
 }
 
 export function initCursor() {
-  const cursor = document.querySelector('.cursor-branded');
-  if (!cursor) return;
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  if (!dot || !ring) return;
 
-  let targetX = window.innerWidth / 2;
-  let targetY = window.innerHeight / 2;
-  let currentX = targetX;
-  let currentY = targetY;
-  let targetRot = 0;
-  let currentRot = 0;
-  let isMoving = false;
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  
+  let dotX = mouseX;
+  let dotY = mouseY;
+  
+  let ringX = mouseX;
+  let ringY = mouseY;
 
   document.addEventListener('mousemove', (e) => {
-    targetX = e.clientX;
-    targetY = e.clientY;
-    const dx = e.movementX || 0;
-    targetRot = Math.min(Math.max(dx * 0.5, -15), 15);
-    isMoving = true;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
   });
 
   function render() {
-    currentX += (targetX - currentX) * 0.5;
-    currentY += (targetY - currentY) * 0.5;
-    currentRot += (targetRot - currentRot) * 0.3;
-    cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%) rotate(${currentRot}deg)`;
-    if (!isMoving) targetRot *= 0.9;
-    isMoving = false;
+    // Dot trails with tight, precise lag (highly responsive)
+    dotX += (mouseX - dotX) * 0.45;
+    dotY += (mouseY - dotY) * 0.45;
+    
+    // Ring follows with a gorgeous, fluid, buttery-smooth delay
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
+    
+    dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
+    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+    
     requestAnimationFrame(render);
   }
 
   requestAnimationFrame(render);
 
-  document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
-  document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
+  document.addEventListener('mousedown', () => {
+    dot.classList.add('clicking');
+    ring.classList.add('clicking');
+  });
+  
+  document.addEventListener('mouseup', () => {
+    dot.classList.remove('clicking');
+    ring.classList.remove('clicking');
+  });
 }
