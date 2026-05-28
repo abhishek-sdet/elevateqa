@@ -61,7 +61,7 @@ export const handler = async (event, context) => {
                         
                         <!-- Header Band -->
                         <div style="background-color: #050508; padding: 32px 24px; border-bottom: 2px solid #d4ff3a;">
-                            <img src="https://elevateqa.sdettech.com/logo-brand.png" alt="Elevate QA Logo" height="34" style="display: block; margin: 0 auto 12px auto; border: 0; pointer-events: none;" />
+                            <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="34" style="display: block; margin: 0 auto 12px auto; border: 0; pointer-events: none;" />
                             <p style="margin: 0; font-size: 10.5px; font-weight: 700; color: #8e8e9a; letter-spacing: 2px; text-transform: uppercase; line-height: 1.5;">
                                 AI-Led &bull; Quality Engineering &bull; Proof of Value
                             </p>
