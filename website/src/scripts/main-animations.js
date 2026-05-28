@@ -107,12 +107,12 @@ export function initCursor() {
 
   function render() {
     // Dot trails with tight, precise lag (highly responsive)
-    dotX += (mouseX - dotX) * 0.45;
-    dotY += (mouseY - dotY) * 0.45;
+    dotX += (mouseX - dotX) * 0.85;
+    dotY += (mouseY - dotY) * 0.85;
     
     // Ring follows with a gorgeous, fluid, buttery-smooth delay
-    ringX += (mouseX - ringX) * 0.15;
-    ringY += (mouseY - ringY) * 0.15;
+    ringX += (mouseX - ringX) * 0.28;
+    ringY += (mouseY - ringY) * 0.28;
     
     dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
     ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
