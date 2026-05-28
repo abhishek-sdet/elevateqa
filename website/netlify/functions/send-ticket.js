@@ -85,26 +85,20 @@ export const handler = async (event, context) => {
 
         <!-- ===== HEADER ===== -->
         <tr>
-          <td align="center" bgcolor="#d4ff3a" style="background-color:#d4ff3a;padding:0;">
-            <!-- Top accent stripe -->
+          <td align="center" bgcolor="#050508" style="background-color:#050508;padding:0;">
+            <!-- Top accent stripe (Lime Green) -->
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <tr>
-                <td height="5" bgcolor="#a8cc00" style="background-color:#a8cc00;font-size:0;line-height:0;">&nbsp;</td>
+                <td height="5" bgcolor="#d4ff3a" style="background-color:#d4ff3a;font-size:0;line-height:0;">&nbsp;</td>
               </tr>
             </table>
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <tr>
-                <td align="center" style="padding: 32px 30px 28px 30px;">
-                  <p style="margin:0 0 6px 0;font-size:11px;letter-spacing:4px;font-weight:700;color:#3a4200;font-family:Arial,sans-serif;text-transform:uppercase;">SDET Technologies Presents</p>
-                  <h1 style="margin:0;font-size:36px;font-weight:900;color:#050508;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:3px;line-height:1.1;">ELEVATE QA</h1>
-                  <p style="margin:4px 0 0 0;font-size:26px;font-weight:900;color:#050508;font-family:Arial,sans-serif;letter-spacing:5px;">2026</p>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:14px auto 0 auto;">
-                    <tr>
-                      <td style="background-color:#050508;border-radius:30px;padding:6px 18px;">
-                        <p style="margin:0;font-size:10px;font-weight:800;color:#d4ff3a;font-family:Arial,sans-serif;letter-spacing:3px;text-transform:uppercase;">THE PROOF OF VALUE</p>
-                      </td>
-                    </tr>
-                  </table>
+                <td align="center" style="padding: 36px 30px 30px 30px;">
+                  <img src="https://elevateqa.sdettech.com/logo-brand.png" alt="Elevate QA Logo" height="38" style="display:block;margin:0 auto 14px auto;border:0;pointer-events:none;" />
+                  <p style="margin:0;font-size:11px;font-family:Arial,sans-serif;color:#8e8e9a;letter-spacing:2px;text-transform:uppercase;line-height:1.5;text-align:center;font-weight:700;">
+                    AI-Led &bull; Quality Engineering &bull; Proof of Value
+                  </p>
                 </td>
               </tr>
             </table>
