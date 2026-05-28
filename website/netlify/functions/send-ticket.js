@@ -147,7 +147,7 @@ export const handler = async (event, context) => {
                         </div>
                     </div>
                 </div>
-            `,`,
+            `,
             attachments: [
                 {
                     filename: 'qrcode.png',
