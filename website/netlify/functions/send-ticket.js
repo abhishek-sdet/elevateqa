@@ -212,7 +212,7 @@ export const handler = async (event, context) => {
               <tr>
                 <td style="background-color:#111a0a;border-left:4px solid #d4ff3a;padding:15px 18px;border-radius:0 8px 8px 0;">
                   <p style="margin:0 0 4px 0;font-size:9px;letter-spacing:2.5px;font-weight:800;color:#d4ff3a;font-family:Arial,sans-serif;text-transform:uppercase;">📍&nbsp;&nbsp;Where</p>
-                  <p style="margin:0;font-size:15px;font-weight:700;color:#ffffff;font-family:Arial,sans-serif;">Crowne Plaza, Mayur Vihar, New Delhi </p>
+                  <p style="margin:0;font-size:15px;font-weight:700;color:#ffffff;font-family:Arial,sans-serif;">Crowne Plaza, Mayur Vihar, New Delhi</p>
                 </td>
               </tr>
             </table>
