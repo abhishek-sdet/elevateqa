@@ -182,7 +182,7 @@ app.post('/api/send-ticket', async (req, res) => {
                             </div>
                             <div style="background: rgba(212,255,58,0.1); border-left: 3px solid #d4ff3a; padding: 15px 20px; border-radius: 0 8px 8px 0;">
                                 <div style="color: #d4ff3a; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;">WHERE</div>
-                                <div style="color: #ffffff; font-size: 15px;">Noida, Delhi NCR</div>
+                                <div style="color: #ffffff; font-size: 15px;">Crowne Plaza, Mayur Vihar, New Delhi </div>
                             </div>
 
                         </div>
