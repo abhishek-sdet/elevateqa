@@ -4,7 +4,7 @@ import { supabase } from './supabase-config.js';
 let currentAuthEmail = '';
 
 // 1. Send OTP via Node Backend after Whitelist Check
-async function sendOTP(e) {
+async function sendAdminOTP(e) {
   if (e) e.preventDefault();
   const emailInput = document.getElementById('login-number');
   const btn = document.getElementById('btn-send-otp');
@@ -145,7 +145,7 @@ async function checkSession() {
 }
 
 // Export for global access
-window.sendOTP = sendOTP;
+window.sendAdminOTP = sendAdminOTP;
 window.verifyOTP = verifyOTP;
 window.handleLogout = handleLogout;
 window.checkSession = checkSession;
