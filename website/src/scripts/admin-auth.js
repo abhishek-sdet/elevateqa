@@ -21,7 +21,7 @@ async function sendOTP(e) {
     const { data, error: dbError } = await supabase.from('site_content').select('admin_whitelist').single();
     
     // Master admins fallback just in case
-    const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com'];
+    const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com', 'mugdha.shah@sdettech.com'];
     let whitelist = [];
     if (data && data.admin_whitelist && Array.isArray(data.admin_whitelist)) {
       whitelist = data.admin_whitelist;
@@ -41,8 +41,8 @@ async function sendOTP(e) {
     const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
     const baseUrl = isLocalHostOrNetwork ? 'http://localhost:3000/api' : 'https://elevateqa.netlify.app/.netlify/functions';
     
-    // Note: Netlify functions might not have send-admin-otp yet, assuming it falls back or is deployed
-    const response = await fetch(`${baseUrl}/send-admin-otp`, {
+    // Note: Use the standard send-otp function for both attendees and admins
+    const response = await fetch(`${baseUrl}/send-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
