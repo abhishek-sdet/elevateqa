@@ -36,3 +36,57 @@
       </div>
     </div>
   </div>
+
+  <!-- SPEAKER APP DETAILS MODAL -->
+  <div id="speaker-app-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:11500; align-items:center; justify-content:center; backdrop-filter:blur(25px); padding: 20px;">
+    <div class="manager-card" style="width:100%; max-width:600px; max-height: 90vh; background:var(--ink-deep); border:1px solid var(--line-strong); border-radius:24px; overflow-y:auto; box-shadow: 0 40px 100px rgba(0,0,0,0.8); position:relative; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line-strong); padding-bottom: 20px; margin-bottom: 24px;">
+        <h2 style="font-family:var(--display); font-size:24px; color:white; margin:0;">Application Details</h2>
+        <button onclick="document.getElementById('speaker-app-modal').style.display='none'" class="btn-del" style="width:36px; height:36px; font-size:18px;">✕</button>
+      </div>
+      
+      <div style="display:flex; flex-direction:column; gap:20px; font-family:var(--sans); font-size:15px; color:var(--ink-dim);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Name</strong><br><span id="sa-name" style="color:white; font-size:16px;"></span></div>
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Email</strong><br><span id="sa-email" style="color:white; font-size:16px;"></span></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Phone</strong><br><span id="sa-phone" style="color:white; font-size:16px;"></span></div>
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">LinkedIn</strong><br><a id="sa-linkedin" href="#" target="_blank" style="color:var(--accent); text-decoration:underline; font-size:16px;">View Profile</a></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Organization</strong><br><span id="sa-org" style="color:white; font-size:16px;"></span></div>
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Designation</strong><br><span id="sa-designation" style="color:white; font-size:16px;"></span></div>
+        </div>
+        
+        <div style="border-top: 1px dashed var(--line-strong); padding-top: 20px; margin-top: 10px;">
+          <strong style="color:var(--accent); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Proposed Topic</strong><br>
+          <div id="sa-topic" style="color:white; font-size:18px; font-weight:600; margin-top:6px; line-height:1.4;"></div>
+        </div>
+
+        <div>
+          <strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Bio / Experience</strong><br>
+          <div id="sa-bio" style="color:white; font-size:15px; margin-top:8px; line-height:1.6; white-space:pre-wrap; background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);"></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Applicant Type</strong><br><span id="sa-applicant-info" style="color:white; font-size:16px;"></span></div>
+          <div><strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Drive Link</strong><br><a id="sa-drive" href="#" target="_blank" style="color:var(--accent); text-decoration:underline; font-size:16px; word-break:break-all;">View Files</a></div>
+        </div>
+        
+        <div id="sa-team-container" style="display:none;">
+          <strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Team Details</strong><br>
+          <div id="sa-team" style="color:white; font-size:15px; margin-top:8px; line-height:1.6; white-space:pre-wrap; background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);"></div>
+        </div>
+
+        <div>
+          <strong style="color:var(--ink-light); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Special Requirements</strong><br>
+          <div id="sa-special" style="color:white; font-size:15px; margin-top:4px;"></div>
+        </div>
+        
+        <div style="font-size:12px; margin-top:10px;">Applied on: <span id="sa-date"></span></div>
+      </div>
+    </div>
+  </div>

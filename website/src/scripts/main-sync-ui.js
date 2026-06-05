@@ -76,6 +76,8 @@ window.syncEverything = () => {
 
   // ── Site Content ───────────────────────────────────────────────────────────
   if (site) {
+    window.maxAttendeeLimit = parseInt(site.maxAttendeeLimit, 10) || 200;
+
     // MIGRATION: auto-fix edition strings
     let heroEd = site.heroEdition || '';
     if (!heroEd || heroEd.toUpperCase().includes('EDITION 01') || heroEd.toUpperCase().includes('EDITION 2') || heroEd.toUpperCase().includes('INAUGURAL')) {

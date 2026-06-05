@@ -84,7 +84,7 @@ window.showConfirm = (message, title = 'Are you sure?', btnText = 'PROCEED') => 
 
 // ── Section navigation ───────────────────────────────────────────────────────
 window.showSection = (target) => {
-  const validSections = ['attendance','email','identity','agenda','speakers','visuals','intelligence','settings'];
+  const validSections = ['attendance','email','identity','agenda','speakers','speaker-apps','visuals','intelligence','settings'];
   const activeId = validSections.includes(target) ? target : 'attendance';
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
   const activeNav = document.getElementById(`nav-${activeId}`);
@@ -100,6 +100,7 @@ window.showSection = (target) => {
     identity:     ['Site Identity',     'Manage taglines, hero content, and about sections.'],
     agenda:       ['Event Agenda',      'Organize sessions, timestamps, and topics.'],
     speakers:     ['Speaker Roster',    'Curate your featured voices and credentials.'],
+    'speaker-apps': ['Speaker Apps',    'Review incoming applications to speak at Elevate QA.'],
     visuals:      ['Visual Assets',     'Upload atmosphere graphics and background media.'],
     intelligence: ['AI Intelligence',   "Configure your event's artificial intelligence brain."],
     settings:     ['Platform Settings', 'Configure administrative security and data.']
@@ -110,6 +111,10 @@ window.showSection = (target) => {
     const parts = titles[activeId][0].split(' ');
     titleEl.innerHTML = `${parts[0]} <em>${parts[1] || ''}</em>`;
     if (descEl) descEl.textContent = titles[activeId][1];
+  }
+
+  if (activeId === 'speaker-apps' && window.renderSpeakerApps) {
+    window.renderSpeakerApps();
   }
 };
 
@@ -497,6 +502,7 @@ export function populateUI(data) {
   setVal('modal-price-new', sc.modalPriceNew); setVal('modal-price-caption', sc.modalPriceCaption);
   setVal('modal-price-btn', sc.modalPriceBtn); setVal('modal-form-title', sc.modalFormTitle); setVal('modal-form-desc', sc.modalFormDesc);
   setVal('maturity-title-input', sc.maturityTitle); setVal('pillars-title-input', sc.pillarsTitle);
+  setVal('set-max-attendees', sc.maxAttendeeLimit || '200');
 
   // Admin whitelist
   const adminContainer = document.getElementById('admin-emails-list');

@@ -8,15 +8,15 @@
  *   - admin-auth.js        → Session & OTP authentication
  */
 import { supabase } from './supabase-config.js';
-import './admin-auth.js';
-import './admin-ui.js';
-import './admin-registrations.js';
+import './admin-auth.js?v=2';
+import './admin-ui.js?v=2';
+import './admin-registrations.js?v=3';
 import {
   loadAllData, saveBranding, saveSiteContent, saveManifesto,
   saveSpeaker, saveAgendaItem, saveMaturityStage, savePillar,
   deleteItem, uploadImageToStorage, syncTableDeletes
-} from './admin-supabase.js';
-import { populateUI, ALLOWED_ADMINS, setAllowedAdmins } from './admin-ui.js';
+} from './admin-supabase.js?v=2';
+import { populateUI, ALLOWED_ADMINS, setAllowedAdmins } from './admin-ui.js?v=2';
 
 // ── Initialization ────────────────────────────────────────────────────────────
 const initAdmin = async () => {
@@ -139,6 +139,7 @@ window.saveAll = async () => {
       modalPriceNew: getVal('modal-price-new'),    modalPriceCaption: getVal('modal-price-caption'),
       modalPriceBtn: getVal('modal-price-btn'),    modalFormTitle: getVal('modal-form-title'),
       modalFormDesc: getVal('modal-form-desc'),
+      maxAttendeeLimit: getVal('set-max-attendees'),
       maturityTitle: getVal('maturity-title-input'), pillarsTitle: getVal('pillars-title-input'),
       adminWhitelist: Array.from(document.querySelectorAll('.admin-email-entry'))
         .map(i => i.value.trim().toLowerCase()).filter(e => e)

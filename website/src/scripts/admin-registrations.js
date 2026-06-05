@@ -67,9 +67,16 @@ window.renderAttendees = (registrations) => {
       : '—';
 
     const isPresent = (p.status && p.status.toUpperCase() === 'PRESENT');
+    const isSent = (p.status && p.status.toUpperCase() === 'TICKET_SENT');
+    const isRejected = (p.status && p.status.toUpperCase() === 'REJECTED');
+    let badgeHtml = '<span class="badge">Verified</span>';
+    if (isPresent) badgeHtml = '<span class="badge" style="background:var(--accent); color:#000;">Present</span>';
+    else if (isSent) badgeHtml = '<span class="badge" style="background:#4CAF50; color:#fff; border-color:#4CAF50;">Pass Sent</span>';
+    else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
     
     return `
       <tr data-id="${p.id}">
+        <td style="text-align: center;"><input type="checkbox" class="attendee-cb" value='${JSON.stringify({id: p.id, name: p.name, email: p.email, company: p.company, designation: p.designation, phone: p.phone, linkedin: p.linkedin}).replace(/'/g, "&#39;")}'></td>
         <td>${p.name  || '—'}</td>
         <td>${p.company     || '—'}</td>
         <td>${p.designation || '—'}</td>
@@ -77,7 +84,7 @@ window.renderAttendees = (registrations) => {
         <td>${p.phone || '—'}</td>
         <td>${linkedinLink}</td>
         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '—'}</td>
-        <td>${isPresent ? '<span class="badge" style="background:var(--accent); color:#000;">Present</span>' : '<span class="badge">Verified</span>'}</td>
+        <td>${badgeHtml}</td>
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -88,6 +95,115 @@ window.renderAttendees = (registrations) => {
       </tr>
     `;
   }).join('');
+};
+
+window.toggleAllAttendees = (source) => {
+  const checkboxes = document.querySelectorAll('.attendee-cb');
+  checkboxes.forEach(cb => cb.checked = source.checked);
+};
+
+window.getSelectedAttendees = () => {
+  const checkboxes = document.querySelectorAll('.attendee-cb:checked');
+  return Array.from(checkboxes).map(cb => JSON.parse(cb.value.replace(/&#39;/g, "'")));
+};
+
+window.sendBulkTickets = async () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  
+  const confirmed = await window.showConfirm(`Are you sure you want to send final passes to ${selected.length} attendees?`, 'Send Final Passes', 'PROCEED');
+  if (!confirmed) return;
+
+  const btn = document.getElementById('btn-send-bulk-tickets');
+  const prog = document.getElementById('bulk-progress');
+  btn.disabled = true;
+  prog.style.display = 'block';
+
+  let sent = 0;
+  for (const attendee of selected) {
+    prog.textContent = `Processing ${sent + 1} / ${selected.length}...`;
+    try {
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
+      
+      const payload = {
+        name: attendee.name,
+        email: attendee.email,
+        company: attendee.company,
+        designation: attendee.designation || '',
+        ticketId: 'EQ26-' + String(attendee.id).split('-')[0].toUpperCase(),
+        qrData: `ELEVATE-QA:${attendee.id}|${attendee.name}|${attendee.company}`
+      };
+
+      const response = await fetch(`${baseUrl}/send-final-ticket`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error('Failed');
+      await updateRegistrationStatus(attendee.id, 'TICKET_SENT');
+      sent++;
+    } catch(e) {
+      console.error('Failed to send to', attendee.email, e);
+    }
+  }
+
+  prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
+  window.showToast(`Sent ${sent} passes.`, 'success');
+  btn.disabled = false;
+  setTimeout(() => { prog.style.display = 'none'; }, 3000);
+  
+  // Refresh UI to show updated badges
+  const data = await loadAllData();
+  if (data && data.registrations) window.renderAttendees(data.registrations);
+  setTimeout(() => { prog.style.display = 'none'; }, 3000);
+};
+
+window.sendBulkRejections = async () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  
+  const confirmed = await window.showConfirm(`Are you sure you want to send house full emails to ${selected.length} attendees?`, 'Send Rejections', 'PROCEED');
+  if (!confirmed) return;
+
+  const btn = document.getElementById('btn-send-bulk-rejections');
+  const prog = document.getElementById('bulk-progress');
+  btn.disabled = true;
+  prog.style.display = 'block';
+
+  let sent = 0;
+  for (const attendee of selected) {
+    prog.textContent = `Processing ${sent + 1} / ${selected.length}...`;
+    try {
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
+      
+      const payload = {
+        name: attendee.name,
+        email: attendee.email
+      };
+
+      const response = await fetch(`${baseUrl}/send-rejection`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error('Failed');
+      await updateRegistrationStatus(attendee.id, 'REJECTED');
+      sent++;
+    } catch(e) {
+      console.error('Failed to send rejection to', attendee.email, e);
+    }
+  }
+
+  prog.textContent = `Done. Sent ${sent} rejections.`;
+  window.showToast(`Sent ${sent} rejection emails.`, 'success');
+  btn.disabled = false;
+  
+  // Refresh UI to show updated badges
+  const data = await loadAllData();
+  if (data && data.registrations) window.renderAttendees(data.registrations);
+  setTimeout(() => { prog.style.display = 'none'; }, 3000);
 };
 
 window.resetAttendeeStatus = async (id) => {
@@ -129,26 +245,150 @@ window.exportAttendees = () => {
     return;
   }
 
-  const data = rows.map(row => {
+  // Create data array for SheetJS
+  const excelData = [];
+  
+  rows.forEach(row => {
     const cells = row.querySelectorAll('td');
-    return {
-      name:        cells[0]?.innerText,
-      company:     cells[1]?.innerText,
-      designation: cells[2]?.innerText,
-      email:       cells[3]?.innerText,
-      mobile:      cells[4]?.innerText,
-      linkedin:    cells[5]?.querySelector('a')?.href || cells[5]?.innerText || '—',
-      registered:  cells[6]?.innerText,
-      status:      cells[7]?.innerText
-    };
+    if (cells.length < 8) return;
+    
+    excelData.push({
+      "Name": cells[1]?.innerText.trim() || '',
+      "Company": cells[2]?.innerText.trim() || '',
+      "Designation": cells[3]?.innerText.trim() || '',
+      "Email": cells[4]?.innerText.trim() || '',
+      "Mobile": cells[5]?.innerText.trim() || '',
+      "LinkedIn": cells[6]?.querySelector('a')?.href || cells[6]?.innerText.trim() || '',
+      "Registered Date": cells[7]?.innerText.trim() || '',
+      "Status": cells[8]?.innerText.trim() || ''
+    });
   });
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `elevate_attendees_${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  window.showToast('Exported registration database', 'success');
+  if (typeof XLSX === 'undefined') {
+    window.showToast('Excel library is loading, please try again in a few seconds.', 'error');
+    return;
+  }
+
+  // Generate Excel workbook and worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+  
+  // Style the header row slightly
+  const headerKeys = Object.keys(excelData[0] || {});
+  for (let i = 0; i < headerKeys.length; i++) {
+    const cellRef = XLSX.utils.encode_cell({r: 0, c: i});
+    if (worksheet[cellRef]) {
+      worksheet[cellRef].s = { font: { bold: true } };
+    }
+  }
+
+  // Export and download
+  const dateStr = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(workbook, `elevate_attendees_${dateStr}.xlsx`);
+  
+  window.showToast('Exported registration database as Excel format', 'success');
+};
+
+window.renderSpeakerApps = () => {
+  const tbody = document.getElementById('speaker-apps-list');
+  const countBadge = document.getElementById('speaker-apps-count');
+  const emptyState = document.getElementById('speaker-apps-empty');
+  const tableContainer = document.querySelector('#sec-speaker-apps .table-container');
+  if (!tbody) return;
+
+  const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  
+  if (countBadge) countBadge.textContent = `${apps.length} applied`;
+
+  if (apps.length === 0) {
+    if (tableContainer) tableContainer.style.display = 'none';
+    if (emptyState) emptyState.style.display = 'flex';
+    return;
+  }
+
+  if (tableContainer) tableContainer.style.display = 'block';
+  if (emptyState) emptyState.style.display = 'none';
+
+  tbody.innerHTML = apps.map((app, index) => {
+    return `
+      <tr>
+        <td>${app.date || new Date().toLocaleDateString()}</td>
+        <td><strong>${app.name}</strong><br><span style="font-size:11px;color:var(--ink-dim);">${app.email}</span></td>
+        <td>${app.organization || '—'}<br><span style="font-size:11px;color:var(--ink-dim);">${app.designation || '—'}</span></td>
+        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${app.topic || 'N/A'}">${app.topic || 'N/A'}</div></td>
+        <td>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn-mini" onclick="viewSpeakerApp(${index})" title="View Details" style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">👁</button>
+            <button class="btn-mini" onclick="deleteSpeakerApp(${index})" title="Delete Application" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">✕</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+};
+
+window.viewSpeakerApp = (index) => {
+  const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  const app = apps[index];
+  if (!app) return;
+
+  document.getElementById('sa-name').textContent = app.name || '—';
+  document.getElementById('sa-email').textContent = app.email || '—';
+  document.getElementById('sa-phone').textContent = app.phone || '—';
+  document.getElementById('sa-org').textContent = app.organization || '—';
+  document.getElementById('sa-designation').textContent = app.designation || '—';
+  
+  const ln = document.getElementById('sa-linkedin');
+  if (app.linkedin) {
+    ln.href = app.linkedin;
+    ln.style.display = 'inline';
+    ln.textContent = app.linkedin;
+  } else {
+    ln.style.display = 'none';
+  }
+
+  document.getElementById('sa-topic').textContent = app.topic || '—';
+  document.getElementById('sa-bio').textContent = app.bio || '—';
+  document.getElementById('sa-date').textContent = app.date || '—';
+
+  // New fields
+  document.getElementById('sa-applicant-info').textContent = app.applicantInfo || 'Individual';
+  
+  const drive = document.getElementById('sa-drive');
+  if (app.driveLink) {
+    let dLink = app.driveLink;
+    if (!/^https?:\/\//i.test(dLink)) dLink = 'https://' + dLink;
+    drive.href = dLink;
+    drive.style.display = 'inline';
+  } else {
+    drive.style.display = 'none';
+  }
+
+  const teamContainer = document.getElementById('sa-team-container');
+  if (app.applicantInfo === 'Team' && app.teamDetails) {
+    teamContainer.style.display = 'block';
+    document.getElementById('sa-team').textContent = app.teamDetails;
+  } else {
+    teamContainer.style.display = 'none';
+  }
+
+  document.getElementById('sa-special').textContent = app.specialReq || 'None';
+
+  document.getElementById('speaker-app-modal').style.display = 'flex';
+};
+
+window.deleteSpeakerApp = async (index) => {
+  const confirmed = await window.showConfirm(
+    'Are you sure you want to delete this speaker application? This cannot be undone.',
+    'Delete Application',
+    'DELETE'
+  );
+  if (!confirmed) return;
+
+  const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  apps.splice(index, 1);
+  localStorage.setItem('elevate_speaker_apps', JSON.stringify(apps));
+  window.showToast('Speaker application deleted', 'success');
+  window.renderSpeakerApps();
 };

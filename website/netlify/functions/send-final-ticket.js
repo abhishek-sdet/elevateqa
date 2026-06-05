@@ -17,11 +17,18 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { name, email, company, ticketId, designation } = JSON.parse(event.body);
+        const { name, email, company, ticketId, designation, qrData } = JSON.parse(event.body);
 
-        if (!email || !ticketId) {
+        if (!email || !ticketId || !qrData) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required ticket data' }) };
         }
+
+        const qrBuffer = await QRCode.toBuffer(qrData, {
+            errorCorrectionLevel: 'H',
+            margin: 2,
+            width: 300,
+            color: { dark: '#000000', light: '#ffffff' }
+        });
 
         const transporter = nodemailer.createTransport({
             host: 'smtp.office365.com',
@@ -37,7 +44,7 @@ export const handler = async (event, context) => {
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: '📝 Registration Received — Elevate QA 2026',
+            subject: '🎫 Your Official Pass — Elevate QA 2026',
             html: `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -98,15 +105,12 @@ export const handler = async (event, context) => {
         <!-- ===== WELCOME SECTION ===== -->
         <tr>
           <td class="content-td" style="padding:40px 38px 0 38px;background-color:#0d0d18;">
-            <p style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#6060a0;font-family:Arial,sans-serif;text-transform:uppercase;">Registration Received ✓</p>
+            <p style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#6060a0;font-family:Arial,sans-serif;text-transform:uppercase;">Registration Confirmed ✓</p>
             <h2 class="hero-name" style="margin:10px 0 18px 0;font-size:24px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.35;">
               Welcome, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
-            <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Thank you for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong>. We have received your details.
-            </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Our Team will contact you to confirm your participation shortly.
+              Your spot at the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong> is confirmed. Please present this QR code at the registration desk.
             </p>
           </td>
         </tr>
@@ -147,11 +151,28 @@ export const handler = async (event, context) => {
                 <td style="border-top:1px solid #1f1f38;font-size:0;line-height:0;" width="45%">&nbsp;</td>
               </tr>
             </table>
-            <p style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">Thank you for your interest in<br><span style="color:#d4ff3a;">Elevate QA 2026!</span></p>
+
+            <!-- TICKET AND QR ROW -->
+            <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <!-- Left side: ID -->
+                <td class="ticket-id-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-right:1px dashed #2a2a3e;padding:24px;border-radius:12px 0 0 12px;">
+                  <p style="margin:0 0 4px 0;font-size:10px;letter-spacing:1px;font-weight:700;color:#8080a8;font-family:Arial,sans-serif;text-transform:uppercase;">Ticket ID</p>
+                  <p style="margin:0;font-size:20px;font-weight:800;color:#ffffff;font-family:monospace;letter-spacing:1px;">${ticketId}</p>
+                </td>
+                <!-- Right side: QR Code -->
+                <td class="ticket-info-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-left:none;padding:16px;border-radius:0 12px 12px 0;">
+                  <div style="background:#ffffff;padding:8px;border-radius:8px;display:inline-block;">
+                    <img src="cid:qrcode@elevateqa" alt="QR Code" width="120" height="120" style="display:block;border:0;">
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:24px 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">See you at<br><span style="color:#d4ff3a;">Elevate QA 2026!</span></p>
             <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">
-              We look forward to confirming your participation. 
+              Keep this email handy. This QR code is your entry ticket. 
             </p>
-            <p style="margin:14px 0 0 0;font-size:16px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;">Stay tuned! 🚀</p>
           </td>
         </tr>
 
@@ -175,6 +196,14 @@ export const handler = async (event, context) => {
 </body>
 </html>`
         };
+
+        mailOptions.attachments = [
+            {
+                filename: 'ticket-qr.png',
+                content: qrBuffer,
+                cid: 'qrcode@elevateqa'
+            }
+        ];
 
         await transporter.sendMail(mailOptions);
         console.log(`[TICKET] Sent to ${email}`);

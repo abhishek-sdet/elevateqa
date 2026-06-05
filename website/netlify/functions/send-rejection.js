@@ -17,10 +17,10 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { name, email, company, ticketId, designation } = JSON.parse(event.body);
+        const { name, email } = JSON.parse(event.body);
 
-        if (!email || !ticketId) {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required ticket data' }) };
+        if (!email) {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required data' }) };
         }
 
         const transporter = nodemailer.createTransport({
@@ -37,7 +37,7 @@ export const handler = async (event, context) => {
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: '📝 Registration Received — Elevate QA 2026',
+            subject: 'Updates Regarding Your Registration — Elevate QA 2026',
             html: `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -98,15 +98,15 @@ export const handler = async (event, context) => {
         <!-- ===== WELCOME SECTION ===== -->
         <tr>
           <td class="content-td" style="padding:40px 38px 0 38px;background-color:#0d0d18;">
-            <p style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#6060a0;font-family:Arial,sans-serif;text-transform:uppercase;">Registration Received ✓</p>
+            <p style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#6060a0;font-family:Arial,sans-serif;text-transform:uppercase;">Registration Update</p>
             <h2 class="hero-name" style="margin:10px 0 18px 0;font-size:24px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.35;">
-              Welcome, <span style="color:#d4ff3a;">${name}!</span>
+              Hi <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Thank you for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong>. We have received your details.
+              Thank you for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong>.
             </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Our Team will contact you to confirm your participation shortly.
+              Due to overwhelming response, we have reached full capacity for this year's summit and cannot accommodate more attendees at this time.
             </p>
           </td>
         </tr>
@@ -147,11 +147,11 @@ export const handler = async (event, context) => {
                 <td style="border-top:1px solid #1f1f38;font-size:0;line-height:0;" width="45%">&nbsp;</td>
               </tr>
             </table>
-            <p style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">Thank you for your interest in<br><span style="color:#d4ff3a;">Elevate QA 2026!</span></p>
+            <p style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">Thank you for your understanding.</p>
             <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">
-              We look forward to confirming your participation. 
+              We hope to see you at our future events. 
             </p>
-            <p style="margin:14px 0 0 0;font-size:16px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;">Stay tuned! 🚀</p>
+            <p style="margin:14px 0 0 0;font-size:16px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;">Stay tuned for next time! 🚀</p>
           </td>
         </tr>
 

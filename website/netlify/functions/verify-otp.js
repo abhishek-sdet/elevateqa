@@ -21,11 +21,12 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { email, otp } = JSON.parse(event.body);
+        let { email, otp } = JSON.parse(event.body);
 
         if (!email || !otp) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email and OTP are required' }) };
         }
+        email = email.toLowerCase();
 
         const { data: record, error: dbError } = await supabase
             .from('otps')
@@ -37,12 +38,12 @@ export const handler = async (event, context) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'No OTP found for this email, or it has expired. Please request a new one.' }) };
         }
 
-        if (Date.now() > record.expires_at) {
+        if (Date.now() > new Date(record.expires_at).getTime()) {
             await supabase.from('otps').delete().eq('email', email);
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'OTP has expired. Please request a new one.' }) };
         }
 
-        if (record.code === otp) {
+        if (record.code.toString() === otp.toString()) {
             await supabase.from('otps').delete().eq('email', email);
             return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'OTP verified successfully' }) };
         } else {

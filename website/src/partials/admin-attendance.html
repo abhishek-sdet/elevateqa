@@ -8,10 +8,18 @@
                 <span class="badge badge-accent" id="attendee-count" aria-live="polite">0 registered</span>
               </div>
             </div>
+            <!-- Bulk Action Bar -->
+            <div id="bulk-actions" style="margin-bottom: 16px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); border-radius: 8px; display: flex; gap: 12px; align-items: center;">
+              <span style="font-size: 13px; color: var(--ink-dim);">Bulk Actions:</span>
+              <button class="btn-save-all" onclick="sendBulkTickets()" id="btn-send-bulk-tickets" style="font-size: 13px; padding: 6px 12px; background: var(--accent); color: #000;">Send Final Passes (QR)</button>
+              <button class="btn-reset" onclick="sendBulkRejections()" id="btn-send-bulk-rejections" style="font-size: 13px; padding: 6px 12px;">Send House Full</button>
+              <div id="bulk-progress" style="display: none; font-size: 12px; font-weight: 600; color: var(--accent); margin-left: auto;">Processing 0 / 0...</div>
+            </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllAttendees" onchange="toggleAllAttendees(this)"></th>
                     <th>Name</th>
                     <th>Organization</th>
                     <th>Designation</th>

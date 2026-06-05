@@ -1,0 +1,236 @@
+/* Speaker Form CSS */
+body {
+  background-color: #0b0b10;
+  color: #fff;
+  font-family: 'Manrope', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.form-page-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.form-card {
+  background: rgba(20, 20, 25, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.form-header {
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 20px;
+}
+
+.form-header h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 2.5rem;
+  margin: 0 0 10px;
+  color: #fff;
+}
+
+.form-header p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.required-note {
+  color: #ff4d4f;
+  font-size: 0.85rem;
+}
+.req {
+  color: #ff4d4f;
+  margin-left: 4px;
+}
+
+.form-group {
+  margin-bottom: 30px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: #e0e0e0;
+}
+
+.form-group label em {
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.form-group label a {
+  color: #d4ff3a;
+  text-decoration: none;
+}
+.form-group label a:hover {
+  text-decoration: underline;
+}
+
+.sub-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: -8px;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.sub-label strong {
+  color: #ccc;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #d4ff3a;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 3px rgba(212, 255, 58, 0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal !important;
+  font-size: 1rem !important;
+  margin: 0 !important;
+}
+
+.radio-label input {
+  display: none;
+}
+
+.custom-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.radio-label input:checked + .custom-radio {
+  border-color: #d4ff3a;
+}
+
+.radio-label input:checked + .custom-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: #d4ff3a;
+  border-radius: 50%;
+}
+
+.hidden-input {
+  display: none;
+  margin-top: 10px;
+}
+
+.hidden-input.show {
+  display: block;
+}
+
+.mt-2 {
+  margin-top: 12px;
+}
+
+.form-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.print-note {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20px;
+}
+
+.submit-button {
+  background: #d4ff3a;
+  color: #000;
+  border: none;
+  padding: 14px 40px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Manrope', sans-serif;
+}
+
+.submit-button:hover {
+  background: #bde633;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(212, 255, 58, 0.2);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.disclaimer {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.disclaimer a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: underline;
+}
+
+.success-icon {
+  margin-bottom: 20px;
+  animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes scaleIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

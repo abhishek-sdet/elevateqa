@@ -26,14 +26,13 @@ export const handler = async (event, context) => {
     }
 
     try {
-        let { email } = JSON.parse(event.body);
+        const { email } = JSON.parse(event.body);
         if (!email) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email is required' }) };
         }
-        email = email.toLowerCase();
 
         const otp = generateOTP();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
         const { error: dbError } = await supabase
             .from('otps')
@@ -55,7 +54,7 @@ export const handler = async (event, context) => {
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: 'Your Elevate QA Verification Code',
+            subject: 'Your Speaker Verification Code',
             html: `
                 <div style="background-color: #07070f; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center;">
                     <div style="max-width: 500px; margin: 0 auto; background-color: #0d0d18; border-radius: 16px; border: 1px solid #1f1f30; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.65);">
@@ -64,15 +63,15 @@ export const handler = async (event, context) => {
                         <div style="background-color: #050508; padding: 32px 24px; border-bottom: 2px solid #d4ff3a;">
                             <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="60" style="display: block; margin: 0 auto 12px auto; border: 0; pointer-events: none;" />
                             <p style="margin: 0; font-size: 10.5px; font-weight: 700; color: #8e8e9a; letter-spacing: 2px; text-transform: uppercase; line-height: 1.5;">
-                                AI-Led &bull; Quality Engineering &bull; Proof of Value
+                                CALL FOR SPEAKERS 2026
                             </p>
                         </div>
                         
                         <!-- Main Content -->
                         <div style="padding: 40px 30px;">
-                            <h2 style="color: #ffffff; margin-top: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em;">Confirm your <span style="color: #d4ff3a; font-style: italic;">Access</span></h2>
+                            <h2 style="color: #ffffff; margin-top: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em;">Confirm your <span style="color: #d4ff3a; font-style: italic;">Submission</span></h2>
                             <p style="color: #b0b0cc; font-size: 14.5px; line-height: 1.7; margin-bottom: 30px;">
-                                Thank you for your interest in joining 300+ QE leaders. Please use the secure verification code below to authenticate your professional email. This code expires in 10 minutes.
+                                Thank you for your interest in speaking at Elevate QA. Please use the secure verification code below to authenticate your professional email. This code expires in 10 minutes.
                             </p>
                             
                             <!-- OTP Display Box -->

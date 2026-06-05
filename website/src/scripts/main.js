@@ -9,7 +9,7 @@
  */
 import { initCloudSync } from './main-sync.js';
 import { supabase } from './supabase-config.js';
-import { sendAttendeeEmail } from './email-service.js';
+import { sendAttendeeEmail, sendSpeakerEmail } from './email-service.js';
 import { DEFAULT_MATURITY, DEFAULT_PILLARS, DEFAULT_AGENDA, DEFAULT_SPEAKERS, initNav } from './main-ui.js';
 import { initAnimations, initCursor } from './main-animations.js';
 import './main-sync-ui.js'; // registers window.syncEverything
@@ -60,13 +60,13 @@ window.closeChooser = () => {
 window.openAttendFlow = () => { closeChooser(); setTimeout(() => window.openModal(), 120); };
 
 window.openSpeakFlow = () => {
-  window.open('https://forms.office.com/r/eNjZMN831G', '_blank');
   closeChooser();
+  setTimeout(() => window.openModal(null, 'speak'), 120);
 };
 
 // ── MODAL HELPERS ─────────────────────────────────────────────────────────────
 function resetModalViews() {
-  ['price-view','form-view','ticket-view','otp-view'].forEach(id => {
+  ['price-view','form-view','ticket-view','otp-view','speaker-form-view','speaker-success-view','attendee-success-view','processing-view'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -75,15 +75,22 @@ function resetModalViews() {
   if (otpErr) otpErr.textContent = '';
 }
 
-window.openModal = (e) => {
+window.openModal = (e, flowType = 'attend') => {
   if (e) e.preventDefault();
   const modal = document.getElementById('regModal');
   if (!modal) return;
   resetModalViews();
   const regForm = modal.querySelector('.reg-form');
   if (regForm) regForm.reset();
-  const priceView = document.getElementById('price-view');
-  if (priceView) priceView.style.display = 'block';
+  
+  if (flowType === 'attend') {
+    const priceView = document.getElementById('price-view');
+    if (priceView) priceView.style.display = 'block';
+  } else if (flowType === 'speak') {
+    const speakerView = document.getElementById('speaker-form-view');
+    if (speakerView) speakerView.style.display = 'block';
+  }
+  
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
   toggleFloatingCta(false);
@@ -161,6 +168,16 @@ window.generateTicket = async function(event) {
   const originalBtnText = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending OTP...'; }
   try {
+    const { count, error } = await supabase.from('registrations').select('*', { count: 'exact', head: true });
+    const limit = window.maxAttendeeLimit || 200;
+    if (count !== null && count >= limit) {
+      window.isWaitlisted = true;
+    } else {
+      window.isWaitlisted = false;
+    }
+  } catch(e) { console.warn('Registration limit check failed:', e); window.isWaitlisted = false; }
+
+  try {
     const { data: existingUser } = await supabase.from('registrations').select('id').eq('email', email).limit(1);
     if (existingUser && existingUser.length > 0) {
       showToast('This email is already registered. Please use a different professional email.', 'error');
@@ -169,7 +186,9 @@ window.generateTicket = async function(event) {
     }
   } catch(e) { console.warn('DB check failed or unavailable:', e); }
   try {
-    const response = await fetch(`${BACKEND_URL}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+    const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
+    const response = await fetch(`${baseUrl}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
     window.pendingRegistration = { type: 'attend', name, email, phone, org, designation, linkedin };
@@ -205,7 +224,12 @@ window.resendOTP = function() {
     btn.innerHTML = 'Sending...';
   }
   
-  fetch(`${BACKEND_URL}/send-otp`, { 
+  const isSpeaker = window.pendingRegistration && window.pendingRegistration.type === 'speaker';
+  const endpoint = '/send-otp'; // using same for both
+  const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+  const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
+  
+  fetch(`${baseUrl}${endpoint}`, { 
     method: 'POST', 
     headers: { 'Content-Type': 'application/json' }, 
     body: JSON.stringify({ email }) 
@@ -266,46 +290,87 @@ window.verifyOTP = async function() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Verifying...';
   document.getElementById('otp-error').textContent = '';
   const { type, email, name, phone, org, designation, linkedin, topic, bio } = window.pendingRegistration;
+  const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+  const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
+  
   try {
-    const response = await fetch(`${BACKEND_URL}/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
+    const response = await fetch(`${baseUrl}/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Verification failed');
     
-    // Attend flow
-    let dbId = null, shortId = null;
-    const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, designation, linkedin, status: 'confirmed' }]).select();
-    if (error) throw error;
-    if (data && data.length > 0) { dbId = data[0].id; shortId = 'EQ26-' + dbId.split('-')[0].toUpperCase(); }
-    document.getElementById('ticket-name').textContent = name;
-    document.getElementById('ticket-org').textContent  = org;
-    const designEl = document.getElementById('ticket-designation');
-    if (designEl) designEl.textContent = designation || '';
-    const idDisplay = document.getElementById('ticket-id-val') || document.getElementById('ticket-id-display');
-    if (idDisplay) idDisplay.textContent = `PASS ID: ${shortId}`;
-    const qrEl = document.getElementById('qrcode');
-    if (qrEl) {
-      qrEl.innerHTML = '';
-      if (typeof QRCode !== 'undefined') new QRCode(qrEl, { text: `ELEVATE-QA:${dbId}|${name}|${org}`, width: 160, height: 160, colorDark: '#0b0b10', colorLight: '#ffffff' });
-    }
-    document.getElementById('otp-view').style.display    = 'none';
-    document.getElementById('ticket-view').style.display = 'block';
-    try {
-      await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
-      const statusWrap = document.getElementById('email-status-wrap');
-      if (statusWrap) {
-        statusWrap.innerHTML = `
-          <div class="email-status success" style="color: var(--accent); margin-bottom: 8px;">✓ Ticket sent to ${escapeHtml(email)}</div>
-          <div style="color: #ffffff; font-size: 13px; font-weight: 600; margin-top: 4px;">Thank you! We will see you at the event!</div>
-        `;
+    if (type === 'speaker') {
+      // Speaker flow
+      const speakerData = { ...window.pendingRegistration, organization: org };
+      
+      // Save to localStorage for admin panel
+      const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+      apps.push(speakerData);
+      localStorage.setItem('elevate_speaker_apps', JSON.stringify(apps));
+
+      document.getElementById('otp-view').style.display = 'none';
+      const processingView = document.getElementById('processing-view');
+      if (processingView) processingView.style.display = 'block';
+      
+      try {
+        await sendSpeakerEmail(speakerData);
+        if (processingView) processingView.style.display = 'none';
+        document.getElementById('speaker-success-email').textContent = email;
+        document.getElementById('speaker-success-view').style.display = 'block';
+        
+        // Reset form for next time
+        const form = document.getElementById('speakerRegistrationForm');
+        if (form) form.reset();
+      } catch(e) {
+        if (processingView) processingView.style.display = 'none';
+        console.error('Failed to send speaker email:', e);
+        if (window.showToast) window.showToast('Error sending confirmation email, but your application is received.', 'error');
+        document.getElementById('speaker-success-email').textContent = email;
+        document.getElementById('speaker-success-view').style.display = 'block';
       }
-    } catch(e) {
-      console.error('Failed to send email:', e);
-      const statusWrap = document.getElementById('email-status-wrap');
-      if (statusWrap) {
-        statusWrap.innerHTML = `
-          <div class="email-status error" style="color: #ff5a36; margin-bottom: 8px;">⚠ Error sending email, but your registration is secure!</div>
-          <div style="color: #ffffff; font-size: 13px; font-weight: 600; margin-top: 4px;">Thank you! We will see you at the event!</div>
-        `;
+    } else {
+      // Attendee flow
+      let dbId = null, shortId = null;
+      const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, designation, linkedin, status: 'pending' }]).select();
+      if (error) throw error;
+      if (data && data.length > 0) { dbId = data[0].id; shortId = 'EQ26-' + String(dbId).split('-')[0].toUpperCase(); }
+      
+      const otpViewEl = document.getElementById('otp-view');
+      if (otpViewEl) otpViewEl.style.display = 'none';
+      const processingView = document.getElementById('processing-view');
+      if (processingView) processingView.style.display = 'block';
+      
+      try {
+        await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
+        if (processingView) processingView.style.display = 'none';
+        const emailEl = document.getElementById('attendee-success-email');
+        if (emailEl) emailEl.textContent = email;
+        const successDesc = document.getElementById('attendee-success-desc');
+        if (successDesc) {
+            if (window.isWaitlisted) {
+                successDesc.innerHTML = `Thank you for showing your interest. We have reached full capacity for this year's summit, but we have received your details. Our team will contact you if any seats open up.`;
+            } else {
+                successDesc.innerHTML = `Thank you for showing your interest in attending the <strong style="color: #fff;">Elevate QA Tech Summit</strong>. We have received your details. Our team will confirm your participation 2 weeks prior to the event.`;
+            }
+        }
+        const successView = document.getElementById('attendee-success-view');
+        if (successView) {
+            successView.style.display = 'block';
+        } else {
+            if (window.showToast) window.showToast('Registration successful! Check your email for details.', 'success');
+            setTimeout(() => closeModal(), 2000);
+        }
+      } catch(e) {
+        if (processingView) processingView.style.display = 'none';
+        console.error('Failed to send email:', e);
+        if (window.showToast) window.showToast('Registration received, but error sending email.', 'error');
+        const emailEl = document.getElementById('attendee-success-email');
+        if (emailEl) emailEl.textContent = email;
+        const successView = document.getElementById('attendee-success-view');
+        if (successView) {
+            successView.style.display = 'block';
+        } else {
+            setTimeout(() => closeModal(), 2000);
+        }
       }
     }
   } catch (error) {
@@ -430,6 +495,132 @@ window.copyLink = function(e) {
     const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     cb();
+  }
+};
+
+// ── SPEAKER REGISTRATION LOGIC ────────────────────────────────────────────────
+// ── SPEAKER REGISTRATION LOGIC ────────────────────────────────────────────────
+
+window.toggleSpeakerTeam = function(radio) {
+  const teamGroup = document.getElementById('speaker-team-group');
+  const teamInput = document.getElementById('speaker-team');
+  const topicLabel = document.getElementById('speaker-topic-label');
+  const driveLabel = document.getElementById('speaker-drive-label');
+  const specialLabel = document.getElementById('speaker-special-label');
+  
+  if (radio.value === 'Team') {
+    teamGroup.style.display = 'block';
+    teamInput.required = true;
+    topicLabel.innerHTML = '10. Topic <span style="color:#ff4d4f">*</span>';
+    driveLabel.innerHTML = '11. Share the drive link with uploaded files <span style="font-weight:normal; color:var(--ink-dim); font-size:12px;">(Provide access to <a href="mailto:elevateqa@sdettech.com" style="color:var(--accent);">elevateqa@sdettech.com</a>)</span> <span style="color:#ff4d4f">*</span>';
+    specialLabel.innerHTML = '12. Any Special Requirements (AV, demo setup, etc.)';
+  } else {
+    teamGroup.style.display = 'none';
+    teamInput.required = false;
+    teamInput.value = '';
+    topicLabel.innerHTML = '9. Topic <span style="color:#ff4d4f">*</span>';
+    driveLabel.innerHTML = '10. Share the drive link with uploaded files <span style="font-weight:normal; color:var(--ink-dim); font-size:12px;">(Provide access to <a href="mailto:elevateqa@sdettech.com" style="color:var(--accent);">elevateqa@sdettech.com</a>)</span> <span style="color:#ff4d4f">*</span>';
+    specialLabel.innerHTML = '11. Any Special Requirements (AV, demo setup, etc.)';
+  }
+};
+
+window.submitSpeakerForm = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = document.getElementById('speaker-submit-btn');
+  const emailInput = document.getElementById('speaker-email');
+  const email = emailInput.value.trim();
+  
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span> Sending OTP...';
+  btn.disabled = true;
+
+  const existingApps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  if (existingApps.some(app => app.email.toLowerCase() === email.toLowerCase())) {
+    if (window.showToast) {
+      window.showToast('This email is already registered for speaker application.', 'error');
+    } else {
+      alert('This email is already registered for speaker application.');
+    }
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const speakerData = {
+      type: 'speaker',
+      name: document.getElementById('speaker-name').value,
+      email: email,
+      org: document.getElementById('speaker-org').value,
+      designation: document.getElementById('speaker-designation').value,
+      linkedin: document.getElementById('speaker-linkedin').value,
+      topic: document.getElementById('speaker-topic').value,
+      bio: document.getElementById('speaker-bio').value,
+      phone: document.getElementById('speaker-mobile').value,
+      applicantInfo: document.querySelector('input[name="applicantInfo"]:checked')?.value || 'Individual',
+      teamDetails: document.getElementById('speaker-team').value,
+      driveLink: document.getElementById('speaker-drive').value,
+      specialReq: document.getElementById('speaker-special').value,
+      date: new Date().toLocaleDateString()
+    };
+
+    window.pendingRegistration = speakerData;
+
+    // Send OTP request
+    const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+    const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
+    
+    const response = await fetch(`${baseUrl}/send-otp`, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ email }) 
+    });
+    
+    let result;
+    try {
+      result = await response.json();
+    } catch (e) {
+      if (!response.ok) throw new Error(`Server returned status ${response.status}`);
+      throw e;
+    }
+    
+    if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
+
+    // Transition to OTP view
+    document.getElementById('speaker-form-view').style.display = 'none';
+    const otpView = document.getElementById('otp-view');
+    otpView.style.display = 'block';
+    
+    // Call UI setup for OTP
+    if (window.initOTPInputs) window.initOTPInputs();
+    
+    let timeLeft = 600;
+    const timerEl = document.getElementById('otp-timer');
+    const resendBtn = document.getElementById('otp-resend-btn');
+    if (resendBtn) resendBtn.disabled = true;
+    
+    if (window.otpInterval) clearInterval(window.otpInterval);
+    window.otpInterval = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        clearInterval(window.otpInterval);
+        if (timerEl) timerEl.textContent = '';
+        if (resendBtn) resendBtn.disabled = false;
+      } else {
+        const m = Math.floor(timeLeft / 60);
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        if (timerEl) timerEl.textContent = `(${m}:${s})`;
+      }
+    }, 1000);
+    
+  } catch (err) {
+    console.error("Submission error:", err);
+    if (window.showToast) window.showToast(err.message || 'Error initiating verification. Please try again.', 'error');
+    else alert('An error occurred. Please try again.');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
   }
 };
 

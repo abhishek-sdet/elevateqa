@@ -577,16 +577,32 @@ function exportAttendees() {
     return;
   }
 
-  const dataStr = JSON.stringify(atts, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  let csvContent = "Name,Organization,Email,Date,Checked In\n";
+  const escapeCSV = (str) => {
+    if (str === null || str === undefined) return '""';
+    const escaped = String(str).replace(/"/g, '""');
+    return `"${escaped}"`;
+  };
 
+  atts.forEach(p => {
+    const name = p.name || '';
+    const org = p.org || '';
+    const email = p.email || '';
+    const date = p.date ? new Date(p.date).toLocaleDateString() : '';
+    const checkedIn = p.checkedIn ? 'Yes' : 'No';
+    csvContent += [name, org, email, date, checkedIn].map(escapeCSV).join(',') + "\n";
+  });
+
+  const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.setAttribute('href', dataUri);
-  link.setAttribute('download', `elevate_attendees_${new Date().toISOString().split('T')[0]}.json`);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `elevate_attendees_${new Date().toISOString().split('T')[0]}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  showSavedToast("Database Exported!");
+  URL.revokeObjectURL(url);
+  showSavedToast("Database Exported as Excel/CSV!");
 }
 
 // ============================================================

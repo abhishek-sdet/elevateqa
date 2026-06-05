@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speaker Registration - Elevate QA 2026</title>
+  
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="src/style/elevate-main.css">
+  <link rel="stylesheet" href="src/style/sections/speaker-form.css">
+</head>
+<body>
+
+  <!-- Dynamic ambient background -->
+  <div class="ambient-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="form-page-container">
+    <div class="form-card" id="speakerFormCard">
+      <div class="form-header">
+        <h1>REGISTER FOR ELEVATEQA 2026</h1>
+        <p>When you submit this form, it will not automatically collect your details like name and email address unless you provide it yourself.</p>
+        <span class="required-note">* Required</span>
+      </div>
+
+      <form id="speakerRegistrationForm">
+        
+        <!-- 1. Full Name -->
+        <div class="form-group">
+          <label>1. Full Name <span class="req">*</span></label>
+          <input type="text" name="fullName" placeholder="Enter your answer" required>
+        </div>
+
+        <!-- 2. Email Address -->
+        <div class="form-group">
+          <label>2. Email Address <span class="req">*</span></label>
+          <input type="email" name="email" placeholder="Please enter an email" required>
+        </div>
+
+        <!-- 3. Organization/Company Name -->
+        <div class="form-group">
+          <label>3. Organization/Company Name <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="organization" value="SDET Technologies" required>
+              <span class="custom-radio"></span>
+              SDET Technologies
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="organization" value="Other" id="orgOtherRadio">
+              <span class="custom-radio"></span>
+              Other
+            </label>
+          </div>
+          <input type="text" name="organizationOther" id="orgOtherInput" placeholder="Enter your answer" class="hidden-input mt-2">
+        </div>
+
+        <!-- 4. Designation -->
+        <div class="form-group">
+          <label>4. Designation <span class="req">*</span></label>
+          <input type="text" name="designation" placeholder="Enter your answer" required>
+        </div>
+
+        <!-- 5. Mobile Number -->
+        <div class="form-group">
+          <label>5. Mobile Number <span class="req">*</span></label>
+          <input type="tel" name="mobile" placeholder="Number must be between 1000000000 ~ 9999999999" required pattern="[0-9]{10}">
+        </div>
+
+        <!-- 6. LinkedIn URL -->
+        <div class="form-group">
+          <label>6. LinkedIn URL <span class="req">*</span></label>
+          <input type="url" name="linkedin" placeholder="Please enter a URL" required>
+        </div>
+
+        <!-- 7. Speaker Bio -->
+        <div class="form-group">
+          <label>7. Speaker Bio <em>(max. 150 words)</em></label>
+          <textarea name="bio" rows="4" placeholder="Enter your answer"></textarea>
+        </div>
+
+        <!-- 8. Applicant Information -->
+        <div class="form-group">
+          <label>8. Applicant Information <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="applicantInfo" value="Individual" required checked>
+              <span class="custom-radio"></span>
+              Individual
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="applicantInfo" value="Team" id="teamRadio">
+              <span class="custom-radio"></span>
+              Team
+            </label>
+          </div>
+        </div>
+
+        <!-- 9. Team Details -->
+        <div class="form-group" id="teamDetailsGroup" style="display: none;">
+          <label>9. Team Details (if applicable) <span class="req">*</span></label>
+          <p class="sub-label">Name of the Team and Co-presenters Details (Name and email) *max of 3 presenters</p>
+          <textarea name="teamDetails" id="teamDetailsInput" rows="4" placeholder="Enter your answer"></textarea>
+        </div>
+
+        <!-- 10. Topic -->
+        <div class="form-group">
+          <label id="topicLabelNum">9. Topic <span class="req">*</span></label>
+          <input type="text" name="topic" placeholder="Enter your answer" required>
+        </div>
+
+        <!-- 11. Drive Link -->
+        <div class="form-group">
+          <label id="driveLinkLabelNum">10. Share the drive link with uploaded files <em>(Make sure to provide access to <a href="mailto:elevateqa@sdettech.com">elevateqa@sdettech.com</a>)</em> <span class="req">*</span></label>
+          <p class="sub-label">
+            <strong>* Abstract</strong> (max. 300 words) describing about takeaways for attendees. Format .docx, .doc. Max file size: 10 MB.<br>
+            <strong>* 10–15 slides</strong> covering AI problem, implementation approach, demo plan, data and benchmarks. Max file size: 20 MB.<br>
+            <strong>* Video Duration:</strong> 1–2 minutes · Accepted formats: MP4, MOV · Max file size: 100 MB · Must show the AI system taking real inputs and producing real outputs — no slides, no voiceover-only cuts
+          </p>
+          <input type="url" name="driveLink" placeholder="Please enter a URL" required>
+        </div>
+
+        <!-- 12. Special Requirements -->
+        <div class="form-group">
+          <label id="specialReqLabelNum">11. Any Special Requirements (AV, demo setup, etc.)</label>
+          <input type="text" name="specialReq" placeholder="Enter your answer">
+        </div>
+
+        <div class="form-footer">
+          <p class="print-note">You can print a copy of your answer after you submit</p>
+          <button type="submit" id="submitBtn" class="submit-button">Submit</button>
+          <p class="disclaimer">Never give out your password. <a href="#">Report abuse</a></p>
+        </div>
+      </form>
+    </div>
+
+    <!-- Thank You UI (Hidden by default) -->
+    <div class="form-card" id="thankYouCard" style="display: none; text-align: center; padding: 60px 40px;">
+      <!-- Glowing Success Icon -->
+      <div style="margin: 0 auto 30px auto; width: 80px; height: 80px; background: rgba(212, 255, 58, 0.1); border: 1px solid rgba(212, 255, 58, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(212, 255, 58, 0.2);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4ff3a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+
+      <!-- Heading -->
+      <h2 style="font-family: 'Fraunces', serif; font-size: 36px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 16px;">
+        Application <em style="color: #d4ff3a; font-style: italic;">Received!</em>
+      </h2>
+
+      <!-- Description -->
+      <p style="color: rgba(255,255,255,0.7); font-size: 16px; line-height: 1.7; max-width: 360px; margin: 0 auto 24px auto;">
+        Thank you for your interest in speaking at <strong style="color: #fff;">Elevate QA 2026</strong>. Our review committee is evaluating your submission.
+      </p>
+
+      <!-- Email Confirmation Box -->
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 24px; margin: 0 auto 32px auto; max-width: 380px;">
+        <span style="display: block; color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Confirmation sent to</span>
+        <strong id="submittedEmailText" style="color: #fff; font-size: 16px; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.5px;"></strong>
+      </div>
+
+      <!-- Action -->
+      <a href="index.html" class="submit-button" style="display: inline-block; width: 100%; max-width: 260px; text-decoration: none;">Back to Home</a>
+    </div>
+
+  </div>
+
+  <script type="module" src="src/scripts/speaker-form.js"></script>
+</body>
+</html>
