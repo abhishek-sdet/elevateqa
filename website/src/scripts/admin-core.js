@@ -8,7 +8,7 @@
  *   - admin-auth.js        → Session & OTP authentication
  */
 import { supabase } from './supabase-config.js';
-import './admin-auth.js?v=4';
+import './admin-auth.js?v=5';
 import './admin-ui.js?v=2';
 import './admin-registrations.js?v=3';
 import {

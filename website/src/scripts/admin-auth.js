@@ -41,8 +41,8 @@ async function sendOTP(e) {
     const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
     const baseUrl = isLocalHostOrNetwork ? 'http://localhost:3000/api' : 'https://elevateqa.netlify.app/.netlify/functions';
     
-    // Note: Use the standard send-otp function for both attendees and admins
-    const response = await fetch(`${baseUrl}/send-otp`, {
+    // Note: Use the admin-specific OTP function for admin portal
+    const response = await fetch(`${baseUrl}/send-admin-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
