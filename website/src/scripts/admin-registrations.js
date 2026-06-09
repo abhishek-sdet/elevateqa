@@ -46,19 +46,66 @@ window.generateAdminQR = (data) => {
 };
 
 window.renderAttendees = (registrations) => {
+  if (registrations) {
+    window.rawAttendees = registrations;
+  }
+  const raw = window.rawAttendees || [];
+  
+  // Get filter inputs
+  const globalSearch = (document.getElementById('attendee-search')?.value || '').toLowerCase().trim();
+  const nameFilter = (document.getElementById('col-filter-name')?.value || '').toLowerCase().trim();
+  const orgFilter = (document.getElementById('col-filter-org')?.value || '').toLowerCase().trim();
+  const desigFilter = (document.getElementById('col-filter-desig')?.value || '').toLowerCase().trim();
+  const emailFilter = (document.getElementById('col-filter-email')?.value || '').toLowerCase().trim();
+  const mobileFilter = (document.getElementById('col-filter-mobile')?.value || '').toLowerCase().trim();
+  const statusFilter = (document.getElementById('col-filter-status')?.value || '').toLowerCase().trim();
+
+  let filtered = raw.filter(p => {
+    if (globalSearch) {
+      const matchText = `${p.name || ''} ${p.company || ''} ${p.designation || ''} ${p.email || ''} ${p.phone || ''}`.toLowerCase();
+      if (!matchText.includes(globalSearch)) return false;
+    }
+    if (nameFilter && !(p.name || '').toLowerCase().includes(nameFilter)) return false;
+    if (orgFilter && !(p.company || '').toLowerCase().includes(orgFilter)) return false;
+    if (desigFilter && !(p.designation || '').toLowerCase().includes(desigFilter)) return false;
+    if (emailFilter && !(p.email || '').toLowerCase().includes(emailFilter)) return false;
+    if (mobileFilter && !(p.phone || '').toLowerCase().includes(mobileFilter)) return false;
+    if (statusFilter) {
+      const status = (p.status || 'verified').toLowerCase();
+      if (statusFilter === 'ticket_sent') {
+        if (status !== 'ticket_sent' && status !== 'pass sent') return false;
+      } else {
+        if (status !== statusFilter) return false;
+      }
+    }
+    return true;
+  });
+
+  // Sort by created_at descending (recently added at top)
+  filtered.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
+
   const tbody      = document.getElementById('attendee-table');
   const countBadge = document.getElementById('attendee-count');
   if (!tbody) return;
 
-  const atts = registrations || [];
-  if (countBadge) countBadge.textContent = `${atts.length} registered`;
+  if (countBadge) {
+    if (raw.length === filtered.length) {
+      countBadge.textContent = `${raw.length} registered`;
+    } else {
+      countBadge.textContent = `${filtered.length} found (${raw.length} total)`;
+    }
+  }
 
-  if (atts.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 40px; color: var(--ink-dim);">No registrations found</td></tr>';
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 40px; color: var(--ink-dim);">No registrations found</td></tr>';
     return;
   }
 
-  tbody.innerHTML = atts.map((p) => {
+  tbody.innerHTML = filtered.map((p) => {
     const qrHtml        = window.generateAdminQR(p);
     const safeName      = (p.name  || '—').replace(/'/g, "\\'");
     const safeEmail     = (p.email || '—').replace(/'/g, "\\'");
@@ -95,6 +142,19 @@ window.renderAttendees = (registrations) => {
       </tr>
     `;
   }).join('');
+};
+
+window.filterAttendees = () => {
+  window.renderAttendees();
+};
+
+window.resetAllFilters = () => {
+  const ids = ['attendee-search', 'col-filter-name', 'col-filter-org', 'col-filter-desig', 'col-filter-email', 'col-filter-mobile', 'col-filter-status'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  window.renderAttendees();
 };
 
 window.toggleAllAttendees = (source) => {

@@ -15,6 +15,14 @@
               <button class="btn-reset" onclick="sendBulkRejections()" id="btn-send-bulk-rejections" style="font-size: 13px; padding: 6px 12px;">Send House Full</button>
               <div id="bulk-progress" style="display: none; font-size: 12px; font-weight: 600; color: var(--accent); margin-left: auto;">Processing 0 / 0...</div>
             </div>
+            <!-- Search & Filters -->
+            <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+              <div style="position: relative; flex: 1;">
+                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-dim); font-size: 14px;">🔍</span>
+                <input type="text" id="attendee-search" placeholder="Search attendees by name, organization, designation, email, mobile..." oninput="window.filterAttendees()" style="width: 100%; padding: 8px 12px 8px 36px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 6px; color: var(--ink); font-size: 13px;">
+              </div>
+              <button class="btn-reset" onclick="window.resetAllFilters()" style="font-size: 13px; padding: 8px 16px;">Reset Filters</button>
+            </div>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -30,6 +38,27 @@
                     <th>Status</th>
                     <th>Pass</th>
                     <th style="text-align: right;">Action</th>
+                  </tr>
+                  <tr class="filter-row">
+                    <th></th>
+                    <th><input type="text" id="col-filter-name" placeholder="Filter Name..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-org" placeholder="Filter Org..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-desig" placeholder="Filter Desig..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-email" placeholder="Filter Email..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-mobile" placeholder="Filter Mobile..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th></th>
+                    <th></th>
+                    <th>
+                      <select id="col-filter-status" onchange="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; height: 26px;">
+                        <option value="">All</option>
+                        <option value="verified">Verified</option>
+                        <option value="present">Present</option>
+                        <option value="ticket_sent">Pass Sent</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                    </th>
+                    <th></th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody id="attendee-table">
