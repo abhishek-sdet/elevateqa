@@ -307,6 +307,23 @@ window.verifyOTP = async function() {
       apps.push(speakerData);
       localStorage.setItem('elevate_speaker_apps', JSON.stringify(apps));
 
+      // Save to Supabase speaker_applications table
+      try {
+        await supabase.from('speaker_applications').insert([{
+          name: speakerData.name,
+          email: speakerData.email,
+          phone: speakerData.phone,
+          company: speakerData.org || speakerData.organization,
+          designation: speakerData.designation,
+          topic: speakerData.topic,
+          bio: speakerData.bio,
+          linkedin: speakerData.linkedin,
+          status: 'pending'
+        }]);
+      } catch (dbErr) {
+        console.error('Failed to sync speaker application to Supabase:', dbErr);
+      }
+
       document.getElementById('otp-view').style.display = 'none';
       const processingView = document.getElementById('processing-view');
       if (processingView) processingView.style.display = 'block';

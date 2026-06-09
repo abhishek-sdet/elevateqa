@@ -95,7 +95,7 @@ export async function loadAllData() {
     }
   };
 
-  const [branding, manifesto, speakers, agenda, site_content_raw, maturity_stages, pillars, registrations] = await Promise.all([
+  const [branding, manifesto, speakers, agenda, site_content_raw, maturity_stages, pillars, registrations, speaker_applications] = await Promise.all([
     fetchTable('branding', { single: true }),
     fetchTable('manifesto', { single: true }),
     fetchTable('speakers', { order: 'display_order' }),
@@ -103,7 +103,8 @@ export async function loadAllData() {
     fetchTable('site_content', { single: true }),
     fetchTable('maturity_stages', { order: 'display_order' }),
     fetchTable('pillars', { order: 'display_order' }),
-    fetchTable('registrations', { order: 'created_at' })
+    fetchTable('registrations', { order: 'created_at' }),
+    fetchTable('speaker_applications', { order: 'created_at' })
   ]);
 
   const combinedSite = {
@@ -179,7 +180,8 @@ export async function loadAllData() {
     site_content: siteContent, 
     maturity_stages, 
     pillars, 
-    registrations 
+    registrations,
+    speaker_applications
   };
 }
 

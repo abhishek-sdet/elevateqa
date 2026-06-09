@@ -350,14 +350,21 @@ window.exportAttendees = () => {
   window.showToast('Exported registration database as Excel format', 'success');
 };
 
-window.renderSpeakerApps = () => {
+window.renderSpeakerApps = (appsList) => {
+  if (appsList) {
+    window.rawSpeakerApps = appsList;
+  }
   const tbody = document.getElementById('speaker-apps-list');
   const countBadge = document.getElementById('speaker-apps-count');
   const emptyState = document.getElementById('speaker-apps-empty');
   const tableContainer = document.querySelector('#sec-speaker-apps .table-container');
   if (!tbody) return;
 
-  const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  const dbApps = window.rawSpeakerApps || [];
+  const localApps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  
+  // Merge or prefer dbApps, but if empty use localApps as fallback
+  const apps = dbApps.length > 0 ? dbApps : localApps;
   
   if (countBadge) countBadge.textContent = `${apps.length} applied`;
 
@@ -370,17 +377,19 @@ window.renderSpeakerApps = () => {
   if (tableContainer) tableContainer.style.display = 'block';
   if (emptyState) emptyState.style.display = 'none';
 
-  tbody.innerHTML = apps.map((app, index) => {
+  tbody.innerHTML = apps.map((app) => {
+    const appKey = app.id || app.email;
+    const dateStr = app.created_at ? new Date(app.created_at).toLocaleDateString() : (app.date || new Date().toLocaleDateString());
     return `
-      <tr>
-        <td>${app.date || new Date().toLocaleDateString()}</td>
+      <tr data-id="${app.id || ''}">
+        <td>${dateStr}</td>
         <td><strong>${app.name}</strong><br><span style="font-size:11px;color:var(--ink-dim);">${app.email}</span></td>
-        <td>${app.organization || '—'}<br><span style="font-size:11px;color:var(--ink-dim);">${app.designation || '—'}</span></td>
+        <td>${app.company || app.organization || '—'}<br><span style="font-size:11px;color:var(--ink-dim);">${app.designation || '—'}</span></td>
         <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${app.topic || 'N/A'}">${app.topic || 'N/A'}</div></td>
         <td>
           <div style="display:flex; gap:8px; align-items:center;">
-            <button class="btn-mini" onclick="viewSpeakerApp(${index})" title="View Details" style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">👁</button>
-            <button class="btn-mini" onclick="deleteSpeakerApp(${index})" title="Delete Application" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">✕</button>
+            <button class="btn-mini" onclick="viewSpeakerApp('${appKey}')" title="View Details" style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">👁</button>
+            <button class="btn-mini" onclick="deleteSpeakerApp('${appKey}')" title="Delete Application" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">✕</button>
           </div>
         </td>
       </tr>
@@ -388,15 +397,17 @@ window.renderSpeakerApps = () => {
   }).join('');
 };
 
-window.viewSpeakerApp = (index) => {
-  const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
-  const app = apps[index];
+window.viewSpeakerApp = (key) => {
+  const dbApps = window.rawSpeakerApps || [];
+  const localApps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  const apps = dbApps.length > 0 ? dbApps : localApps;
+  const app = apps.find(a => a.id === key || a.email === key);
   if (!app) return;
 
   document.getElementById('sa-name').textContent = app.name || '—';
   document.getElementById('sa-email').textContent = app.email || '—';
   document.getElementById('sa-phone').textContent = app.phone || '—';
-  document.getElementById('sa-org').textContent = app.organization || '—';
+  document.getElementById('sa-org').textContent = app.company || app.organization || '—';
   document.getElementById('sa-designation').textContent = app.designation || '—';
   
   const ln = document.getElementById('sa-linkedin');
@@ -410,7 +421,7 @@ window.viewSpeakerApp = (index) => {
 
   document.getElementById('sa-topic').textContent = app.topic || '—';
   document.getElementById('sa-bio').textContent = app.bio || '—';
-  document.getElementById('sa-date').textContent = app.date || '—';
+  document.getElementById('sa-date').textContent = app.created_at ? new Date(app.created_at).toLocaleDateString() : (app.date || '—');
 
   // New fields
   document.getElementById('sa-applicant-info').textContent = app.applicantInfo || 'Individual';
@@ -438,7 +449,7 @@ window.viewSpeakerApp = (index) => {
   document.getElementById('speaker-app-modal').style.display = 'flex';
 };
 
-window.deleteSpeakerApp = async (index) => {
+window.deleteSpeakerApp = async (key) => {
   const confirmed = await window.showConfirm(
     'Are you sure you want to delete this speaker application? This cannot be undone.',
     'Delete Application',
@@ -446,9 +457,25 @@ window.deleteSpeakerApp = async (index) => {
   );
   if (!confirmed) return;
 
-  const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
-  apps.splice(index, 1);
-  localStorage.setItem('elevate_speaker_apps', JSON.stringify(apps));
-  window.showToast('Speaker application deleted', 'success');
-  window.renderSpeakerApps();
+  // If uuid key, delete from Supabase
+  if (key && key.includes('-')) {
+    const success = await deleteItem('speaker_applications', key);
+    if (success) {
+      window.showToast('Speaker application deleted successfully', 'success');
+      const data = await loadAllData();
+      if (data) window.renderSpeakerApps(data.speaker_applications);
+    } else {
+      window.showToast('Failed to delete speaker application', 'error');
+    }
+  } else {
+    // Fallback to local storage for legacy/local items
+    const apps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+    const idx = apps.findIndex(a => a.email === key);
+    if (idx !== -1) {
+      apps.splice(idx, 1);
+      localStorage.setItem('elevate_speaker_apps', JSON.stringify(apps));
+    }
+    window.showToast('Speaker application deleted', 'success');
+    window.renderSpeakerApps();
+  }
 };

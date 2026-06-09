@@ -114,7 +114,7 @@ window.showSection = (target) => {
   }
 
   if (activeId === 'speaker-apps' && window.renderSpeakerApps) {
-    window.renderSpeakerApps();
+    window.renderSpeakerApps(window.rawSpeakerApps || (window._lastLoadedData && window._lastLoadedData.speaker_applications));
   }
 };
 
@@ -599,6 +599,7 @@ export function populateUI(data) {
   }
 
   if (data.registrations) window.renderAttendees(data.registrations);
+  if (data.speaker_applications) window.renderSpeakerApps(data.speaker_applications);
 }
 
 function _renderImgPreview(id, url) {

@@ -44,21 +44,40 @@ const initAdmin = async () => {
   const savedTab    = sessionStorage.getItem('admin_active_tab');
   window.showSection(hashSection || savedTab || 'attendance');
 
-  // Real-time registration sync
-  console.log('[ElevateQA] Enabling Real-time Registration Sync...');
+  // Real-time registration & speaker app sync
+  console.log('[ElevateQA] Enabling Real-time Registration & Speaker Sync...');
   supabase
-    .channel('admin-registrations-sync')
+    .channel('admin-realtime-sync')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'registrations' }, async (payload) => {
       console.log('[ElevateQA] Registration Change Detected:', payload);
       const updatedData = await loadAllData();
       if (updatedData && updatedData.registrations) {
         window.renderAttendees(updatedData.registrations);
         if (payload.eventType === 'INSERT') {
-          window.showToast(`New registration: ${payload.new.name}`, 'info', 'Real-time Update');
+          window.showToast(`New attendee registration: ${payload.new.name} (${payload.new.company || ''})`, 'info', 'New Attendee');
         }
       }
     })
-    .subscribe((status) => { console.log('[ElevateQA] Registration Sync Status:', status); });
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'speaker_applications' }, async (payload) => {
+      console.log('[ElevateQA] Speaker Application Change Detected:', payload);
+      const updatedData = await loadAllData();
+      if (updatedData && updatedData.speaker_applications) {
+        window.renderSpeakerApps(updatedData.speaker_applications);
+        if (payload.eventType === 'INSERT') {
+          window.showToast(`New speaker application: ${payload.new.name} (${payload.new.company || ''})`, 'info', 'New Speaker App');
+        }
+      }
+    })
+    .subscribe((status) => { console.log('[ElevateQA] Real-time Sync Status:', status); });
+
+  // Failsafe polling (every 30 seconds) to ensure updates are fetched
+  setInterval(async () => {
+    const updatedData = await loadAllData();
+    if (updatedData) {
+      if (updatedData.registrations) window.renderAttendees(updatedData.registrations);
+      if (updatedData.speaker_applications) window.renderSpeakerApps(updatedData.speaker_applications);
+    }
+  }, 30000);
 
   // Dismiss preloader
   setTimeout(() => {
