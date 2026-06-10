@@ -89,7 +89,7 @@ export const handler = async (event, context) => {
               Thank you, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Your application to speak at <strong style="color:#ffffff;">Elevate QA 2026</strong> has been successfully received. We are excited about your proposed topic: <strong style="color:#d4ff3a;">"${topic || 'Not specified'}"</strong>.
+              Your application to speak at <strong style="color:#ffffff;">Elevate QA 2026</strong> has been successfully received with the topic: <strong style="color:#d4ff3a;">"${topic || 'Not specified'}"</strong>.
             </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
               Our curation team is currently reviewing all submissions. We will get back to you shortly with further details and next steps. In the meantime, sit tight and keep innovating!

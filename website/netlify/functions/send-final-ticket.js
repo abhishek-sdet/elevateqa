@@ -110,7 +110,7 @@ export const handler = async (event, context) => {
               Welcome, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Your spot at the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong> is confirmed. Please present this QR code at the registration desk.
+              Your spot at the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong> is confirmed. Please present this QR code at the registration desk upon your arrival.
             </p>
           </td>
         </tr>

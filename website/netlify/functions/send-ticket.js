@@ -103,10 +103,10 @@ export const handler = async (event, context) => {
               Welcome, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Thank you for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong>. We have received your details.
+              We're absolutely thrilled to see your interest in the <strong style="color:#ffffff;">Elevate QA Tech Summit!</strong> We have successfully received your registration details.
             </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Our Team will contact you to confirm your participation shortly.
+              We'll be reaching out to you personally very soon to share updates about your participation. We truly appreciate your patience and can't wait to connect!
             </p>
           </td>
         </tr>

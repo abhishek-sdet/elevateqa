@@ -106,7 +106,7 @@ export const handler = async (event, context) => {
               Thank you for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong>.
             </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Due to overwhelming response, we have reached full capacity for this year's summit and cannot accommodate more attendees at this time.
+              Due to overwhelming response, we have reached full capacity for this year's summit and cannot confirm your spot. We apologise for the inconvenience this may cause to you.
             </p>
           </td>
         </tr>
