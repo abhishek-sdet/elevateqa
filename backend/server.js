@@ -58,8 +58,8 @@ app.post('/api/send-otp', async (req, res) => {
                     <p style="color: #8b8b9b; font-size: 15px; line-height: 1.6; margin-bottom: 30px;">
                         Please use the secure code below to authenticate your registration for Elevate QA 2026. This code expires in 10 minutes.
                     </p>
-                    <div style="background: #1a1a24; padding: 20px; border-radius: 8px; display: inline-block; border: 1px dashed #404050; margin-bottom: 30px;">
-                        <h1 style="color: #d4ff3a; font-size: 42px; letter-spacing: 8px; margin: 0; font-family: monospace;">${otp}</h1>
+                    <div style="background: #1a1a24; padding: 20px 24px; border-radius: 8px; display: inline-block; border: 1px dashed #404050; margin-bottom: 30px; word-break: break-all;">
+                        <h1 style="color: #d4ff3a; font-size: 36px; letter-spacing: 6px; margin: 0; font-family: monospace;">${otp}</h1>
                     </div>
                     <p style="color: #555565; font-size: 13px; margin-bottom: 0;">
                         If you did not request this, please ignore this email.<br>
@@ -122,8 +122,8 @@ app.post('/api/send-speaker-otp', async (req, res) => {
                         </p>
                         
                         <!-- OTP Display Box -->
-                        <div style="background: #13132a; padding: 22px 30px; border-radius: 12px; display: inline-block; border: 1px dashed #2a2a50; margin-bottom: 32px;">
-                            <h1 style="color: #d4ff3a; font-size: 44px; letter-spacing: 10px; margin: 0; font-family: 'Courier New', Courier, monospace; font-weight: 800;">${otp}</h1>
+                        <div style="background: #13132a; padding: 20px 24px; border-radius: 12px; display: inline-block; border: 1px dashed #2a2a50; margin-bottom: 32px; word-break: break-all;">
+                            <h1 style="color: #d4ff3a; font-size: 36px; letter-spacing: 6px; margin: 0; font-family: 'Courier New', Courier, monospace; font-weight: 800;">${otp}</h1>
                         </div>
                         
                         <hr style="border: 0; border-top: 1px solid #1f1f30; margin-bottom: 24px;" />
@@ -183,8 +183,8 @@ app.post('/api/send-admin-otp', async (req, res) => {
                         <p style="color: #b0b0cc; font-size: 14.5px; line-height: 1.7; margin-bottom: 30px;">
                             Please use the secure verification code below to log into the Admin Portal. This code expires in 10 minutes.
                         </p>
-                        <div style="background: #13132a; padding: 22px 30px; border-radius: 12px; display: inline-block; border: 1px dashed #2a2a50; margin-bottom: 32px;">
-                            <h1 style="color: #ff5a36; font-size: 44px; letter-spacing: 10px; margin: 0; font-family: 'Courier New', Courier, monospace; font-weight: 800;">${otp}</h1>
+                        <div style="background: #13132a; padding: 20px 24px; border-radius: 12px; display: inline-block; border: 1px dashed #2a2a50; margin-bottom: 32px; word-break: break-all;">
+                            <h1 style="color: #ff5a36; font-size: 36px; letter-spacing: 6px; margin: 0; font-family: 'Courier New', Courier, monospace; font-weight: 800;">${otp}</h1>
                         </div>
                     </div>
                 </div>

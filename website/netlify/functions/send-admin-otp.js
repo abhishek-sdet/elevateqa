@@ -75,8 +75,8 @@ export const handler = async (event, context) => {
                             </p>
                             
                             <!-- OTP Display Box -->
-                            <div style="background: #13132a; padding: 22px 30px; border-radius: 12px; display: inline-block; border: 1px dashed #2a2a50; margin-bottom: 32px;">
-                                <h1 style="color: #ff5a36; font-size: 44px; letter-spacing: 12px; margin: 0; font-family: 'Courier New', Courier, monospace; font-weight: 800;">${otp}</h1>
+                            <div style="background: #13132a; padding: 20px 24px; border-radius: 12px; display: inline-block; border: 1px dashed #2a2a50; margin-bottom: 32px; word-break: break-all;">
+                                <h1 style="color: #ff5a36; font-size: 36px; letter-spacing: 6px; margin: 0; font-family: 'Courier New', Courier, monospace; font-weight: 800;">${otp}</h1>
                             </div>
                         </div>
                     </div>
