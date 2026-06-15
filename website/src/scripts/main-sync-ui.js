@@ -303,12 +303,13 @@ window.syncEverything = () => {
         const rawPhoto = s.image_url || s.img;
         const photo = (rawPhoto && !rawPhoto.includes('/admin')) ? rawPhoto : null;
         return `
-        <div class="speaker-card reveal">
+        <div class="speaker-card reveal${s.bio ? ' has-bio' : ''}">
           ${photo ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${photo}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
           <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status || s.wave || 'CONFIRMED'}</span></div>
           <div class="speaker-content">
             <div class="name">${s.name}</div>
             <div class="designation">${s.title || s.role || ''}</div>
+            ${s.bio ? `<div class="bio">${s.bio}</div>` : ''}
           </div>
         </div>`;
       }).join('') + `

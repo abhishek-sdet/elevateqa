@@ -280,7 +280,7 @@ window.handleVisualUpload = async (input, id) => {
 };
 
 // ── Dynamic list items ───────────────────────────────────────────────────────
-window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: '', status: '' }) => {
+window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: '', status: '', bio: '' }) => {
   const container = document.getElementById('speaker-list');
   if (!container) return;
   const div = document.createElement('div');
@@ -302,6 +302,7 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
         <div class="form-group"><label>Role Tag (e.g. KEYNOTE)</label><input type="text" class="s-role" value="${data.role}" placeholder="e.g. KEYNOTE"></div>
         <div class="form-group"><label>Designation</label><input type="text" class="s-title" value="${data.title || ''}" placeholder="e.g. Director of QE"></div>
         <div class="form-group"><label>Status Label</label><input type="text" class="s-status" value="${data.status || 'CONFIRMED'}" placeholder="e.g. KEYNOTE SPEAKER"></div>
+        <div class="form-group"><label>Bio</label><textarea class="s-bio" rows="3" placeholder="Speaker bio...">${data.bio || ''}</textarea></div>
       </div>
     </div>
   `;
@@ -560,7 +561,7 @@ export function populateUI(data) {
         { name: 'To be revealed', role: 'KEYNOTE', wave: 'WAVE 01' },
         { name: 'To be revealed', role: 'KEYNOTE', wave: 'WAVE 01' },
         { name: 'To be revealed', role: 'INDUSTRY', wave: 'WAVE 01' }
-      ]).forEach(s => window.addSpeakerItem({ id: s.id, name: s.name, role: s.role, title: s.title, status: s.status, img: s.image_url || s.img, display_order: s.display_order }));
+      ]).forEach(s => window.addSpeakerItem({ id: s.id, name: s.name, role: s.role, title: s.title, status: s.status, img: s.image_url || s.img, display_order: s.display_order, bio: s.bio }));
     }
   }
 

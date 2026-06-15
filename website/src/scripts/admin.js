@@ -738,7 +738,7 @@ function addAgendaItem(data = { time: '', tag: '', title: '', desc: '' }) {
   }, 50);
 }
 
-function addSpeakerItem(data = { name: '', role: '', img: '' }) {
+function addSpeakerItem(data = { name: '', role: '', img: '', bio: '' }) {
   const div = document.createElement('div');
   div.className = 'dynamic-item';
   div.innerHTML = `
@@ -755,6 +755,7 @@ function addSpeakerItem(data = { name: '', role: '', img: '' }) {
         <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
         <div class="form-group"><label>Role / Badge</label><input type="text" class="s-role" value="${data.role}" placeholder="Keynote Speaker"></div>
         <div class="form-group"><label>Professional Designation</label><input type="text" class="s-title" value="${data.title || ''}" placeholder="e.g. CEO at SDET TECH"></div>
+        <div class="form-group"><label>Bio</label><textarea class="s-bio" rows="3" placeholder="Speaker bio...">${data.bio || ''}</textarea></div>
       </div>
       <button class="btn-del" onclick="this.parentElement.parentElement.remove()" title="Remove">✕</button>
     </div>`;
@@ -913,6 +914,7 @@ function saveAll() {
         name: el.querySelector('.s-name').value,
         role: el.querySelector('.s-role').value,
         title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '',
+        bio: el.querySelector('.s-bio') ? el.querySelector('.s-bio').value : '',
         img: el.querySelector('img').src.includes('data:image') || el.querySelector('img').src.includes('http') ? el.querySelector('img').src : ''
       };
     });

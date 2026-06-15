@@ -191,7 +191,7 @@ window.saveAll = async () => {
         } catch(e) { console.error('[ElevateAdmin] Base64 Migration Error:', e); }
       } else if (!finalImg) { finalImg = src; }
       if (finalImg.startsWith('data:image')) finalImg = '';
-      return { el, data: { id: el.getAttribute('data-id') || undefined, name: el.querySelector('.s-name').value, role: el.querySelector('.s-role').value, title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '', status: el.querySelector('.s-status').value, img: finalImg, display_order: i } };
+      return { el, data: { id: el.getAttribute('data-id') || undefined, name: el.querySelector('.s-name').value, role: el.querySelector('.s-role').value, title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '', status: el.querySelector('.s-status').value, bio: el.querySelector('.s-bio') ? el.querySelector('.s-bio').value : '', img: finalImg, display_order: i } };
     });
     const speakersWithEl = await Promise.all(speakerPromises);
     await syncTableDeletes('speakers', speakersWithEl.map(s => s.data.id));

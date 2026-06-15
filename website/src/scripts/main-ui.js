@@ -476,20 +476,27 @@ function renderSpeakers(speakers) {
   const fragment = document.createDocumentFragment();
   data.forEach((s, idx) => {
     const hasPhoto = s.img && s.img.length > 10 && !s.img.includes('/admin');
+    const hasBioClass = s.bio ? ' has-bio' : '';
     const card = document.createElement('div');
-    card.className = 'speaker-card reveal' + (hasPhoto ? ' speaker-has-photo' : '');
+    card.className = 'speaker-card reveal' + (hasPhoto ? ' speaker-has-photo' : '') + hasBioClass;
     const safeImg = escapeHtml(s.img);
     const safeName = escapeHtml(s.name || 'To be revealed');
     const safeRole = escapeHtml((s.role || 'KEYNOTE')).toUpperCase();
     const safeWave = escapeHtml(s.wave || 'WAVE 01');
     const safeSilhouette = escapeHtml(s.silhouette || '0' + (idx + 1));
+    const safeDesignation = escapeHtml(s.title || s.role || '');
+    const safeBio = s.bio ? escapeHtml(s.bio) : '';
     card.innerHTML = `
       ${hasPhoto
         ? `<div class="speaker-photo-wrap"><img src="${safeImg}" class="speaker-photo" alt="${safeName}" loading="lazy" decoding="async" /></div>`
         : `<div class="silhouette" aria-hidden="true">${safeSilhouette}</div>`
       }
       <div class="top"><span>${safeRole}</span><span>${safeWave}</span></div>
-      <div class="name">${parseAccent(s.name || 'To be revealed')}</div>`;
+      <div class="speaker-content">
+        <div class="name">${parseAccent(s.name || 'To be revealed')}</div>
+        <div class="designation">${safeDesignation}</div>
+        ${safeBio ? `<div class="bio">${safeBio}</div>` : ''}
+      </div>`;
     fragment.appendChild(card);
   });
 
