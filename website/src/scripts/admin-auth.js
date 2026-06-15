@@ -18,13 +18,16 @@ async function sendAdminOTP(e) {
 
   try {
     // 1a. CHECK WHITELIST FROM SUPABASE PUBLIC TABLE
-    const { data, error: dbError } = await supabase.from('site_content').select('admin_whitelist').single();
+    const { data, error: dbError } = await supabase.from('site_content').select('hero_meta').single();
     
     // Master admins fallback just in case
     const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com', 'mugdha.shah@sdettech.com'];
     let whitelist = [];
-    if (data && data.admin_whitelist && Array.isArray(data.admin_whitelist)) {
-      whitelist = data.admin_whitelist;
+    if (data && data.hero_meta) {
+      let meta = typeof data.hero_meta === 'string' ? JSON.parse(data.hero_meta) : data.hero_meta;
+      if (meta.admin_whitelist && Array.isArray(meta.admin_whitelist)) {
+        whitelist = meta.admin_whitelist;
+      }
     }
     whitelist = [...new Set([...whitelist, ...MASTER_ADMINS])].map(e => e.toLowerCase());
 

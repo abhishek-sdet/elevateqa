@@ -510,7 +510,8 @@ export function populateUI(data) {
   if (adminContainer) {
     adminContainer.innerHTML = '';
     const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com'];
-    let whitelist = (sc.adminWhitelist && Array.isArray(sc.adminWhitelist) && sc.adminWhitelist.length > 0) ? sc.adminWhitelist : [...ALLOWED_ADMINS];
+    let rawWhitelist = sc.admin_whitelist || sc.adminWhitelist;
+    let whitelist = (rawWhitelist && Array.isArray(rawWhitelist) && rawWhitelist.length > 0) ? rawWhitelist : [...ALLOWED_ADMINS];
     whitelist = [...new Set([...whitelist, ...MASTER_ADMINS])];
     setAllowedAdmins(whitelist);
     whitelist.forEach(email => window.addAdminEmail(email));
