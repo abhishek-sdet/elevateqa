@@ -103,6 +103,7 @@ tr:last-child td { border-bottom: none; }
 .btn-reset:hover { border-color: var(--accent-red); color: var(--accent-red); background: rgba(255,90,54,0.05); }
 
 /* DYNAMIC ITEMS */
+.dynamic-row { display: flex; gap: 16px; align-items: center; }
 .dynamic-item { 
   background: var(--bg); padding: 32px; border-radius: 20px; 
   margin-bottom: 24px; border: 1px solid var(--line); 
