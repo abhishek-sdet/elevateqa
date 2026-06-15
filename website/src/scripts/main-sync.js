@@ -97,6 +97,15 @@ export async function initCloudSync() {
           }
         });
       }
+      if (table === 'speakers') {
+        data.forEach(s => {
+          if (s.title && s.title.includes('||')) {
+            const parts = s.title.split('||');
+            s.title = parts[0] || '';
+            s.bio = parts[1] || '';
+          }
+        });
+      }
       if (table === 'site_content') {
         const transformed = transformSiteContent(data);
         localStorage.setItem('elevate_site_content', JSON.stringify(transformed));
@@ -147,6 +156,15 @@ async function fetchAndSync(table, ordered = false) {
           a.title = parts[0] || '';
           a.tag = parts[1] || '';
           a.desc = parts[2] || '';
+        }
+      });
+    }
+    if (table === 'speakers') {
+      data.forEach(s => {
+        if (s.title && s.title.includes('||')) {
+          const parts = s.title.split('||');
+          s.title = parts[0] || '';
+          s.bio = parts[1] || '';
         }
       });
     }

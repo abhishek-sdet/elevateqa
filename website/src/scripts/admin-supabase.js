@@ -153,6 +153,15 @@ export async function loadAllData() {
         }
       });
     }
+    if (speakers) {
+      speakers.forEach(s => {
+        if (s.title && s.title.includes('||')) {
+          const parts = s.title.split('||');
+          s.title = parts[0] || '';
+          s.bio = parts[1] || '';
+        }
+      });
+    }
     const combined = transformSiteContent(site_content_raw || {});
     const visuals = transformBranding(branding || {});
     
@@ -309,7 +318,7 @@ export async function saveSpeaker(s) {
   const dbData = {
     name: s.name,
     role: s.role,
-    title: s.title,
+    title: `${s.title || ''}||${s.bio || ''}`,
     status: s.status,
     image_url: s.img || s.image_url,
     display_order: s.display_order
