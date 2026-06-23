@@ -3,7 +3,11 @@
           <div class="manager-card">
             <div class="section-title">
               <div>Speaker <em>Applications</em> <span class="badge" id="speaker-apps-count">0</span></div>
-              <button class="btn-add" onclick="window.downloadSpeakerAppsCSV()">DOWNLOAD CSV</button>
+              <div style="display:flex; gap:12px; align-items:center;">
+                <button class="btn-add" onclick="window.downloadSpeakerAppsCSV()">DOWNLOAD CSV</button>
+                <button class="btn-mini" onclick="backupDataToJSON('speaker_applications')" aria-label="Backup Database">💾 Backup</button>
+                <button class="btn-mini" onclick="triggerRestoreJSON('speaker_applications')" aria-label="Restore Database">📂 Restore</button>
+              </div>
             </div>
             
             <div class="table-container" style="padding-bottom: 120px; overflow-x: auto;">

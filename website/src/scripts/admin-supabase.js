@@ -448,3 +448,14 @@ export async function sendMagicLink(email) {
   });
   return !error;
 }
+
+export async function restoreData(table, dataArray) {
+  if (!dataArray || dataArray.length === 0) return true;
+  console.log(`[Supabase] Restoring ${dataArray.length} items to ${table}...`);
+  const { error } = await supabase.from(table).upsert(dataArray);
+  if (error) {
+    console.error(`[Supabase] Restore Error for ${table}:`, error);
+    return false;
+  }
+  return true;
+}

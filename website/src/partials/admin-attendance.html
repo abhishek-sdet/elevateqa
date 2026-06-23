@@ -5,6 +5,8 @@
               <span>Verified Registrations</span>
               <div style="display:flex; gap:12px; align-items:center;">
                 <button class="btn-mini" onclick="exportAttendees()" aria-label="Export attendee database">⬇ Export DB</button>
+                <button class="btn-mini" onclick="backupDataToJSON('registrations')" aria-label="Backup Database">💾 Backup</button>
+                <button class="btn-mini" onclick="triggerRestoreJSON('registrations')" aria-label="Restore Database">📂 Restore</button>
                 <span class="badge badge-accent" id="attendee-count" aria-live="polite">0 registered</span>
               </div>
             </div>

@@ -4,7 +4,7 @@
  * Contains: renderAttendees, deleteAttendee, exportAttendees, showPass, generateAdminQR
  * Extracted from admin-core.js for maintainability.
  */
-import { deleteItem, loadAllData, updateRegistrationStatus } from './admin-supabase.js';
+import { deleteItem, loadAllData, updateRegistrationStatus, restoreData } from './admin-supabase.js';
 
 window.showPass = (id, name, email) => {
   const modal   = document.getElementById('qr-modal');
@@ -533,4 +533,68 @@ window.downloadSpeakerAppsCSV = () => {
   XLSX.writeFile(workbook, `speaker_applications_${dateStr}.xlsx`);
   
   window.showToast('Exported speaker applications database as Excel format', 'success');
+};
+
+window.backupDataToJSON = (table) => {
+  let data = [];
+  if (table === 'registrations') data = window.rawAttendees || [];
+  else if (table === 'speaker_applications') data = window.rawSpeakerApps || [];
+  
+  if (data.length === 0) {
+    window.showToast('No data to backup', 'info');
+    return;
+  }
+
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().split('T')[0];
+  a.download = `elevate_${table}_backup_${dateStr}.json`;
+  a.click();
+  
+  URL.revokeObjectURL(url);
+  window.showToast(`Backup downloaded for ${table}`, 'success');
+};
+
+window.triggerRestoreJSON = (table) => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const jsonData = JSON.parse(event.target.result);
+        if (!Array.isArray(jsonData)) throw new Error('Invalid backup format: Expected an array.');
+        
+        const confirmed = await window.showConfirm(`Are you sure you want to restore ${jsonData.length} records? This will overwrite existing records with the same ID.`, 'Restore Data', 'RESTORE');
+        if (!confirmed) return;
+
+        window.showToast('Restoring data...', 'info');
+        const success = await restoreData(table, jsonData);
+        
+        if (success) {
+          window.showToast(`Successfully restored ${jsonData.length} records to ${table}`, 'success');
+          const data = await loadAllData();
+          if (data) {
+            if (table === 'registrations') window.renderAttendees(data.registrations);
+            if (table === 'speaker_applications') window.renderSpeakerApps(data.speaker_applications);
+          }
+        } else {
+          window.showToast(`Failed to restore data to ${table}`, 'error');
+        }
+      } catch (err) {
+        console.error('Restore parse error:', err);
+        window.showToast('Failed to parse backup file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 };
