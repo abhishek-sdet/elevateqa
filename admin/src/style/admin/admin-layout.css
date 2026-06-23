@@ -86,7 +86,7 @@ html.is-logged-in #protected-content { display: flex; }
 #login-overlay { display: none; }
 html.not-logged-in #login-overlay { display: flex; }
 #protected-content > main { 
-  overflow-y: auto; padding: 0 40px 120px; flex: 1; scroll-behavior: smooth; 
+  overflow-y: auto; padding: 0 40px 180px; flex: 1; scroll-behavior: smooth; 
 }
 
 @keyframes pulse {
@@ -98,7 +98,7 @@ html.not-logged-in #login-overlay { display: flex; }
 @media (max-width: 1200px) {
   .sidebar { width: 260px; padding: 32px 20px; }
   .top-header { padding: 24px 40px 16px; }
-  #protected-content > main { padding: 0 40px 120px; }
+  #protected-content > main { padding: 0 40px 180px; }
 }
 
 /* MOBILE RESPONSIVENESS & SIDEBAR TOGGLE */
@@ -148,7 +148,7 @@ html.not-logged-in #login-overlay { display: flex; }
   .top-header { padding: 24px 20px; align-items: center; }
   .header-left h1 { font-size: 24px; }
   .header-right { display: none; }
-  #protected-content > main { padding: 0 20px 100px; }
+  #protected-content > main { padding: 0 20px 160px; }
   
   /* Prevent scrolling when menu is open */
   body.sidebar-active { overflow: hidden; }

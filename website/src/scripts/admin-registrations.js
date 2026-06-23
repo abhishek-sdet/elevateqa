@@ -479,3 +479,58 @@ window.deleteSpeakerApp = async (key) => {
     window.renderSpeakerApps();
   }
 };
+
+window.downloadSpeakerAppsCSV = () => {
+  const dbApps = window.rawSpeakerApps || [];
+  const localApps = JSON.parse(localStorage.getItem('elevate_speaker_apps') || '[]');
+  const apps = dbApps.length > 0 ? dbApps : localApps;
+
+  if (apps.length === 0) {
+    window.showToast('No speaker applications to export', 'info');
+    return;
+  }
+
+  // Create data array for SheetJS
+  const excelData = apps.map(app => {
+    return {
+      "Date": app.created_at ? new Date(app.created_at).toLocaleDateString() : (app.date || new Date().toLocaleDateString()),
+      "Name": app.name || '',
+      "Email": app.email || '',
+      "Phone": app.phone || '',
+      "Organization": app.company || app.organization || '',
+      "Designation": app.designation || '',
+      "Topic": app.topic || '',
+      "LinkedIn": app.linkedin || '',
+      "Applicant Type": app.applicantInfo || 'Individual',
+      "Team Details": app.teamDetails || '',
+      "Drive Link": app.driveLink || '',
+      "Special Requests": app.specialReq || '',
+      "Bio": app.bio || ''
+    };
+  });
+
+  if (typeof XLSX === 'undefined') {
+    window.showToast('Excel library is loading, please try again in a few seconds.', 'error');
+    return;
+  }
+
+  // Generate Excel workbook and worksheet
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Speaker_Apps");
+  
+  // Style the header row slightly
+  const headerKeys = Object.keys(excelData[0] || {});
+  for (let i = 0; i < headerKeys.length; i++) {
+    const cellRef = XLSX.utils.encode_cell({r: 0, c: i});
+    if (worksheet[cellRef]) {
+      worksheet[cellRef].s = { font: { bold: true } };
+    }
+  }
+
+  // Export and download
+  const dateStr = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(workbook, `speaker_applications_${dateStr}.xlsx`);
+  
+  window.showToast('Exported speaker applications database as Excel format', 'success');
+};
