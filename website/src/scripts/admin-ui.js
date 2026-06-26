@@ -602,6 +602,32 @@ export function populateUI(data) {
 
   if (data.registrations) window.renderAttendees(data.registrations);
   if (data.speaker_applications) window.renderSpeakerApps(data.speaker_applications);
+
+  // Email templates
+  const et = sc.emailTemplates || {};
+  const fillTpl = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  const reg = et.registration || {};
+  fillTpl('et-registration-subject', reg.subject);
+  fillTpl('et-registration-body1',   reg.body1);
+  fillTpl('et-registration-body2',   reg.body2);
+  fillTpl('et-registration-closing', reg.closing);
+  fillTpl('et-registration-tagline', reg.tagline);
+  const tkt = et.ticket || {};
+  fillTpl('et-ticket-subject', tkt.subject);
+  fillTpl('et-ticket-body1',   tkt.body1);
+  fillTpl('et-ticket-closing', tkt.closing);
+  fillTpl('et-ticket-tagline', tkt.tagline);
+  const spk = et.speaker || {};
+  fillTpl('et-speaker-subject', spk.subject);
+  fillTpl('et-speaker-body1',   spk.body1);
+  fillTpl('et-speaker-body2',   spk.body2);
+  fillTpl('et-speaker-contact', spk.contact);
+  const rej = et.rejection || {};
+  fillTpl('et-rejection-subject', rej.subject);
+  fillTpl('et-rejection-body1',   rej.body1);
+  fillTpl('et-rejection-body2',   rej.body2);
+  fillTpl('et-rejection-closing', rej.closing);
+  fillTpl('et-rejection-tagline', rej.tagline);
 }
 
 function _renderImgPreview(id, url) {
@@ -613,6 +639,81 @@ function _renderImgPreview(id, url) {
 }
 
 // ── Email Center Logic ───────────────────────────────────────────────────────
+
+// Switch template tabs
+window.showEmailTemplateTab = (tabId) => {
+  document.querySelectorAll('.email-template-panel').forEach(panel => panel.style.display = 'none');
+  const target = document.getElementById(`etab-${tabId}`);
+  if (target) target.style.display = 'block';
+  document.querySelectorAll('[id^="etab-btn-"]').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`etab-btn-${tabId}`);
+  if (activeBtn) activeBtn.classList.add('active');
+};
+
+// Save email templates to Supabase via saveSiteContent
+window.saveEmailTemplates = async () => {
+  const btn = document.getElementById('btn-save-email-templates');
+  const statusEl = document.getElementById('email-template-status');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving...'; }
+  if (statusEl) { statusEl.textContent = ''; statusEl.style.color = 'var(--text-dim)'; }
+
+  const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  const templates = {
+    emailTemplates: {
+      registration: {
+        subject: getVal('et-registration-subject'),
+        body1:   getVal('et-registration-body1'),
+        body2:   getVal('et-registration-body2'),
+        closing: getVal('et-registration-closing'),
+        tagline: getVal('et-registration-tagline'),
+      },
+      ticket: {
+        subject: getVal('et-ticket-subject'),
+        body1:   getVal('et-ticket-body1'),
+        closing: getVal('et-ticket-closing'),
+        tagline: getVal('et-ticket-tagline'),
+      },
+      speaker: {
+        subject: getVal('et-speaker-subject'),
+        body1:   getVal('et-speaker-body1'),
+        body2:   getVal('et-speaker-body2'),
+        contact: getVal('et-speaker-contact'),
+      },
+      rejection: {
+        subject:  getVal('et-rejection-subject'),
+        body1:    getVal('et-rejection-body1'),
+        body2:    getVal('et-rejection-body2'),
+        closing:  getVal('et-rejection-closing'),
+        tagline:  getVal('et-rejection-tagline'),
+      },
+    }
+  };
+
+  try {
+    const { saveSiteContent } = await import('./admin-supabase.js?v=2');
+    // Merge with existing cached data so we don't overwrite other fields
+    const existing = (window._lastLoadedData && window._lastLoadedData.site_content) || {};
+    const merged = { ...existing, ...templates };
+    const ok = await saveSiteContent(merged);
+    if (ok) {
+      // Update cache
+      if (window._lastLoadedData) window._lastLoadedData.site_content = { ...existing, ...templates };
+      if (statusEl) { statusEl.textContent = '✓ Templates saved!'; statusEl.style.color = 'var(--accent)'; }
+      window.showToast('Email templates saved successfully!', 'success', 'Templates Saved');
+    } else {
+      throw new Error('Save returned false');
+    }
+  } catch (err) {
+    console.error('[saveEmailTemplates]', err);
+    if (statusEl) { statusEl.textContent = '✕ Save failed. Check console.'; statusEl.style.color = 'var(--accent-red)'; }
+    window.showToast('Failed to save templates.', 'error', 'Save Error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'SAVE TEMPLATES <span aria-hidden="true" style="margin-left:8px;">💾</span>'; }
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 5000);
+  }
+};
+
 window.toggleCustomEmailInput = () => {
   const target = document.querySelector('input[name="email-target"]:checked').value;
   const customContainer = document.getElementById('custom-emails-container');
@@ -681,13 +782,20 @@ window.sendCustomEmail = async () => {
     try {
     const BACKEND_URL = '/.netlify/functions';
     
+    const ccInput = document.getElementById('cc-emails-input') ? document.getElementById('cc-emails-input').value.trim() : '';
+    const bccInput = document.getElementById('bcc-emails-input') ? document.getElementById('bcc-emails-input').value.trim() : '';
+    const ccEmails = ccInput ? ccInput.split(',').map(e => e.trim()).filter(e => e) : [];
+    const bccEmails = bccInput ? bccInput.split(',').map(e => e.trim()).filter(e => e) : [];
+
     const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject,
         message,
-        targetEmails
+        targetEmails,
+        ccEmails,
+        bccEmails
       })
     });
 
@@ -703,6 +811,8 @@ window.sendCustomEmail = async () => {
     document.getElementById('email-subject').value = '';
     document.getElementById('email-message').value = '';
     if (target === 'custom') document.getElementById('custom-emails-input').value = '';
+    if (document.getElementById('cc-emails-input')) document.getElementById('cc-emails-input').value = '';
+    if (document.getElementById('bcc-emails-input')) document.getElementById('bcc-emails-input').value = '';
 
   } catch (err) {
     console.error('Error sending custom email:', err);

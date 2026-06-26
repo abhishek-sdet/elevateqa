@@ -161,7 +161,35 @@ window.saveAll = async () => {
       maxAttendeeLimit: getVal('set-max-attendees'),
       maturityTitle: getVal('maturity-title-input'), pillarsTitle: getVal('pillars-title-input'),
       adminWhitelist: Array.from(document.querySelectorAll('.admin-email-entry'))
-        .map(i => i.value.trim().toLowerCase()).filter(e => e)
+        .map(i => i.value.trim().toLowerCase()).filter(e => e),
+      emailTemplates: {
+        registration: {
+          subject: getVal('et-registration-subject'),
+          body1:   getVal('et-registration-body1'),
+          body2:   getVal('et-registration-body2'),
+          closing: getVal('et-registration-closing'),
+          tagline: getVal('et-registration-tagline'),
+        },
+        ticket: {
+          subject: getVal('et-ticket-subject'),
+          body1:   getVal('et-ticket-body1'),
+          closing: getVal('et-ticket-closing'),
+          tagline: getVal('et-ticket-tagline'),
+        },
+        speaker: {
+          subject: getVal('et-speaker-subject'),
+          body1:   getVal('et-speaker-body1'),
+          body2:   getVal('et-speaker-body2'),
+          contact: getVal('et-speaker-contact'),
+        },
+        rejection: {
+          subject:  getVal('et-rejection-subject'),
+          body1:    getVal('et-rejection-body1'),
+          body2:    getVal('et-rejection-body2'),
+          closing:  getVal('et-rejection-closing'),
+          tagline:  getVal('et-rejection-tagline'),
+        },
+      }
     });
 
     await saveBranding({

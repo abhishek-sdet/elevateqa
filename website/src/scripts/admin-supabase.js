@@ -269,7 +269,8 @@ export async function saveSiteContent(data) {
       modalFormDesc: data.modalFormDesc,
       maturityTitle: data.maturityTitle,
       pillarsTitle: data.pillarsTitle,
-      admin_whitelist: data.adminWhitelist || []
+      admin_whitelist: data.adminWhitelist || [],
+      emailTemplates: data.emailTemplates || undefined
     }
   };
 

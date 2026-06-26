@@ -1,5 +1,19 @@
 import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL || 'https://wbgxcadajmdjxfhsgose.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
+
+async function fetchEmailTemplate(type) {
+    try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data, error } = await supabase.from('site_content').select('hero_meta').eq('id', 1).single();
+        if (error || !data) return {};
+        const meta = (typeof data.hero_meta === 'string') ? JSON.parse(data.hero_meta) : (data.hero_meta || {});
+        return (meta.emailTemplates && meta.emailTemplates[type]) ? meta.emailTemplates[type] : {};
+    } catch (e) { console.warn('[fetchEmailTemplate]', e.message); return {}; }
+}
 
 export const handler = async (event, context) => {
     const headers = {
@@ -23,6 +37,12 @@ export const handler = async (event, context) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required ticket data' }) };
         }
 
+        const tpl = await fetchEmailTemplate('ticket');
+        const subject    = tpl.subject || '🎫 Your Official Pass — Elevate QA 2026';
+        const bodyPara1  = tpl.body1   || 'Your spot at the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong> is confirmed. Please present this QR code at the registration desk upon your arrival.';
+        const closingMsg = tpl.closing || 'See you at Elevate QA 2026!';
+        const tagline    = tpl.tagline || 'Keep this email handy. This QR code is your entry ticket.';
+
         const qrBuffer = await QRCode.toBuffer(qrData, {
             errorCorrectionLevel: 'H',
             margin: 2,
@@ -44,7 +64,7 @@ export const handler = async (event, context) => {
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: '🎫 Your Official Pass — Elevate QA 2026',
+            subject: subject,
             html: `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -110,7 +130,7 @@ export const handler = async (event, context) => {
               Welcome, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Your spot at the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong> is confirmed. Please present this QR code at the registration desk upon your arrival.
+              ${bodyPara1}
             </p>
           </td>
         </tr>
@@ -169,10 +189,8 @@ export const handler = async (event, context) => {
               </tr>
             </table>
 
-            <p style="margin:24px 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">See you at<br><span style="color:#d4ff3a;">Elevate QA 2026!</span></p>
-            <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">
-              Keep this email handy. This QR code is your entry ticket. 
-            </p>
+            <p style="margin:24px 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">${closingMsg}</p>
+            <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">${tagline}</p>
           </td>
         </tr>
 

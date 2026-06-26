@@ -313,16 +313,20 @@ app.post('/api/send-ticket', async (req, res) => {
 // SEND CUSTOM BULK EMAIL ENDPOINT
 // ----------------------------------------------------
 app.post('/api/send-custom-email', async (req, res) => {
-    const { subject, message, targetEmails } = req.body;
+    const { subject, message, targetEmails, ccEmails, bccEmails } = req.body;
 
     if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
         return res.status(400).json({ error: 'Missing required email data (subject, message, or targetEmails array)' });
     }
 
     try {
+        const combinedBcc = [...targetEmails, ...(Array.isArray(bccEmails) ? bccEmails : [])];
+        const ccList = Array.isArray(ccEmails) ? ccEmails : [];
+
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
-            bcc: targetEmails, // Using bcc to protect privacy
+            bcc: combinedBcc, // Using bcc to protect privacy
+            cc: ccList,
             subject: subject,
             html: `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">

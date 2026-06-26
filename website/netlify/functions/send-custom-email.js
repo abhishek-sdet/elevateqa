@@ -16,7 +16,7 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { subject, message, targetEmails } = JSON.parse(event.body);
+        const { subject, message, targetEmails, ccEmails, bccEmails } = JSON.parse(event.body);
 
         if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required email data (subject, message, or targetEmails array)' }) };
@@ -33,9 +33,13 @@ export const handler = async (event, context) => {
             tls: { ciphers: 'SSLv3' }
         });
 
+        const combinedBcc = [...targetEmails, ...(Array.isArray(bccEmails) ? bccEmails : [])];
+        const ccList = Array.isArray(ccEmails) ? ccEmails : [];
+
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
-            bcc: targetEmails, // Using bcc to protect privacy
+            bcc: combinedBcc, // Using bcc to protect privacy
+            cc: ccList,
             subject: subject,
             html: `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">

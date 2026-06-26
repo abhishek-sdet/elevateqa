@@ -1,4 +1,6 @@
 <section id="sec-email" style="display:none; padding-bottom: 120px;" aria-labelledby="sec-email-heading">
+
+  <!-- ══════════ BLAST OUT CARD ══════════ -->
   <div class="manager-card primary-card fade-in">
     <div class="card-header" style="display: block; margin-bottom: 24px;">
       <div class="section-title" id="sec-email-heading">Blast Out <em>Event Updates</em></div>
@@ -29,8 +31,18 @@
       </div>
 
       <div id="custom-emails-container" class="form-group" style="display: none; margin-bottom: 24px;">
-        <label for="custom-emails-input">Custom Emails <span class="label-hint">(Comma separated)</span></label>
+        <label for="custom-emails-input">Custom Emails (To) <span class="label-hint">(Comma separated)</span></label>
         <textarea id="custom-emails-input" rows="3" placeholder="john@example.com, sarah@sdettech.com"></textarea>
+      </div>
+
+      <div id="cc-emails-container" class="form-group" style="margin-bottom: 24px;">
+        <label for="cc-emails-input">CC <span class="label-hint">(Comma separated)</span></label>
+        <textarea id="cc-emails-input" rows="2" placeholder="cc@example.com"></textarea>
+      </div>
+
+      <div id="bcc-emails-container" class="form-group" style="margin-bottom: 24px;">
+        <label for="bcc-emails-input">BCC <span class="label-hint">(Comma separated)</span></label>
+        <textarea id="bcc-emails-input" rows="2" placeholder="bcc@example.com"></textarea>
       </div>
 
       <div class="action-row" style="margin-top: 32px; text-align: left;">
@@ -42,4 +54,134 @@
       <div id="email-status-msg" style="margin-top: 16px; font-weight: 600;"></div>
     </div>
   </div>
+
+  <!-- ══════════ EMAIL TEMPLATES CARD ══════════ -->
+  <div class="manager-card primary-card fade-in" style="margin-top: 32px;">
+    <div class="card-header" style="display: block; margin-bottom: 8px;">
+      <div class="section-title">Email <em>Templates</em></div>
+      <p style="color: var(--text-dim); font-size: 14px; margin-top: 8px; line-height: 1.5;">
+        Customize the subject and body text of the 4 automatic transactional emails. Changes are saved to the database and used the next time an email is sent.
+      </p>
+    </div>
+
+    <!-- Template Tabs -->
+    <div class="internal-tabs" style="margin-bottom: 0; border-bottom: 1px solid var(--line); padding-bottom: 0; margin-top: 20px;">
+      <button class="tab-btn active" id="etab-btn-registration" onclick="showEmailTemplateTab('registration')" style="font-size: 12px; padding: 10px 16px;">📝 Registration</button>
+      <button class="tab-btn" id="etab-btn-ticket" onclick="showEmailTemplateTab('ticket')" style="font-size: 12px; padding: 10px 16px;">🎫 Final Pass</button>
+      <button class="tab-btn" id="etab-btn-speaker" onclick="showEmailTemplateTab('speaker')" style="font-size: 12px; padding: 10px 16px;">🎙️ Speaker App</button>
+      <button class="tab-btn" id="etab-btn-rejection" onclick="showEmailTemplateTab('rejection')" style="font-size: 12px; padding: 10px 16px;">❌ Rejection</button>
+    </div>
+
+    <div class="card-body" style="padding-top: 28px;">
+
+      <!-- ── REGISTRATION RECEIVED ── -->
+      <div id="etab-registration" class="email-template-panel">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Auto-sent on Registration</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-registration-subject">Email Subject <span class="label-hint">Recipient's inbox subject line</span></label>
+          <input type="text" id="et-registration-subject" placeholder="📝 Registration Received — Elevate QA 2026">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-registration-body1">Welcome Message <span class="label-hint">First paragraph shown to registrant</span></label>
+          <textarea id="et-registration-body1" rows="3" placeholder="We're absolutely thrilled to see your interest in the Elevate QA Tech Summit! We have successfully received your registration details."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-registration-body2">Follow-up Line <span class="label-hint">Second paragraph</span></label>
+          <textarea id="et-registration-body2" rows="3" placeholder="We'll be reaching out to you personally very soon to share updates about your participation. We truly appreciate your patience and can't wait to connect!"></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-registration-closing">Closing Message <span class="label-hint">Shown at the bottom center of the email</span></label>
+          <input type="text" id="et-registration-closing" placeholder="Thank you for your interest in Elevate QA 2026!">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-registration-tagline">Tagline <span class="label-hint">Coloured accent line below closing</span></label>
+          <input type="text" id="et-registration-tagline" placeholder="Stay tuned! 🚀">
+        </div>
+      </div>
+
+      <!-- ── FINAL TICKET / PASS ── -->
+      <div id="etab-ticket" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Auto-sent on Approval (QR Pass)</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-ticket-subject">Email Subject</label>
+          <input type="text" id="et-ticket-subject" placeholder="🎫 Your Official Pass — Elevate QA 2026">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-ticket-body1">Confirmation Message <span class="label-hint">Main body text sent with QR code</span></label>
+          <textarea id="et-ticket-body1" rows="3" placeholder="Your spot at the Elevate QA Tech Summit is confirmed. Please present this QR code at the registration desk upon your arrival."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-ticket-closing">Closing Message</label>
+          <input type="text" id="et-ticket-closing" placeholder="See you at Elevate QA 2026!">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-ticket-tagline">Tagline</label>
+          <input type="text" id="et-ticket-tagline" placeholder="Keep this email handy. This QR code is your entry ticket.">
+        </div>
+      </div>
+
+      <!-- ── SPEAKER APPLICATION ── -->
+      <div id="etab-speaker" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Auto-sent on Speaker Submission</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-speaker-subject">Email Subject</label>
+          <input type="text" id="et-speaker-subject" placeholder="🎙️ Application Received — Elevate QA 2026 Speaker">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-speaker-body1">Thank You Message <span class="label-hint">Opening paragraph shown to speaker</span></label>
+          <textarea id="et-speaker-body1" rows="3" placeholder="Your application to speak at Elevate QA 2026 has been successfully received."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-speaker-body2">Review Process Message <span class="label-hint">What happens next</span></label>
+          <textarea id="et-speaker-body2" rows="3" placeholder="Our curation team is currently reviewing all submissions. We will get back to you shortly with further details and next steps. In the meantime, sit tight and keep innovating!"></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-speaker-contact">Contact Line <span class="label-hint">Bottom contact paragraph</span></label>
+          <input type="text" id="et-speaker-contact" placeholder="If you have any questions, feel free to reply to this email at elevateqa@sdettech.com.">
+        </div>
+      </div>
+
+      <!-- ── REJECTION ── -->
+      <div id="etab-rejection" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(255,90,54,0.1); border: 1px solid rgba(255,90,54,0.3); color: #ff5a36; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Auto-sent on Rejection</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-rejection-subject">Email Subject</label>
+          <input type="text" id="et-rejection-subject" placeholder="Updates Regarding Your Registration — Elevate QA 2026">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-rejection-body1">Opening Message <span class="label-hint">First paragraph</span></label>
+          <textarea id="et-rejection-body1" rows="3" placeholder="Thank you for showing your interest in attending the Elevate QA Tech Summit."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-rejection-body2">Rejection Reason <span class="label-hint">Explanation paragraph</span></label>
+          <textarea id="et-rejection-body2" rows="3" placeholder="Due to overwhelming response, we have reached full capacity for this year's summit and cannot confirm your spot. We apologise for the inconvenience this may cause to you."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-rejection-closing">Closing Message</label>
+          <input type="text" id="et-rejection-closing" placeholder="Thank you for your understanding.">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-rejection-tagline">Tagline</label>
+          <input type="text" id="et-rejection-tagline" placeholder="Stay tuned for next time! 🚀">
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div style="border-top: 1px dashed var(--line-light); padding-top: 24px; margin-top: 8px; display: flex; align-items: center; gap: 16px;">
+        <button id="btn-save-email-templates" class="btn-primary" onclick="saveEmailTemplates()" style="font-size: 13px; padding: 11px 22px;">
+          SAVE TEMPLATES <span aria-hidden="true" style="margin-left: 8px;">💾</span>
+        </button>
+        <span id="email-template-status" style="font-size: 13px; font-weight: 600;"></span>
+      </div>
+    </div>
+  </div>
+
 </section>

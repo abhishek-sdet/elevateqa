@@ -1,4 +1,18 @@
 import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL || 'https://wbgxcadajmdjxfhsgose.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
+
+async function fetchEmailTemplate(type) {
+    try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data, error } = await supabase.from('site_content').select('hero_meta').eq('id', 1).single();
+        if (error || !data) return {};
+        const meta = (typeof data.hero_meta === 'string') ? JSON.parse(data.hero_meta) : (data.hero_meta || {});
+        return (meta.emailTemplates && meta.emailTemplates[type]) ? meta.emailTemplates[type] : {};
+    } catch (e) { console.warn('[fetchEmailTemplate]', e.message); return {}; }
+}
 
 export const handler = async (event, context) => {
     const headers = {
@@ -22,6 +36,12 @@ export const handler = async (event, context) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required speaker data' }) };
         }
 
+        const tpl = await fetchEmailTemplate('speaker');
+        const subject  = tpl.subject || '🎤️ Application Received — Elevate QA 2026 Speaker';
+        const bodyPara1 = tpl.body1   || `Your application to speak at <strong style="color:#ffffff;">Elevate QA 2026</strong> has been successfully received with the topic: <strong style="color:#d4ff3a;">"${topic || 'Not specified'}"</strong>.`;
+        const bodyPara2 = tpl.body2   || "Our curation team is currently reviewing all submissions. We will get back to you shortly with further details and next steps. In the meantime, sit tight and keep innovating!";
+        const contactLine = tpl.contact || 'If you have any questions, feel free to reply to this email at <strong style="color:#ffffff;">elevateqa@sdettech.com</strong>.';
+
         const transporter = nodemailer.createTransport({
             host: 'smtp.office365.com',
             port: 587,
@@ -36,7 +56,7 @@ export const handler = async (event, context) => {
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: '🎙️ Application Received — Elevate QA 2026 Speaker',
+            subject: subject,
             html: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,10 +109,10 @@ export const handler = async (event, context) => {
               Thank you, <span style="color:#d4ff3a;">${name}!</span>
             </h2>
             <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Your application to speak at <strong style="color:#ffffff;">Elevate QA 2026</strong> has been successfully received with the topic: <strong style="color:#d4ff3a;">"${topic || 'Not specified'}"</strong>.
+              ${bodyPara1}
             </p>
             <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
-              Our curation team is currently reviewing all submissions. We will get back to you shortly with further details and next steps. In the meantime, sit tight and keep innovating!
+              ${bodyPara2}
             </p>
             
             <div style="background: #1a1a24; border: 1px solid #333344; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
@@ -110,7 +130,7 @@ export const handler = async (event, context) => {
             </table>
             
             <p style="margin:0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">
-              If you have any questions, feel free to reply to this email at <strong style="color:#ffffff;">elevateqa@sdettech.com</strong>.
+              ${contactLine}
             </p>
           </td>
         </tr>
