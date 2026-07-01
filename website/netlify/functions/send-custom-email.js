@@ -82,7 +82,7 @@ export const handler = async (event, context) => {
                 const name = typeof recipient === 'object' ? recipient.name : '';
                 
                 // Replace placeholders
-                const finalMessage = message.replace(/\{\{name\}\}|\{\{Name\}\}|\[Name\]/gi, name || '');
+                const finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
                 
                 const mailOptions = {
                     from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
@@ -101,7 +101,7 @@ export const handler = async (event, context) => {
 
         // Send a single copy to CC and BCC if provided, so they aren't spammed
         if (ccList.length > 0 || extraBccList.length > 0) {
-            const ccMessage = message.replace(/\{\{name\}\}|\{\{Name\}\}|\[Name\]/gi, 'Team');
+            const ccMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, 'Team');
             await transporter.sendMail({
                 from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                 to: process.env.EMAIL_USER, // Send to self
