@@ -33,15 +33,10 @@ export const handler = async (event, context) => {
             tls: { ciphers: 'SSLv3' }
         });
 
-        const combinedBcc = [...targetEmails, ...(Array.isArray(bccEmails) ? bccEmails : [])];
+        const extraBccList = Array.isArray(bccEmails) ? bccEmails : [];
         const ccList = Array.isArray(ccEmails) ? ccEmails : [];
 
-        const mailOptions = {
-            from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
-            bcc: combinedBcc, // Using bcc to protect privacy
-            cc: ccList,
-            subject: subject,
-            html: `
+        const getHtml = (msgContent) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
                         
@@ -61,7 +56,7 @@ export const handler = async (event, context) => {
                         <!-- Body Section -->
                         <div style="padding: 40px;">
                             <div style="color: #ffffff; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                ${message}
+                                ${msgContent}
                             </div>
                         </div>
                         
@@ -74,12 +69,51 @@ export const handler = async (event, context) => {
                         </div>
                     </div>
                 </div>
-            `
-        };
+        `;
 
-        await transporter.sendMail(mailOptions);
-        console.log(`[CUSTOM EMAIL] Blast sent to ${targetEmails.length} recipients`);
-        return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Custom email blast sent successfully' }) };
+        const chunkSize = 20;
+        let successCount = 0;
+        let failCount = 0;
+
+        for (let i = 0; i < targetEmails.length; i += chunkSize) {
+            const chunk = targetEmails.slice(i, i + chunkSize);
+            const promises = chunk.map(recipient => {
+                const email = typeof recipient === 'object' ? recipient.email : recipient;
+                const name = typeof recipient === 'object' ? recipient.name : 'Attendee';
+                
+                // Replace placeholders
+                const finalMessage = message.replace(/\{\{name\}\}|\{\{Name\}\}|\[Name\]/gi, name || 'Attendee');
+                
+                const mailOptions = {
+                    from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
+                    to: email,
+                    subject: subject,
+                    html: getHtml(finalMessage)
+                };
+                return transporter.sendMail(mailOptions);
+            });
+            const results = await Promise.allSettled(promises);
+            results.forEach(r => {
+                if (r.status === 'fulfilled') successCount++;
+                else failCount++;
+            });
+        }
+
+        // Send a single copy to CC and BCC if provided, so they aren't spammed
+        if (ccList.length > 0 || extraBccList.length > 0) {
+            const ccMessage = message.replace(/\{\{name\}\}|\{\{Name\}\}|\[Name\]/gi, 'Team');
+            await transporter.sendMail({
+                from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
+                to: process.env.EMAIL_USER, // Send to self
+                cc: ccList,
+                bcc: extraBccList,
+                subject: `[CC/BCC Copy] ${subject}`,
+                html: getHtml(ccMessage)
+            });
+        }
+
+        console.log(`[CUSTOM EMAIL] Blast sent. Success: ${successCount}, Failed: ${failCount}`);
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Blast sent successfully. (${successCount} succeeded, ${failCount} failed)` }) };
 
     } catch (error) {
         console.error('[CUSTOM EMAIL Error]', error);

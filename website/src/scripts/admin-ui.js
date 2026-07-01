@@ -745,22 +745,43 @@ window.sendCustomEmail = async () => {
       statusMsg.textContent = 'Please enter at least one custom email address.';
       return;
     }
-    // Parse comma separated emails
-    targetEmails = customInput.split(',').map(e => e.trim()).filter(e => e);
+    // Parse comma separated emails supporting "Name <email>" format
+    targetEmails = customInput.split(',').map(e => {
+      const raw = e.trim();
+      if (!raw) return null;
+      
+      let name = "Attendee";
+      let email = raw;
+      
+      // Match format: Name <email@example.com>
+      const match = raw.match(/^(.*?)\s*<(.+)>$/);
+      if (match) {
+        name = match[1].trim() || "Attendee";
+        email = match[2].trim();
+      }
+      
+      return { email, name };
+    }).filter(e => e);
   } else {
+    // Show confirmation before fetching and sending
+    const confirmed = await window.showConfirm("Are you sure you want to send this email to ALL registered attendees?", "Send to All", "SEND");
+    if (!confirmed) {
+      return;
+    }
+
     // Fetch all attendees from the registrations table
     statusMsg.style.color = 'var(--text-dim)';
     statusMsg.textContent = 'Fetching attendee list...';
     try {
       const { supabaseClient } = await import('./admin-supabase.js');
-      const { data, error } = await supabaseClient.from('registrations').select('email').neq('status', 'cancelled');
+      const { data, error } = await supabaseClient.from('registrations').select('email, name').neq('status', 'cancelled');
       if (error) throw error;
       if (!data || data.length === 0) {
         statusMsg.style.color = 'var(--accent-red)';
         statusMsg.textContent = 'No attendees found.';
         return;
       }
-      targetEmails = data.map(row => row.email).filter(e => e);
+      targetEmails = data.filter(row => row.email).map(row => ({ email: row.email, name: row.name || 'Attendee' }));
     } catch (err) {
       console.error('Error fetching attendees:', err);
       statusMsg.style.color = 'var(--accent-red)';
