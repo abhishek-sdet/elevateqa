@@ -46,13 +46,15 @@ export const handler = async (event, context) => {
                     <div style="max-width: 600px; margin: 0 auto; background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
                         
                         <!-- Header Section -->
-                        <div style="background-color: #050508; text-align: center;">
-                            <div style="height: 5px; background-color: #d4ff3a;"></div>
-                            <div style="padding: 36px 30px 30px 30px;">
-                                <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="68" style="display:block;margin:0 auto 14px auto;border:0;pointer-events:none;" />
-                                <p style="color: #8e8e9a; margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: Arial, sans-serif;">
-                                    EVENT UPDATE
-                                </p>
+                        <div style="background: linear-gradient(180deg, #101017 0%, #050508 100%); text-align: center; border-bottom: 1px solid #1a1a24;">
+                            <div style="height: 4px; background: linear-gradient(90deg, #a8ff1a, #d4ff3a, #eaff80); box-shadow: 0 2px 15px rgba(212, 255, 58, 0.4);"></div>
+                            <div style="padding: 45px 30px 40px 30px;">
+                                <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="100" style="display:block;margin:0 auto 20px auto;border:0;pointer-events:none;" />
+                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(212, 255, 58, 0.05); border: 1px solid rgba(212, 255, 58, 0.15); border-radius: 50px;">
+                                    <p style="color: #d4ff3a; margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                        EVENT UPDATE
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
