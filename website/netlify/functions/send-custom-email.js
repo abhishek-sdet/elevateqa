@@ -79,10 +79,10 @@ export const handler = async (event, context) => {
             const chunk = targetEmails.slice(i, i + chunkSize);
             const promises = chunk.map(recipient => {
                 const email = typeof recipient === 'object' ? recipient.email : recipient;
-                const name = typeof recipient === 'object' ? recipient.name : 'Attendee';
+                const name = typeof recipient === 'object' ? recipient.name : '';
                 
                 // Replace placeholders
-                const finalMessage = message.replace(/\{\{name\}\}|\{\{Name\}\}|\[Name\]/gi, name || 'Attendee');
+                const finalMessage = message.replace(/\{\{name\}\}|\{\{Name\}\}|\[Name\]/gi, name || '');
                 
                 const mailOptions = {
                     from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,

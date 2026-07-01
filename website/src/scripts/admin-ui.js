@@ -721,6 +721,10 @@ window.toggleCustomEmailInput = () => {
     customContainer.style.display = 'block';
   } else {
     customContainer.style.display = 'none';
+    const previewContainer = document.getElementById('custom-emails-preview-container');
+    if (previewContainer) previewContainer.style.display = 'none';
+    const btnSend = document.getElementById('btn-send-email');
+    if (btnSend) btnSend.innerHTML = 'SEND EMAIL BLAST <span aria-hidden="true" style="margin-left: 8px;">🚀</span>';
   }
 };
 
@@ -738,56 +742,93 @@ window.sendCustomEmail = async () => {
 
   let targetEmails = [];
 
-  if (target === 'custom') {
-    const customInput = document.getElementById('custom-emails-input').value.trim();
-    if (!customInput) {
-      statusMsg.style.color = 'var(--accent-red)';
-      statusMsg.textContent = 'Please enter at least one custom email address.';
-      return;
+  const previewContainer = document.getElementById('custom-emails-preview-container');
+  const previewTextarea = document.getElementById('custom-emails-preview-textarea');
+  const btnSend = document.getElementById('btn-send-email');
+
+  // First step: Generate and show preview
+  if (previewContainer.style.display === 'none') {
+    let parsed = [];
+    
+    if (target === 'custom') {
+      const customInput = document.getElementById('custom-emails-input').value.trim();
+      if (!customInput) {
+        statusMsg.style.color = 'var(--accent-red)';
+        statusMsg.textContent = 'Please enter at least one custom email address.';
+        return;
+      }
+      
+      parsed = customInput.split(',').map(e => {
+        const raw = e.trim();
+        if (!raw) return null;
+        const match = raw.match(/^(.*?)\s*<(.+)>$/);
+        if (match && match[1].trim()) {
+          return { name: match[1].trim(), email: match[2].trim() };
+        } else {
+          const emailParts = raw.split('@')[0].split(/[._-]/);
+          let extractedName = '';
+          if (emailParts.length > 0) {
+            extractedName = emailParts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+          }
+          return { name: extractedName, email: raw };
+        }
+      }).filter(e => e);
+    } else {
+      statusMsg.style.color = 'var(--text-dim)';
+      statusMsg.textContent = 'Fetching attendee list...';
+      try {
+        const { supabaseClient } = await import('./admin-supabase.js');
+        const { data, error } = await supabaseClient.from('registrations').select('email, name').neq('status', 'cancelled');
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          statusMsg.style.color = 'var(--accent-red)';
+          statusMsg.textContent = 'No attendees found.';
+          return;
+        }
+        parsed = data.filter(row => row.email).map(row => ({ email: row.email, name: row.name || 'there' }));
+      } catch (err) {
+        console.error('Error fetching attendees:', err);
+        statusMsg.style.color = 'var(--accent-red)';
+        statusMsg.textContent = 'Error fetching attendees from database.';
+        return;
+      }
     }
-    // Parse comma separated emails supporting "Name <email>" format
-    targetEmails = customInput.split(',').map(e => {
+    
+    previewTextarea.value = parsed.map(item => `${item.name} <${item.email}>`).join(',\n');
+    
+    previewContainer.style.display = 'block';
+    btnSend.innerHTML = 'CONFIRM & SEND <span aria-hidden="true" style="margin-left: 8px;">🚀</span>';
+    statusMsg.style.color = 'var(--accent)';
+    statusMsg.textContent = 'Please review and edit the names before sending.';
+    return; // Stop execution here, wait for second click
+    
+  } else {
+    // Second step: Confirm and build targetEmails from the preview textarea
+    const finalInput = previewTextarea.value.trim();
+    let formatError = false;
+    
+    targetEmails = finalInput.split(',').map(e => {
       const raw = e.trim();
       if (!raw) return null;
       
-      let name = "Attendee";
-      let email = raw;
-      
-      // Match format: Name <email@example.com>
       const match = raw.match(/^(.*?)\s*<(.+)>$/);
-      if (match) {
-        name = match[1].trim() || "Attendee";
-        email = match[2].trim();
+      if (match && match[1].trim()) {
+        return { name: match[1].trim(), email: match[2].trim() };
+      } else {
+        formatError = true;
+        return null;
       }
-      
-      return { email, name };
     }).filter(e => e);
-  } else {
-    // Show confirmation before fetching and sending
-    const confirmed = await window.showConfirm("Are you sure you want to send this email to ALL registered attendees?", "Send to All", "SEND");
-    if (!confirmed) {
-      return;
-    }
-
-    // Fetch all attendees from the registrations table
-    statusMsg.style.color = 'var(--text-dim)';
-    statusMsg.textContent = 'Fetching attendee list...';
-    try {
-      const { supabaseClient } = await import('./admin-supabase.js');
-      const { data, error } = await supabaseClient.from('registrations').select('email, name').neq('status', 'cancelled');
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        statusMsg.style.color = 'var(--accent-red)';
-        statusMsg.textContent = 'No attendees found.';
-        return;
-      }
-      targetEmails = data.filter(row => row.email).map(row => ({ email: row.email, name: row.name || 'Attendee' }));
-    } catch (err) {
-      console.error('Error fetching attendees:', err);
+    
+    if (formatError || targetEmails.length === 0) {
       statusMsg.style.color = 'var(--accent-red)';
-      statusMsg.textContent = 'Error fetching attendees from database.';
+      statusMsg.textContent = 'Please ensure all emails follow the format: Name <email@example.com>';
       return;
     }
+    
+    // Hide preview and reset button for the next blast
+    previewContainer.style.display = 'none';
+    btnSend.innerHTML = 'SEND EMAIL BLAST <span aria-hidden="true" style="margin-left: 8px;">🚀</span>';
   }
 
   if (targetEmails.length === 0) {

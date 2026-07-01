@@ -45,6 +45,12 @@
         <textarea id="bcc-emails-input" rows="2" placeholder="bcc@example.com"></textarea>
       </div>
 
+      <div id="custom-emails-preview-container" style="display: none; margin-bottom: 24px; padding: 16px; background-color: #1a1a24; border: 1px solid #2a2a35; border-radius: 8px;">
+        <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #d4ff3a; font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px;">Review & Edit Names</h4>
+        <p style="margin: 0 0 16px 0; font-size: 12px; color: var(--text-dim);">Please verify the target names below. You can edit them before sending.</p>
+        <textarea id="custom-emails-preview-textarea" rows="10" style="width: 100%; background: #121217; color: var(--text); border: 1px solid #2a2a35; padding: 12px; border-radius: 4px; font-family: var(--mono); font-size: 13px; line-height: 1.5; resize: vertical;"></textarea>
+      </div>
+
       <div class="action-row" style="margin-top: 32px; text-align: left;">
         <button id="btn-send-email" class="btn-primary" onclick="sendCustomEmail()" style="font-size: 14px; padding: 12px 24px;">
           SEND EMAIL BLAST <span aria-hidden="true" style="margin-left: 8px;">🚀</span>
