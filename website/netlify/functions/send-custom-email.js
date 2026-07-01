@@ -46,13 +46,14 @@ export const handler = async (event, context) => {
                     <div style="max-width: 600px; margin: 0 auto; background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
                         
                         <!-- Header Section -->
-                        <div style="background-color: #d4ff3a; padding: 30px; text-align: center;">
-                            <h2 style="color: #0b0b10; margin: 0; font-size: 28px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
-                                Elevate QA 2026
-                            </h2>
-                            <p style="color: #0b0b10; margin: 10px 0 0 0; font-size: 14px; font-weight: 600; opacity: 0.8; letter-spacing: 2px;">
-                                EVENT UPDATE
-                            </p>
+                        <div style="background-color: #050508; text-align: center;">
+                            <div style="height: 5px; background-color: #d4ff3a;"></div>
+                            <div style="padding: 36px 30px 30px 30px;">
+                                <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="68" style="display:block;margin:0 auto 14px auto;border:0;pointer-events:none;" />
+                                <p style="color: #8e8e9a; margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: Arial, sans-serif;">
+                                    EVENT UPDATE
+                                </p>
+                            </div>
                         </div>
                         
                         <!-- Body Section -->
