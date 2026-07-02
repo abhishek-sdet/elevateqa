@@ -777,8 +777,8 @@ window.sendCustomEmail = async () => {
       statusMsg.style.color = 'var(--text-dim)';
       statusMsg.textContent = 'Fetching attendee list...';
       try {
-        const { supabaseClient } = await import('./admin-supabase.js');
-        const { data, error } = await supabaseClient.from('registrations').select('email, name').neq('status', 'cancelled');
+        const { supabase } = await import('./supabase-config.js');
+        const { data, error } = await supabase.from('registrations').select('email, name').neq('status', 'cancelled');
         if (error) throw error;
         if (!data || data.length === 0) {
           statusMsg.style.color = 'var(--accent-red)';
