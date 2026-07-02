@@ -773,12 +773,18 @@ window.sendCustomEmail = async () => {
           return { name: extractedName, email: raw };
         }
       }).filter(e => e);
-    } else {
+    } else if (target === 'all' || target === 'sdet') {
       statusMsg.style.color = 'var(--text-dim)';
       statusMsg.textContent = 'Fetching attendee list...';
       try {
         const { supabase } = await import('./supabase-config.js');
-        const { data, error } = await supabase.from('registrations').select('email, name').neq('status', 'cancelled');
+        let query = supabase.from('registrations').select('email, name').neq('status', 'cancelled');
+        
+        if (target === 'sdet') {
+            query = query.ilike('email', '%@sdettech.com');
+        }
+        
+        const { data, error } = await query;
         if (error) throw error;
         if (!data || data.length === 0) {
           statusMsg.style.color = 'var(--accent-red)';

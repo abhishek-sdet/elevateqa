@@ -22,7 +22,10 @@
         <label>Recipient Target <span class="label-hint">Who will receive this email</span></label>
         <div style="display: flex; gap: 24px; align-items: center; margin-top: 12px;">
           <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
-            <input type="radio" name="email-target" value="all" checked onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> All Registered Attendees
+            <input type="radio" name="email-target" value="all" checked onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> All Attendees
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
+            <input type="radio" name="email-target" value="sdet" onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> SDET Tech Employees
           </label>
           <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
             <input type="radio" name="email-target" value="custom" onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> Custom Email(s)
