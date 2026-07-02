@@ -76,7 +76,7 @@ window.syncEverything = () => {
 
   // ── Site Content ───────────────────────────────────────────────────────────
   if (site) {
-    window.maxAttendeeLimit = parseInt(site.maxAttendeeLimit, 10) || 200;
+    window.maxAttendeeLimit = parseInt(site.maxAttendeeLimit, 10) || 250;
 
     // MIGRATION: auto-fix edition strings
     let heroEd = site.heroEdition || '';

@@ -169,7 +169,7 @@ window.generateTicket = async function(event) {
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending OTP...'; }
   try {
     const { count, error } = await supabase.from('registrations').select('*', { count: 'exact', head: true });
-    const limit = window.maxAttendeeLimit || 200;
+    const limit = window.maxAttendeeLimit || 250;
     if (count !== null && count >= limit) {
       window.isWaitlisted = true;
     } else {
