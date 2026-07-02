@@ -842,39 +842,62 @@ window.sendCustomEmail = async () => {
   document.getElementById('btn-send-email').disabled = true;
 
     try {
-    const BACKEND_URL = '/.netlify/functions';
-    
-    const ccInput = document.getElementById('cc-emails-input') ? document.getElementById('cc-emails-input').value.trim() : '';
-    const bccInput = document.getElementById('bcc-emails-input') ? document.getElementById('bcc-emails-input').value.trim() : '';
-    const ccEmails = ccInput ? ccInput.split(',').map(e => e.trim()).filter(e => e) : [];
-    const bccEmails = bccInput ? bccInput.split(',').map(e => e.trim()).filter(e => e) : [];
+      const BACKEND_URL = '/.netlify/functions';
+      
+      const ccInput = document.getElementById('cc-emails-input') ? document.getElementById('cc-emails-input').value.trim() : '';
+      const bccInput = document.getElementById('bcc-emails-input') ? document.getElementById('bcc-emails-input').value.trim() : '';
+      const ccEmails = ccInput ? ccInput.split(',').map(e => e.trim()).filter(e => e) : [];
+      const bccEmails = bccInput ? bccInput.split(',').map(e => e.trim()).filter(e => e) : [];
 
-    const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        subject,
-        message,
-        targetEmails,
-        ccEmails,
-        bccEmails
-      })
-    });
+      const CHUNK_SIZE = 20;
+      let totalSent = 0;
 
-    const result = await response.json();
-    if (!response.ok) {
-        throw new Error(result.error || 'Failed to send custom email');
-    }
+      for (let i = 0; i < targetEmails.length; i += CHUNK_SIZE) {
+        const chunk = targetEmails.slice(i, i + CHUNK_SIZE);
+        
+        // Only send CC and BCC on the first chunk so they don't receive duplicate emails
+        const isFirstChunk = (i === 0);
+        const currentCc = isFirstChunk ? ccEmails : [];
+        const currentBcc = isFirstChunk ? bccEmails : [];
 
-    statusMsg.style.color = 'var(--accent)';
-    statusMsg.textContent = `Success! Email blast sent to ${targetEmails.length} recipient(s).`;
-    
-    // Clear the form after sending
-    document.getElementById('email-subject').value = '';
-    document.getElementById('email-message').value = '';
-    if (target === 'custom') document.getElementById('custom-emails-input').value = '';
-    if (document.getElementById('cc-emails-input')) document.getElementById('cc-emails-input').value = '';
-    if (document.getElementById('bcc-emails-input')) document.getElementById('bcc-emails-input').value = '';
+        statusMsg.style.color = 'var(--text-dim)';
+        statusMsg.textContent = `Sending batch ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(targetEmails.length / CHUNK_SIZE)}...`;
+
+        const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subject,
+            message,
+            targetEmails: chunk,
+            ccEmails: currentCc,
+            bccEmails: currentBcc
+          })
+        });
+
+        let result;
+        try {
+           result = await response.json();
+        } catch(e) {
+           throw new Error("Server timeout or invalid response. Batch failed.");
+        }
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to send custom email batch');
+        }
+        
+        totalSent += chunk.length;
+      }
+
+      statusMsg.style.color = 'var(--accent)';
+      statusMsg.textContent = `Success! Email blast sent to ${totalSent} recipient(s).`;
+      
+      // Clear the form after sending
+      document.getElementById('email-subject').value = '';
+      document.getElementById('email-message').value = '';
+      if (target === 'custom') document.getElementById('custom-emails-input').value = '';
+      if (document.getElementById('cc-emails-input')) document.getElementById('cc-emails-input').value = '';
+      if (document.getElementById('bcc-emails-input')) document.getElementById('bcc-emails-input').value = '';
 
   } catch (err) {
     console.error('Error sending custom email:', err);
