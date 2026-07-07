@@ -60,6 +60,28 @@ window.renderAttendees = (registrations) => {
   const mobileFilter = (document.getElementById('col-filter-mobile')?.value || '').toLowerCase().trim();
   const statusFilter = (document.getElementById('col-filter-status')?.value || '').toLowerCase().trim();
 
+  // Sync tab styles with statusFilter
+  const tabAll = document.getElementById('tab-all');
+  const tabPass = document.getElementById('tab-pass');
+  const tabReject = document.getElementById('tab-reject');
+  
+  if (tabAll && tabPass && tabReject) {
+    [tabAll, tabPass, tabReject].forEach(t => {
+      t.style.background = 'var(--bg-3)';
+      t.style.color = 'var(--ink)';
+    });
+    if (statusFilter === 'ticket_sent') {
+      tabPass.style.background = 'var(--accent)';
+      tabPass.style.color = '#000';
+    } else if (statusFilter === 'rejected') {
+      tabReject.style.background = 'var(--accent)';
+      tabReject.style.color = '#000';
+    } else if (statusFilter === '') {
+      tabAll.style.background = 'var(--accent)';
+      tabAll.style.color = '#000';
+    }
+  }
+
   let filtered = raw.filter(p => {
     if (globalSearch) {
       const matchText = `${p.name || ''} ${p.company || ''} ${p.designation || ''} ${p.email || ''} ${p.phone || ''}`.toLowerCase();
@@ -142,6 +164,14 @@ window.renderAttendees = (registrations) => {
       </tr>
     `;
   }).join('');
+};
+
+window.setTabFilter = (status) => {
+  const statusSelect = document.getElementById('col-filter-status');
+  if (statusSelect) {
+    statusSelect.value = status;
+  }
+  window.filterAttendees();
 };
 
 window.filterAttendees = () => {
