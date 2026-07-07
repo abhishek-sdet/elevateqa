@@ -169,7 +169,7 @@ window.generateTicket = async function(event) {
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending OTP...'; }
   try {
     const { count, error } = await supabase.from('registrations').select('*', { count: 'exact', head: true });
-    const limit = window.maxAttendeeLimit || 250;
+    const limit = window.maxAttendeeLimit || 500;
     if (count !== null && count >= limit) {
       window.isWaitlisted = true;
     } else {
@@ -357,7 +357,7 @@ window.verifyOTP = async function() {
       if (processingView) processingView.style.display = 'block';
       
       try {
-        await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin });
+        await sendAttendeeEmail({ name, email, company: org, ticketId: shortId, dbId, designation, linkedin, isWaitlisted: window.isWaitlisted });
         if (processingView) processingView.style.display = 'none';
         const emailEl = document.getElementById('attendee-success-email');
         if (emailEl) emailEl.textContent = email;

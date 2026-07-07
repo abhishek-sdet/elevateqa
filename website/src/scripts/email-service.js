@@ -6,7 +6,7 @@
 const BACKEND_URL = 'https://elevateqa.netlify.app/.netlify/functions';
 
 export const sendAttendeeEmail = async (attendeeData) => {
-  const { name, email, company, ticketId, dbId, designation, linkedin } = attendeeData;
+  const { name, email, company, ticketId, dbId, designation, linkedin, isWaitlisted } = attendeeData;
 
   console.log(`[ElevateQA] Sending ticket generation request to Backend for ${email}...`);
 
@@ -24,7 +24,9 @@ export const sendAttendeeEmail = async (attendeeData) => {
       qrData: `ELEVATE-QA:${dbId}|${name}|${company}`
     };
 
-    const response = await fetch(`${baseUrl}/send-ticket`, {
+    const endpoint = isWaitlisted ? '/send-rejection' : '/send-ticket';
+
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
