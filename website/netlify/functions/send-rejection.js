@@ -39,10 +39,10 @@ export const handler = async (event, context) => {
 
         const tpl = await fetchEmailTemplate('rejection');
         const subject   = tpl.subject || 'Updates Regarding Your Registration — Elevate QA 2026';
-        const bodyPara1 = tpl.body1   || 'Thank you for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit.</strong>';
-        const bodyPara2 = tpl.body2   || "Due to overwhelming response, we have reached full capacity for this year's summit and cannot confirm your spot. We apologise for the inconvenience this may cause to you.";
-        const closingMsg = tpl.closing || 'Thank you for your understanding.';
-        const tagline    = tpl.tagline || 'Stay tuned for next time! 🚀';
+        const bodyPara1 = tpl.body1   || 'Thank you so much for showing your interest in attending the <strong style="color:#ffffff;">Elevate QA Tech Summit.</strong> We truly appreciate it.';
+        const bodyPara2 = tpl.body2   || "Due to an overwhelming response, we have reached full capacity for this year's summit. We are genuinely sorry that we couldn't accommodate you this time. Please don't be disheartened! We would love for you to try again and join us next year.";
+        const closingMsg = tpl.closing || 'Thank you for your understanding and continuous support.';
+        const tagline    = tpl.tagline || 'Hope to see you next year! 🚀';
 
         const transporter = nodemailer.createTransport({
             host: 'smtp.office365.com',

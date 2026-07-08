@@ -504,6 +504,12 @@ export function populateUI(data) {
   setVal('modal-price-btn', sc.modalPriceBtn); setVal('modal-form-title', sc.modalFormTitle); setVal('modal-form-desc', sc.modalFormDesc);
   setVal('maturity-title-input', sc.maturityTitle); setVal('pillars-title-input', sc.pillarsTitle);
   setVal('set-max-attendees', sc.maxAttendeeLimit || '250');
+  
+  // Registration Access Toggles
+  const attendeeClosedEl = document.getElementById('set-attendee-closed');
+  if (attendeeClosedEl) attendeeClosedEl.checked = !!sc.attendeeRegClosed;
+  const speakerClosedEl = document.getElementById('set-speaker-closed');
+  if (speakerClosedEl) speakerClosedEl.checked = !!sc.speakerRegClosed;
 
   // Admin whitelist
   const adminContainer = document.getElementById('admin-emails-list');

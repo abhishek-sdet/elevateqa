@@ -66,7 +66,7 @@ window.openSpeakFlow = () => {
 
 // ── MODAL HELPERS ─────────────────────────────────────────────────────────────
 function resetModalViews() {
-  ['price-view','form-view','ticket-view','otp-view','speaker-form-view','speaker-success-view','attendee-success-view','processing-view'].forEach(id => {
+  ['price-view','form-view','ticket-view','otp-view','speaker-form-view','speaker-success-view','attendee-success-view','processing-view', 'attendee-closed-view', 'speaker-closed-view'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -84,11 +84,21 @@ window.openModal = (e, flowType = 'attend') => {
   if (regForm) regForm.reset();
   
   if (flowType === 'attend') {
-    const priceView = document.getElementById('price-view');
-    if (priceView) priceView.style.display = 'block';
+    if (window.attendeeRegClosed) {
+      const closedView = document.getElementById('attendee-closed-view');
+      if (closedView) closedView.style.display = 'block';
+    } else {
+      const priceView = document.getElementById('price-view');
+      if (priceView) priceView.style.display = 'block';
+    }
   } else if (flowType === 'speak') {
-    const speakerView = document.getElementById('speaker-form-view');
-    if (speakerView) speakerView.style.display = 'block';
+    if (window.speakerRegClosed) {
+      const closedView = document.getElementById('speaker-closed-view');
+      if (closedView) closedView.style.display = 'block';
+    } else {
+      const speakerView = document.getElementById('speaker-form-view');
+      if (speakerView) speakerView.style.display = 'block';
+    }
   }
   
   modal.classList.add('active');

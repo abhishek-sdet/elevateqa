@@ -77,6 +77,8 @@ window.syncEverything = () => {
   // ── Site Content ───────────────────────────────────────────────────────────
   if (site) {
     window.maxAttendeeLimit = parseInt(site.maxAttendeeLimit, 10) || 250;
+    window.attendeeRegClosed = !!site.attendeeRegClosed;
+    window.speakerRegClosed = !!site.speakerRegClosed;
 
     // MIGRATION: auto-fix edition strings
     let heroEd = site.heroEdition || '';

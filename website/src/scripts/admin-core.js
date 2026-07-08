@@ -159,6 +159,8 @@ window.saveAll = async () => {
       modalPriceBtn: getVal('modal-price-btn'),    modalFormTitle: getVal('modal-form-title'),
       modalFormDesc: getVal('modal-form-desc'),
       maxAttendeeLimit: getVal('set-max-attendees'),
+      attendeeRegClosed: document.getElementById('set-attendee-closed')?.checked || false,
+      speakerRegClosed: document.getElementById('set-speaker-closed')?.checked || false,
       maturityTitle: getVal('maturity-title-input'), pillarsTitle: getVal('pillars-title-input'),
       adminWhitelist: Array.from(document.querySelectorAll('.admin-email-entry'))
         .map(i => i.value.trim().toLowerCase()).filter(e => e),

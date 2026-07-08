@@ -219,6 +219,34 @@
 
     </div>
 
+    <!-- ATTENDEE CLOSED VIEW -->
+    <div id="attendee-closed-view" style="display:none; text-align:center; padding: 50px 20px;">
+      <div style="margin: 0 auto 30px auto; width: 80px; height: 80px; background: rgba(255, 90, 54, 0.1); border: 1px solid rgba(255, 90, 54, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(255, 90, 54, 0.2);">
+        <span style="font-size: 32px;">🎟️</span>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 16px;">
+        Registrations <em style="color: var(--accent); font-style: italic;">Closed</em>
+      </h2>
+      <p style="color: var(--ink-dim); font-size: 15px; line-height: 1.7; max-width: 320px; margin: 0 auto 32px auto;">
+        We have reached our maximum capacity for attendees. Thank you for your overwhelming interest!
+      </p>
+      <button class="btn btn-primary" onclick="closeModal()" style="width: 100%; max-width: 240px; border-radius: 8px;">Back to Website</button>
+    </div>
+
+    <!-- SPEAKER CLOSED VIEW -->
+    <div id="speaker-closed-view" style="display:none; text-align:center; padding: 50px 20px;">
+      <div style="margin: 0 auto 30px auto; width: 80px; height: 80px; background: rgba(255, 90, 54, 0.1); border: 1px solid rgba(255, 90, 54, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(255, 90, 54, 0.2);">
+        <span style="font-size: 32px;">🎤</span>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 16px;">
+        Applications <em style="color: var(--accent); font-style: italic;">Closed</em>
+      </h2>
+      <p style="color: var(--ink-dim); font-size: 15px; line-height: 1.7; max-width: 320px; margin: 0 auto 32px auto;">
+        We are no longer accepting speaker applications for this edition. Thank you for your interest!
+      </p>
+      <button class="btn btn-primary" onclick="closeModal()" style="width: 100%; max-width: 240px; border-radius: 8px;">Back to Website</button>
+    </div>
+
     <!-- SPEAKER FORM VIEW -->
     <div id="speaker-form-view" style="display:none; max-height: 80vh; overflow-y: auto; padding-right: 8px;">
       <h2 id="speaker-form-title">Apply to <em>Speak</em></h2>
