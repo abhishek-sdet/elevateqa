@@ -592,6 +592,20 @@ export function populateUI(data) {
   setVal('set-color-primary', sc.primaryColor || (data.branding && data.branding.primary_color));
   setVal('set-color-accent',  sc.accentColor  || (data.branding && data.branding.accent_color));
 
+  const _renderImgPreview = (id, url) => {
+    const preview = document.getElementById(`preview-${id}`);
+    const placeholder = document.getElementById(`placeholder-${id}`);
+    if (preview) {
+      preview.src = url;
+      preview.style.display = 'block';
+      preview.parentElement.classList.add('has-img');
+      if (placeholder) placeholder.style.display = 'none';
+      const dlLink = document.getElementById(`download-${id}`);
+      if (dlLink) { dlLink.href = url; dlLink.style.display = 'inline-block'; }
+      if (window.injectImageStats) window.injectImageStats(preview.parentElement, url);
+    }
+  };
+
   const logoUrl = sc.logoUrl || (data.branding && data.branding.logo_url);
   if (logoUrl) {
     window._visualData.logo = logoUrl;
