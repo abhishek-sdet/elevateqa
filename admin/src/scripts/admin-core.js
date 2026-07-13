@@ -716,10 +716,10 @@ window.handleSpeakerImg = async (input) => {
   wrap.style.opacity = '0.6';
   wrap.title = 'Uploading…';
 
-  // ② Upload to Supabase Storage
+  // ② Upload to Supabase Storage (Max width 800px for speakers to save space)
   const ext = file.name.split('.').pop().toLowerCase();
   const safeName = `speakers/${Date.now()}.${ext}`;
-  const publicUrl = await uploadImageToStorage(file, safeName);
+  const publicUrl = await uploadImageToStorage(file, safeName, 800);
 
   wrap.style.opacity = '1';
   wrap.title = '';
@@ -769,7 +769,12 @@ window.handleVisualUpload = async (input, id) => {
   const folder = id === 'logo' ? 'branding' : 'visuals';
   const ext = file.name.split('.').pop().toLowerCase();
   const safeName = `${folder}/${id}_${Date.now()}.${ext}`;
-  const publicUrl = await uploadImageToStorage(file, safeName);
+  // Set different max-widths: Logo 600px, Gallery 1200px, Hero 1920px
+  let maxWidth = 1920;
+  if (id === 'logo') maxWidth = 600;
+  else if (id.startsWith('strip-')) maxWidth = 1200;
+  
+  const publicUrl = await uploadImageToStorage(file, safeName, maxWidth);
 
   wrap.style.opacity = '1';
   wrap.title = '';

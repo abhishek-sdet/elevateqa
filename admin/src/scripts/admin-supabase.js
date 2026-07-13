@@ -58,12 +58,12 @@ async function compressImage(file, maxWidth = 1920, quality = 0.92) {
 }
 
 // ─── STORAGE UPLOAD ──────────────────────────────────────────────────────────
-export async function uploadImageToStorage(file, path) {
+export async function uploadImageToStorage(file, path, maxWidth = 1920) {
   if (!file) return null;
   console.log(`[Supabase Storage] Original size: ${(file.size / 1024).toFixed(2)} KB`);
   
   // Compress image before upload
-  const compressedFile = await compressImage(file);
+  const compressedFile = await compressImage(file, maxWidth);
   console.log(`[Supabase Storage] Compressed size: ${(compressedFile.size / 1024).toFixed(2)} KB`);
 
   // Ensure path has correct extension if converted to webp
