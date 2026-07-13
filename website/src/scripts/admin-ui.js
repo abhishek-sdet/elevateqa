@@ -362,7 +362,6 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
       </div>
     </div>
   `;
-  `;
   container.appendChild(div);
   
   const appendedImg = div.querySelector('.img-upload-wrap img');
