@@ -94,9 +94,11 @@ window.verifyOTP = async function() {
       if (error) throw error;
 
       if (data.session) {
-        // Set session state and reload for a clean data-sync lifecycle
+        // Set session state and transition UI seamlessly without reloading
         sessionStorage.setItem('admin_logged_in', 'true');
-        location.reload();
+        document.documentElement.classList.add('is-logged-in');
+        document.documentElement.classList.remove('not-logged-in');
+        authorizeUI();
       }
     } catch (err) {
       inputs.forEach(i => {

@@ -441,6 +441,7 @@ function updateVisualPreviews() {
       if (img) {
         img.src = src;
         img.style.display = 'block';
+        if (window.injectImageStats) window.injectImageStats(wrap, src);
       }
       const ph = document.getElementById(`placeholder-${id}`);
       if (ph) ph.style.display = 'none';
@@ -662,6 +663,11 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', img: '', status:
     </div>
   `;
   container.appendChild(div);
+  
+  const appendedImg = div.querySelector('.img-upload-wrap img');
+  if (appendedImg && appendedImg.src && window.injectImageStats) {
+    window.injectImageStats(appendedImg.parentElement, appendedImg.src);
+  }
 };
 
 window.addAgendaItem = (data = { id: null, time_slot: '', tag: '', title: '', desc: '' }) => {
@@ -724,6 +730,7 @@ window.handleSpeakerImg = async (input) => {
     img.dataset.storageUrl = publicUrl;
     URL.revokeObjectURL(localPreview);
     console.log('[Admin] Speaker image uploaded:', publicUrl);
+    if (window.injectImageStats) window.injectImageStats(wrap, publicUrl);
   } else {
     // Upload failed — revert preview
     wrap.classList.remove('has-img');
@@ -771,6 +778,7 @@ window.handleVisualUpload = async (input, id) => {
     // ③ Swap to real CDN URL and persist in global state
     img.src = publicUrl;
     URL.revokeObjectURL(localPreview);
+    if (window.injectImageStats) window.injectImageStats(wrap, publicUrl);
 
     if (id === 'hero-bg')  window._visualData.heroBg     = publicUrl;
     if (id === 'logo')     window._visualData.logo        = publicUrl;
@@ -815,4 +823,62 @@ window.logout = () => {
   window.supabase.auth.signOut();
   sessionStorage.removeItem('admin_logged_in');
   location.href = location.pathname;
+};
+
+window.injectImageStats = async (wrap, src) => {
+  if (!wrap || !src) return;
+  
+  let badge = wrap.querySelector('.img-stats-badge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.className = 'img-stats-badge';
+    badge.style.position = 'absolute';
+    badge.style.bottom = '8px';
+    badge.style.right = '8px';
+    badge.style.background = 'rgba(0,0,0,0.8)';
+    badge.style.color = 'var(--accent, #D4FF3A)';
+    badge.style.padding = '4px 8px';
+    badge.style.borderRadius = '6px';
+    badge.style.fontFamily = 'var(--mono, monospace)';
+    badge.style.fontSize = '10px';
+    badge.style.zIndex = '10';
+    badge.style.backdropFilter = 'blur(4px)';
+    badge.style.border = '1px solid rgba(212,255,58,0.2)';
+    wrap.appendChild(badge);
+  }
+
+  badge.innerHTML = '...';
+  badge.style.display = 'block';
+
+  try {
+    const img = new Image();
+    img.src = src;
+    await new Promise(r => {
+      img.onload = r;
+      img.onerror = r;
+    });
+    const w = img.naturalWidth || '?';
+    const h = img.naturalHeight || '?';
+
+    let sizeStr = '';
+    if (src.startsWith('data:') || src.startsWith('blob:')) {
+      sizeStr = 'Local';
+    } else {
+      try {
+        const response = await fetch(src, { method: 'HEAD' });
+        const bytes = response.headers.get('content-length');
+        if (bytes) {
+          const b = parseInt(bytes, 10);
+          if (b < 1024 * 1024) sizeStr = (b / 1024).toFixed(1) + ' KB';
+          else sizeStr = (b / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+      } catch (e) {
+        console.warn('Could not fetch file size for', src);
+      }
+    }
+
+    badge.innerHTML = `${w}x${h}${sizeStr && sizeStr !== 'Local' ? ' &bull; ' + sizeStr : ''}`;
+  } catch (e) {
+    badge.style.display = 'none';
+  }
 };
