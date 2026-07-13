@@ -77,6 +77,7 @@ export async function uploadImageToStorage(file, path, maxWidth = 1920) {
   const { data, error } = await supabase.storage
     .from('elevate-media')
     .upload(finalPath, compressedFile, {
+      cacheControl: '31536000',
       upsert: true,
       contentType: compressedFile.type
     });
