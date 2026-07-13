@@ -107,6 +107,9 @@ async function verifyOTP() {
       const main = document.getElementById('admin-main');
       if (overlay) overlay.style.display = 'none';
       if (main) main.classList.add('authorized');
+      
+      // Force a fresh data load since session is now established
+      if (window.forceDataSync) window.forceDataSync();
 
     } catch (error) {
       console.error('[ElevateAuth] Verify Error:', error.message);

@@ -26,6 +26,15 @@ const initAdmin = async () => {
     window._lastLoadedData = data;
     populateUI(data);
   }
+  
+  window.forceDataSync = async () => {
+    console.log('[ElevateQA] Force syncing data after auth...');
+    const freshData = await loadAllData();
+    if (freshData) {
+      window._lastLoadedData = freshData;
+      populateUI(freshData);
+    }
+  };
   window.checkSession();
 
   // Sidebar hamburger

@@ -59,12 +59,12 @@ async function compressImage(file, maxWidth = 1920, quality = 0.8) {
  * Path example: "speakers/1715678901234_john.png"
  * Returns null on failure.
  */
-export async function uploadImageToStorage(file, path) {
+export async function uploadImageToStorage(file, path, maxWidth = 1920) {
   if (!file) return null;
   console.log(`[Supabase Storage] Original size: ${(file.size / 1024).toFixed(2)} KB`);
   
   // Compress image before upload
-  const compressedFile = await compressImage(file);
+  const compressedFile = await compressImage(file, maxWidth);
   console.log(`[Supabase Storage] Compressed size: ${(compressedFile.size / 1024).toFixed(2)} KB`);
 
   // Ensure path has correct extension if converted to webp
@@ -79,7 +79,8 @@ export async function uploadImageToStorage(file, path) {
     .from('elevate-media')
     .upload(finalPath, compressedFile, {
       upsert: true,
-      contentType: compressedFile.type
+      contentType: compressedFile.type,
+      cacheControl: '31536000'
     });
 
   if (error) {

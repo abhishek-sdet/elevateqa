@@ -22,6 +22,53 @@ export const setAllowedAdmins = (list) => { ALLOWED_ADMINS.length = 0; ALLOWED_A
 // ── Visual data store ───────────────────────────────────────────────────────
 window._visualData = { logo: '', heroBg: '', founderImg: '', strip: ['', '', ''] };
 
+// ── Image Stats Utility ─────────────────────────────────────────────────────
+window.injectImageStats = async (wrap, src) => {
+  if (!wrap || !src) return;
+  
+  let badge = wrap.querySelector('.img-stat-badge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.className = 'img-stat-badge';
+    Object.assign(badge.style, {
+      position: 'absolute', bottom: '6px', right: '6px',
+      background: 'rgba(0,0,0,0.7)', color: '#D4FF3A',
+      padding: '2px 6px', borderRadius: '4px',
+      fontSize: '10px', fontFamily: 'monospace',
+      backdropFilter: 'blur(4px)', border: '1px solid rgba(212,255,58,0.2)',
+      zIndex: '10', pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px'
+    });
+    wrap.style.position = 'relative';
+    wrap.appendChild(badge);
+  }
+
+  badge.innerHTML = '<span class="spinner" style="width:10px;height:10px;border-width:1px;"></span> Calculating...';
+
+  try {
+    const imgObj = new Image();
+    imgObj.src = src;
+    await new Promise((r) => { imgObj.onload = r; imgObj.onerror = r; });
+    
+    let sizeStr = '';
+    if (src.startsWith('blob:') || src.startsWith('data:')) {
+      sizeStr = 'Local';
+    } else {
+      const res = await fetch(src, { method: 'HEAD' });
+      const bytes = res.headers.get('content-length');
+      if (bytes) {
+        const kb = parseInt(bytes, 10) / 1024;
+        sizeStr = kb > 1024 ? (kb / 1024).toFixed(2) + ' MB' : Math.round(kb) + ' KB';
+      } else {
+        sizeStr = 'CDN';
+      }
+    }
+    
+    badge.textContent = `${imgObj.width || '?'}x${imgObj.height || '?'} • ${sizeStr}`;
+  } catch (err) {
+    badge.textContent = 'Stats Error';
+  }
+};
+
 // ── Toast ───────────────────────────────────────────────────────────────────
 window.showToast = (message, type = 'success', title = '') => {
   let container = document.querySelector('.toast-container');
@@ -230,10 +277,17 @@ window.handleSpeakerImg = async (input) => {
   img.src = localPreview; img.style.display = 'block'; img.dataset.storageUrl = '';
   wrap.style.opacity = '0.6'; wrap.title = 'Uploading…';
   const ext = file.name.split('.').pop().toLowerCase();
-  const publicUrl = await uploadImageToStorage(file, `speakers/${Date.now()}.${ext}`);
+  const publicUrl = await uploadImageToStorage(file, `speakers/${Date.now()}.${ext}`, 800);
   wrap.style.opacity = '1'; wrap.title = '';
   if (publicUrl) {
     img.src = publicUrl; img.dataset.storageUrl = publicUrl; URL.revokeObjectURL(localPreview);
+    if (window.injectImageStats) window.injectImageStats(wrap, publicUrl);
+    
+    const downloadLink = input.nextElementSibling;
+    if (downloadLink && downloadLink.classList.contains('s-download-link')) {
+      downloadLink.href = publicUrl;
+      downloadLink.style.display = 'block';
+    }
   } else {
     wrap.classList.remove('has-img'); img.style.display = 'none'; img.src = ''; img.dataset.storageUrl = '';
     URL.revokeObjectURL(localPreview);
@@ -269,6 +323,7 @@ window.handleVisualUpload = async (input, id) => {
     else if (id.startsWith('strip-')) window._visualData.strip[parseInt(id.split('-')[1]) - 1] = publicUrl;
     const dlLink = document.getElementById(`download-${id}`);
     if (dlLink) { dlLink.href = publicUrl; dlLink.style.display = 'inline-block'; }
+    if (window.injectImageStats && preview) window.injectImageStats(preview.parentElement, publicUrl);
     window.showToast('Image uploaded successfully!', 'success', 'Upload Done');
   } else {
     if (preview) { preview.src = ''; preview.style.display = 'none'; preview.parentElement.classList.remove('has-img'); }
@@ -296,6 +351,7 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
           <div class="placeholder">Click to replace</div>
         </div>
         <input type="file" class="s-img-input" accept="image/*" style="display:none;" onchange="window.handleSpeakerImg(this)">
+        <a href="${data.img || ''}" target="_blank" class="download-link s-download-link" style="display: ${data.img ? 'block' : 'none'}; margin-top: 10px; font-family: var(--mono, monospace); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent, #D4FF3A); cursor: pointer; text-decoration: none;" download>⬇ Download Photo</a>
       </div>
       <div class="speaker-info-column">
         <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
@@ -306,7 +362,13 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
       </div>
     </div>
   `;
+  `;
   container.appendChild(div);
+  
+  const appendedImg = div.querySelector('.img-upload-wrap img');
+  if (appendedImg && appendedImg.src && window.injectImageStats) {
+    window.injectImageStats(appendedImg.parentElement, appendedImg.src);
+  }
 };
 
 window.updateAgendaIndexes = () => {
