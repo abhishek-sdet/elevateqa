@@ -8,16 +8,77 @@
  */
 import { supabase } from './supabase-config.js';
 
+// ─── IMAGE COMPRESSION UTILITY ───────────────────────────────────────────────
+async function compressImage(file, maxWidth = 1920, quality = 0.92) {
+  // SVG files should not be compressed via canvas
+  if (file.type === 'image/svg+xml') return file;
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = event => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(blob => {
+          if (blob) {
+            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+              type: 'image/webp',
+              lastModified: Date.now()
+            }));
+          } else {
+            resolve(file); // fallback
+          }
+        }, 'image/webp', quality);
+      };
+      img.onerror = error => {
+        console.warn('Image loading error during compression, using original', error);
+        resolve(file);
+      };
+    };
+    reader.onerror = error => {
+      console.warn('FileReader error during compression, using original', error);
+      resolve(file);
+    };
+  });
+}
+
 // ─── STORAGE UPLOAD ──────────────────────────────────────────────────────────
 export async function uploadImageToStorage(file, path) {
   if (!file) return null;
-  console.log(`[Supabase Storage] Uploading → ${path}`);
+  console.log(`[Supabase Storage] Original size: ${(file.size / 1024).toFixed(2)} KB`);
+  
+  // Compress image before upload
+  const compressedFile = await compressImage(file);
+  console.log(`[Supabase Storage] Compressed size: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+
+  // Ensure path has correct extension if converted to webp
+  let finalPath = path;
+  if (compressedFile.type === 'image/webp' && !finalPath.endsWith('.webp')) {
+    finalPath = finalPath.replace(/\.[^/.]+$/, "") + ".webp";
+  }
+
+  console.log(`[Supabase Storage] Uploading → ${finalPath}`);
 
   const { data, error } = await supabase.storage
     .from('elevate-media')
-    .upload(path, file, {
+    .upload(finalPath, compressedFile, {
       upsert: true,
-      contentType: file.type
+      contentType: compressedFile.type
     });
 
   if (error) {

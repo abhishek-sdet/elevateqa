@@ -99,17 +99,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loginState = sessionStorage.getItem('admin_logged_in');
     
-    if (session || loginState === 'true') {
+    if (session) {
       // 🛡️ SECURITY: Verify whitelist one last time
       const userEmail = session?.user?.email || '';
-      const isAllowed = ['abhishek.johri@sdettech.com'].includes(userEmail) || loginState === 'true';
+      const isAllowed = ['abhishek.johri@sdettech.com', 'abhishekjohri150@gmail.com'].includes(userEmail);
 
       if (isAllowed) {
         window.startSync();
       } else {
         window.logout();
       }
-    } else {
+    } else if (loginState === 'true') {
+      // If session is null but loginState is true, it means Supabase is still initializing.
+      // We just wait. Do not show login overlay yet.
+      console.log('Waiting for Supabase session...');
       // Not logged in — show overlay
       if (preloader) preloader.classList.add('dismissed');
       const loginOverlay = document.getElementById('login-overlay') || document.getElementById('admin-login-overlay');
@@ -639,7 +642,7 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', img: '', status:
     </div>
     <div class="form-grid-2">
       <div class="speaker-img-column">
-        <label>Speaker Photo</label>
+        <label>Speaker Photo <span class="label-hint">(1:1 Square, max 1MB)</span></label>
         <div class="img-upload-wrap ${data.img || data.image_url ? 'has-img' : ''}" onclick="this.nextElementSibling.click()">
           <img
             src="${data.img || data.image_url || ''}"
