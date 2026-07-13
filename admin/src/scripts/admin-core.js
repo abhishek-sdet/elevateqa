@@ -651,8 +651,8 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', img: '', status:
             alt="Preview"
             style="display: ${data.img || data.image_url ? 'block' : 'none'}">
           <div class="placeholder">Click to replace</div>
-        </div>
         <input type="file" class="s-img-input" accept="image/*" style="display:none;" onchange="window.handleSpeakerImg(this)">
+        <a href="${data.img || data.image_url || ''}" target="_blank" class="download-link s-download-link" style="display: ${data.img || data.image_url ? 'block' : 'none'}; margin-top: 10px; font-family: var(--mono, monospace); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent, #D4FF3A); cursor: pointer; text-decoration: none;" download>⬇ Download Photo</a>
       </div>
       <div class="speaker-info-column">
         <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
@@ -731,6 +731,12 @@ window.handleSpeakerImg = async (input) => {
     URL.revokeObjectURL(localPreview);
     console.log('[Admin] Speaker image uploaded:', publicUrl);
     if (window.injectImageStats) window.injectImageStats(wrap, publicUrl);
+    
+    const downloadLink = input.nextElementSibling;
+    if (downloadLink && downloadLink.classList.contains('s-download-link')) {
+      downloadLink.href = publicUrl;
+      downloadLink.style.display = 'block';
+    }
   } else {
     // Upload failed — revert preview
     wrap.classList.remove('has-img');
