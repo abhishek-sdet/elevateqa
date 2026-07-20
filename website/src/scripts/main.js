@@ -180,11 +180,8 @@ window.generateTicket = async function(event) {
   try {
     const { count, error } = await supabase.from('registrations').select('*', { count: 'exact', head: true });
     const limit = window.maxAttendeeLimit || 500;
-    if (count !== null && count >= limit) {
-      window.isWaitlisted = true;
-    } else {
-      window.isWaitlisted = false;
-    }
+    // Always set isWaitlisted to false since the attendee form has been reopened and everyone should receive the thank you mail
+    window.isWaitlisted = false;
   } catch(e) { console.warn('Registration limit check failed:', e); window.isWaitlisted = false; }
 
   try {
