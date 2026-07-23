@@ -139,10 +139,10 @@ window.syncEverything = () => {
     setHtml('manifesto-pill', site.manifestoPill || 'Why now');
     setHtml('manifesto-aside-text', site.manifestoAside || 'A note from the <br>founder.');
     
-    if (site.founderImg) {
-      const founderImg = document.getElementById('manifesto-founder-photo');
-      if (founderImg && founderImg.src !== site.founderImg) founderImg.src = site.founderImg;
-    }
+    // Override with custom user-provided image from /founder.png
+    const founderImgSrc = '/founder.png';
+    const founderImg = document.getElementById('manifesto-founder-photo');
+    if (founderImg && founderImg.src !== founderImgSrc) founderImg.src = founderImgSrc;
 
     // Nav labels
     if (site.navManifesto) setHtml('nav-manifesto', site.navManifesto);
@@ -157,27 +157,52 @@ window.syncEverything = () => {
     setHtml('prizes-s2-val', site.prizesS2Num); setHtml('prizes-s2-text', site.prizesS2Lbl);
     setHtml('prizes-s3-val', site.prizesS3Num); setHtml('prizes-s3-text', site.prizesS3Lbl);
 
-    setHtml('experience-section-num',   site.experienceSectionNum   || '03 / The Experience');
-    setHtml('experience-section-title', site.experienceSectionTitle || 'A day built around <em>signal,</em> not noise.');
+    setHtml('experience-section-num', site.experienceSectionNum || '03 / The Experience');
+    setHtml('experience-title',       site.pillarsTitle         || 'A day built around <em>signal,</em> not noise.');
+
+    // The Map (maturity curve)
+    setHtml('maturity-section-num', site.mapSectionNum  || '02 / THE MAP');
+    setHtml('maturity-title',       site.maturityTitle  || 'Where is your team on the <em>AI-led QE</em> curve?');
+
+    // Agenda
+    setHtml('agenda-section-num',   site.agendaSectionNum   || '04 / DAY FLOW');
+    setHtml('agenda-section-title', site.agendaSectionTitle || 'The day, <em>at a glance.</em>');
+
+    // Speakers
+    setHtml('speakers-section-num',   site.speakersSectionNum   || '05 / The Lineup');
+    setHtml('speakers-section-title', site.speakersSectionTitle || 'Speakers being <em>announced</em> in waves.');
+    setHtml('speakers-intro',         site.speakersIntro);
 
     // Get Involved
-    setHtml('involve-title',       site.involveTitle);
-    setHtml('involve-card1-title', site.involveCard1Title);
-    setHtml('involve-card1-desc',  site.involveCard1Desc);
-    setHtml('involve-card2-title', site.involveCard2Title);
-    setHtml('involve-card2-desc',  site.involveCard2Desc);
-    setHtml('involve-card3-title', site.involveCard3Title);
-    setHtml('involve-card3-desc',  site.involveCard3Desc);
+    setHtml('involve-section-num',      site.involveSectionNum);
+    setHtml('involve-title',            site.involveTitle);
+    setHtml('involve-card1-title',      site.involveCard1Title);
+    setHtml('involve-card1-desc',       site.involveCard1Desc);
+    setHtml('involve-card1-link-text',  site.involveCard1LinkText);
+    setHtml('involve-card2-title',      site.involveCard2Title);
+    setHtml('involve-card2-desc',       site.involveCard2Desc);
+    setHtml('involve-card2-link-text',  site.involveCard2LinkText);
+    setHtml('involve-card3-title',      site.involveCard3Title);
+    setHtml('involve-card3-desc',       site.involveCard3Desc);
+    setHtml('copy-link-btn',            site.involveCard3LinkText);
 
     // Coming Soon
+    setHtml('coming-section-num', site.comingSectionNum || "06 / What's coming");
     setHtml('coming-title', site.comingTitle);
     setHtml('coming-desc',  site.comingDesc);
-    setHtml('coming-visual-label', site.comingVisualLabel || 'REVEALING');
-    setHtml('coming-visual-sub',   site.comingVisualSub   || 'Soon');
     for (let i = 1; i <= 6; i++) {
       setHtml(`coming-item${i}-label`,  site[`comingItem${i}Label`]);
       setHtml(`coming-item${i}-status`, site[`comingItem${i}Status`]);
     }
+
+    // Pricing modal
+    setHtml('modal-price-scarcity', site.modalPriceScarcity);
+    setHtml('modal-price-old',      site.modalPriceOld);
+    setHtml('modal-price-new',      site.modalPriceNew);
+    setHtml('modal-price-caption',  site.modalPriceCaption);
+    setHtml('modal-price-btn',      site.modalPriceBtn);
+    setHtml('modal-form-title',     site.modalFormTitle);
+    setHtml('modal-form-desc',      site.modalFormDesc);
 
     // Footer
     let footerTagStr = site.footerTagline || "The proof of value, or it didn't happen.";
@@ -224,7 +249,7 @@ window.syncEverything = () => {
           <div class="maturity-stage reveal">
             <div class="level"><span>STAGE 0${i+1}</span></div>
             <div class="stage-name">${parseEm(m.name)}</div>
-            <p class="stage-desc">${m.desc}</p>
+            <p class="stage-desc">${escapeHtml(m.desc)}</p>
             <div class="meter"><div class="meter-fill" style="width: 0%; background: ${color} !important;" data-width="${pct}%"></div></div>
             <div class="pct">~ ${pct}% of orgs surveyed</div>
           </div>`;
@@ -251,7 +276,7 @@ window.syncEverything = () => {
           <div class="pillar-num">> 0${i+1}</div>
           <div class="pillar-icon"><svg viewBox="0 0 48 48">${p.icon || ICONS[i] || ICONS[0]}</svg></div>
           <h3>${parseEm(p.title)}</h3>
-          <p>${p.desc}</p>
+          <p>${escapeHtml(p.desc)}</p>
         </div>`).join('');
       if (grid.innerHTML !== targetHtml) grid.innerHTML = targetHtml;
     }
@@ -262,7 +287,6 @@ window.syncEverything = () => {
   if (finalAgenda.length > 0) {
     const timeline = document.querySelector('.timeline');
     if (timeline) {
-      const escapeHtml = (val) => String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       const targetHtml = finalAgenda.map(item => {
         const titleLower = item.title?.toLowerCase() || '';
         const tagLower   = item.tag?.toLowerCase() || '';
@@ -273,12 +297,12 @@ window.syncEverything = () => {
         const tagClass   = `tag${cleanTag ? ' tag-' + cleanTag : ''}`;
         return `
         <div class="${rowClass}">
-          <div class="timeline-time">${item.time_slot || item.time}</div>
+          <div class="timeline-time">${escapeHtml(item.time_slot || item.time)}</div>
           <div class="timeline-content">
-            <span class="${tagClass}" style="${item.tag ? '' : 'display:none;'}">${item.tag || ''}</span>
+            <span class="${tagClass}" style="${item.tag ? '' : 'display:none;'}">${escapeHtml(item.tag)}</span>
             <h4>${parseEm(item.title)}</h4>
             ${item.speaker_name ? `<div class="timeline-speaker">By <strong>${escapeHtml(item.speaker_name)}</strong></div>` : ''}
-            <p class="desc">${item.desc || ''}</p>
+            <p class="desc">${escapeHtml(item.desc)}</p>
           </div>
         </div>`;
       }).join('');
@@ -299,28 +323,53 @@ window.syncEverything = () => {
     finalSpeakers = DEFAULT_SPEAKERS;
   }
   if (finalSpeakers.length > 0) {
-    const grid = document.querySelector('.speakers-grid');
-    if (grid) {
-      const targetHtml = finalSpeakers.map((s, idx) => {
+    const keynoteGrid = document.querySelector('.speakers-grid.keynote-grid');
+    const regularGrid = document.querySelector('.speakers-grid.regular-grid');
+    
+    const buildHtml = (speakersArray) => {
+      return speakersArray.map((s, idx) => {
         const rawPhoto = s.image_url || s.img;
         const photo = (rawPhoto && !rawPhoto.includes('/admin')) ? rawPhoto : null;
         return `
         <div class="speaker-card reveal${s.bio ? ' has-bio' : ''}">
           ${photo ? `<div class="speaker-photo-wrap"><img class="speaker-photo" src="${photo}" alt="${s.name}"></div>` : `<div class="silhouette">${(idx + 1).toString().padStart(2, '0')}</div>`}
-          <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status || s.wave || 'CONFIRMED'}</span></div>
+          <div class="top"><span>${(s.role || 'Speaker').toUpperCase()}</span><span>${s.status !== undefined && s.status !== null ? s.status : (s.wave || 'CONFIRMED')}</span></div>
           <div class="speaker-content">
-            <div class="name">${s.name}</div>
-            <div class="designation">${s.title || s.role || ''}</div>
+            <div class="name" style="margin-bottom: 4px; font-size: 21px;">${s.name}</div>
+            <div class="designation" style="font-size: 9px; line-height: 1.3;">${s.title || s.role || ''}</div>
+            ${s.linkedin ? `
+            <div class="social-links" style="margin-top: 10px; display: flex; gap: 10px;">
+              <a href="${s.linkedin.startsWith('http') ? s.linkedin : 'https://' + s.linkedin}" target="_blank" class="linkedin-btn" style="color: var(--accent); transition: transform 0.2s ease; display: inline-flex; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+            </div>` : ''}
             ${s.bio ? `<div class="bio">${s.bio}</div>` : ''}
           </div>
         </div>`;
-      }).join('') + `
-          <div class="speaker-card speaker-cta-card reveal" onclick="window.openSpeakFlow()" style="cursor: pointer;">
-            <div class="silhouette" aria-hidden="true">+</div>
-            <div class="top"><span>SUBMISSIONS</span><span>OPEN</span></div>
-            <div class="pitch">Have a story <em>worth telling?</em><br><a href="javascript:void(0)">Apply to speak ></a></div>
-          </div>`;
-      if (grid.innerHTML !== targetHtml) grid.innerHTML = targetHtml;
+      }).join('');
+    };
+
+    if (keynoteGrid && regularGrid) {
+      const keynotes = finalSpeakers.filter(s => (s.role || '').toUpperCase().includes('KEYNOTE'));
+      const regulars = finalSpeakers.filter(s => !(s.role || '').toUpperCase().includes('KEYNOTE'));
+      
+      if (keynotes.length > 0) {
+        keynoteGrid.style.display = 'grid';
+        keynoteGrid.innerHTML = buildHtml(keynotes);
+      } else {
+        keynoteGrid.style.display = 'none';
+      }
+      
+      if (regulars.length > 0) {
+        regularGrid.style.display = 'grid';
+        regularGrid.innerHTML = buildHtml(regulars);
+      } else {
+        regularGrid.style.display = 'none';
+      }
+    } else {
+      const grid = document.querySelector('.speakers-grid');
+      if (grid) {
+        grid.style.display = 'grid';
+        grid.innerHTML = buildHtml(finalSpeakers);
+      }
     }
   }
 

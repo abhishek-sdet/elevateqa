@@ -103,6 +103,7 @@ export async function initCloudSync() {
             const parts = s.title.split('||');
             s.title = parts[0] || '';
             s.bio = parts[1] || '';
+            s.linkedin = parts[2] || '';
           }
         });
       }
@@ -165,6 +166,7 @@ async function fetchAndSync(table, ordered = false) {
           const parts = s.title.split('||');
           s.title = parts[0] || '';
           s.bio = parts[1] || '';
+          s.linkedin = parts[2] || '';
         }
       });
     }

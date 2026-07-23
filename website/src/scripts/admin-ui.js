@@ -190,11 +190,9 @@ window.showIdentitySubSection = (subId) => {
       ];
       stages.forEach(s => window.addMaturityStage(s));
     }
-    const sc = window._lastLoadedData?.site_content || {};
-    const mapNumEl = document.getElementById('map-section-num');
-    const mapTitleEl = document.getElementById('maturity-title-input');
-    if (mapNumEl && !mapNumEl.value) mapNumEl.value = sc.mapSectionNum || '02 / THE MAP';
-    if (mapTitleEl && !mapTitleEl.value) mapTitleEl.value = sc.maturityTitle || 'Where is your team on the AI-led QE curve?';
+    // NOTE: map-section-num / maturity-title-input are already populated once by
+    // populateUI() on load — re-defaulting them here on every tab click would
+    // stomp an intentionally-blank saved value with a fake placeholder string.
   }
 
   if (subId === 'experience') {
@@ -208,28 +206,9 @@ window.showIdentitySubSection = (subId) => {
       ];
       pills.forEach(p => window.addPillarItem(p));
     }
-    const sc = window._lastLoadedData?.site_content || {};
-    const expNumEl = document.getElementById('experience-section-num');
-    const expTitleEl = document.getElementById('pillars-title-input');
-    if (expNumEl && !expNumEl.value) expNumEl.value = sc.experienceSectionNum || '03 / THE EXPERIENCE';
-    if (expTitleEl && !expTitleEl.value) expTitleEl.value = sc.pillarsTitle || 'A day built around signal, not noise.';
-  }
-
-  if (subId === 'extras') {
-    const sc = window._lastLoadedData?.site_content || {};
-    const fields = {
-      'speakers-section-num-input': sc.speakersSectionNum  || '05 / The Lineup',
-      'speakers-section-title':     sc.speakersSectionTitle|| 'A roster built for proof.',
-      'speakers-intro':             sc.speakersIntro       || "We're curating a lineup of keynote voices, practitioner breakouts, and community panels.",
-      'speakers-placeholder':       sc.speakersPlaceholder || 'To be revealed',
-      'involve-section-num':        sc.involveSectionNum   || '07 / Get Involved',
-      'involve-title':              sc.involveTitle        || 'How to participate.',
-      'footer-email':               sc.footerEmail         || 'elevateqa@sdettech.com'
-    };
-    Object.entries(fields).forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (el && !el.value) el.value = val;
-    });
+    // NOTE: experience-section-num / pillars-title-input are already populated
+    // once by populateUI() on load — see the 'map' branch above for why we don't
+    // re-default them here.
   }
 };
 
@@ -357,7 +336,8 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
         <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
         <div class="form-group"><label>Role Tag (e.g. KEYNOTE)</label><input type="text" class="s-role" value="${data.role}" placeholder="e.g. KEYNOTE"></div>
         <div class="form-group"><label>Designation</label><input type="text" class="s-title" value="${data.title || ''}" placeholder="e.g. Director of QE"></div>
-        <div class="form-group"><label>Status Label</label><input type="text" class="s-status" value="${data.status || 'CONFIRMED'}" placeholder="e.g. KEYNOTE SPEAKER"></div>
+        <div class="form-group"><label>Status Label</label><input type="text" class="s-status" value="${data.status || ''}" placeholder="e.g. CONFIRMED / KEYNOTE SPEAKER"></div>
+        <div class="form-group"><label>LinkedIn URL</label><input type="text" class="s-linkedin" value="${data.linkedin || ''}" placeholder="https://linkedin.com/in/..."></div>
         <div class="form-group"><label>Bio</label><textarea class="s-bio" rows="3" placeholder="Speaker bio...">${data.bio || ''}</textarea></div>
       </div>
     </div>
@@ -545,7 +525,7 @@ export function populateUI(data) {
   setVal('agenda-section-num', sc.agendaSectionNum); setVal('agenda-section-title', sc.agendaSectionTitle);
   setVal('speakers-section-num-input', sc.speakersSectionNum); setVal('speakers-section-title', sc.speakersSectionTitle);
   setVal('speakers-intro', sc.speakersIntro);
-  setVal('speakers-placeholder', sc.speakersPlaceholder || 'To be revealed');
+  setVal('speakers-placeholder', sc.speakersPlaceholder);
   setVal('involve-section-num', sc.involveSectionNum); setVal('involve-title', sc.involveTitle);
   ['1','2','3'].forEach(n => {
     setVal(`involve-card${n}-title`, sc[`involveCard${n}Title`]); setVal(`involve-card${n}-desc`, sc[`involveCard${n}Desc`]);
@@ -553,7 +533,7 @@ export function populateUI(data) {
     setVal(`involve-card${n}-link-text`, sc[`involveCard${n}LinkText`]);
   });
   setVal('coming-section-num', sc.comingSectionNum); setVal('coming-title', sc.comingTitle);
-  setVal('coming-desc', sc.comingDesc); setVal('coming-visual-label', sc.comingVisualLabel); setVal('coming-visual-sub', sc.comingVisualSub);
+  setVal('coming-desc', sc.comingDesc);
   for (let i = 1; i <= 6; i++) { setVal(`coming-item${i}-label`, sc[`comingItem${i}Label`]); setVal(`coming-item${i}-status`, sc[`comingItem${i}Status`]); }
   setVal('footer-tagline', sc.footerTagline); setVal('footer-location', sc.footerLocation);
   setVal('footer-edition', sc.footerEdition); setVal('footer-copyright', sc.footerCopyright); setVal('footer-email', sc.footerEmail);
@@ -564,7 +544,7 @@ export function populateUI(data) {
   setVal('modal-price-new', sc.modalPriceNew); setVal('modal-price-caption', sc.modalPriceCaption);
   setVal('modal-price-btn', sc.modalPriceBtn); setVal('modal-form-title', sc.modalFormTitle); setVal('modal-form-desc', sc.modalFormDesc);
   setVal('maturity-title-input', sc.maturityTitle); setVal('pillars-title-input', sc.pillarsTitle);
-  setVal('set-max-attendees', sc.maxAttendeeLimit || '250');
+  setVal('set-max-attendees', sc.maxAttendeeLimit);
   
   // Registration Access Toggles
   const attendeeClosedEl = document.getElementById('set-attendee-closed');

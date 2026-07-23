@@ -91,6 +91,22 @@
   background: transparent; 
   border: none; 
 }
+.speakers-grid.keynote-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+.speakers-grid.regular-grid {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+.speakers-grid.regular-grid .speaker-card {
+  padding: 20px;
+}
+.speakers-grid.regular-grid .speaker-card .name {
+  font-size: 16px;
+}
+.speakers-grid.regular-grid .speaker-card .designation {
+  font-size: 8px;
+}
 .speaker-card { 
   background: var(--bg-2); 
   padding: 32px; 
@@ -126,6 +142,10 @@
 .speaker-card .top > span { color: var(--accent) !important; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
 .speaker-card .speaker-content { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
 .speaker-card .name { font-family: var(--display); font-size: 22px; font-weight: 400; font-style: italic; letter-spacing: -0.02em; line-height: 1; color: #fff; margin-bottom: 4px; }
+.speaker-card .linkedin-btn:hover {
+  transform: scale(1.15) translateY(-2px);
+  filter: brightness(1.2);
+}
 .speaker-card .name em { color: var(--accent); }
 .speaker-card .designation { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.9; transition: all 0.4s ease; max-height: 30px; overflow: hidden; }
 .speaker-card .bio { font-size: 13px; color: rgba(255, 255, 255, 0.9); line-height: 1.5; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; transform: translateY(10px); text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.8); }
@@ -170,8 +190,15 @@
 /* REMOVING DUPLICATE FINALE/FOOTER - HANDLED IN CONTENT.CSS */
 
 /* RESPONSIVE: SPEAKERS / INVOLVE */
+@media (max-width: 1200px) {
+  .speakers-grid.keynote-grid { grid-template-columns: repeat(4, 1fr); }
+  .speakers-grid.regular-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
 @media (max-width: 1100px) {
   .speakers-grid { grid-template-columns: repeat(3, 1fr); }
+  .speakers-grid.keynote-grid { grid-template-columns: repeat(3, 1fr); }
+  .speakers-grid.regular-grid { grid-template-columns: repeat(4, 1fr); }
   .involve-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -182,7 +209,9 @@
     text-align: center;
   }
   
-  .speakers-grid { 
+  .speakers-grid,
+  .speakers-grid.keynote-grid,
+  .speakers-grid.regular-grid { 
     grid-template-columns: 1fr; 
     gap: 20px;
   }

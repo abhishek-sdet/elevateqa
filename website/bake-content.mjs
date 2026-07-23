@@ -122,6 +122,18 @@ async function bakeContent() {
           }
         });
       }
+      
+      // Mirror the speakers title-split from main-sync.js
+      if (table === 'speakers') {
+        data.forEach(s => {
+          if (s.title && s.title.includes('||')) {
+            const parts = s.title.split('||');
+            s.title = parts[0] || '';
+            s.bio = parts[1] || '';
+            s.linkedin = parts[2] || '';
+          }
+        });
+      }
 
       if (table === 'site_content') {
         bakedData['elevate_site_content'] = JSON.stringify(transformSiteContent(data));

@@ -44,11 +44,12 @@ section {
 #scroll-progress {
   position: fixed;
   top: 0; left: 0;
-  height: 3px;
+  height: 4px;
   background: var(--accent);
   width: 0%;
-  z-index: 201;
+  z-index: 9999;
   pointer-events: none;
+  box-shadow: 0 0 10px var(--accent);
 }
 
 /* ELITE BRANDED PRECISION CURSOR */

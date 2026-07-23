@@ -220,6 +220,7 @@ export async function loadAllData() {
           const parts = s.title.split('||');
           s.title = parts[0] || '';
           s.bio = parts[1] || '';
+          s.linkedin = parts[2] || '';
         }
       });
     }
@@ -287,6 +288,7 @@ export async function saveSiteContent(data) {
       speakersSectionNum: data.speakersSectionNum,
       speakersSectionTitle: data.speakersSectionTitle,
       speakersIntro: data.speakersIntro,
+      speakersPlaceholder: data.speakersPlaceholder,
       prizesHeadline: data.prizesHeadline,
       prizesS1Num: data.prizesS1Num, prizesS1Lbl: data.prizesS1Lbl,
       prizesS2Num: data.prizesS2Num, prizesS2Lbl: data.prizesS2Lbl,
@@ -302,8 +304,6 @@ export async function saveSiteContent(data) {
       comingSectionNum: data.comingSectionNum,
       comingTitle: data.comingTitle,
       comingDesc: data.comingDesc,
-      comingVisualLabel: data.comingVisualLabel,
-      comingVisualSub: data.comingVisualSub,
       comingItem1Label: data.comingItem1Label, comingItem1Status: data.comingItem1Status,
       comingItem2Label: data.comingItem2Label, comingItem2Status: data.comingItem2Status,
       comingItem3Label: data.comingItem3Label, comingItem3Status: data.comingItem3Status,
@@ -383,7 +383,7 @@ export async function saveSpeaker(s) {
   const dbData = {
     name: s.name,
     role: s.role,
-    title: `${s.title || ''}||${s.bio || ''}`,
+    title: `${s.title || ''}||${s.bio || ''}||${s.linkedin || ''}`,
     status: s.status,
     image_url: s.img || s.image_url,
     display_order: s.display_order
@@ -498,8 +498,9 @@ export async function syncTableDeletes(table, domIds) {
     const dbIds = data.map(row => String(row.id));
     const safeDomIds = domIds.filter(id => id).map(String);
     const toDelete = dbIds.filter(id => !safeDomIds.includes(id));
-    for (const id of toDelete) {
-      await deleteItem(table, id);
+    if (toDelete.length > 0) {
+      const { error } = await supabase.from(table).delete().in('id', toDelete);
+      if (error) console.error(`[Supabase] Batch delete error for ${table}:`, error);
     }
   }
 }

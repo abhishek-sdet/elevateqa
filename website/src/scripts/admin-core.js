@@ -149,8 +149,7 @@ window.saveAll = async () => {
       involveCard3Title: getVal('involve-card3-title'), involveCard3Desc: getVal('involve-card3-desc'),
       involveCard3LinkText: getVal('involve-card3-link-text'),
       comingSectionNum: getVal('coming-section-num'), comingTitle: getVal('coming-title'),
-      comingDesc: getVal('coming-desc'), comingVisualLabel: getVal('coming-visual-label'),
-      comingVisualSub: getVal('coming-visual-sub'),
+      comingDesc: getVal('coming-desc'),
       comingItem1Label: getVal('coming-item1-label'), comingItem1Status: getVal('coming-item1-status'),
       comingItem2Label: getVal('coming-item2-label'), comingItem2Status: getVal('coming-item2-status'),
       comingItem3Label: getVal('coming-item3-label'), comingItem3Status: getVal('coming-item3-status'),
@@ -207,11 +206,11 @@ window.saveAll = async () => {
       logoUrl:  window._visualData.logo,
       logoHeight: getVal('visual-logo-height'),
       heroBg:   window._visualData.heroBg,
-      founderImg: window._visualData.founderImg,
       stripImg1: window._visualData.strip[0], stripCap1: getVal('strip-01-caption'),
       stripImg2: window._visualData.strip[1], stripCap2: getVal('strip-02-caption'),
       stripImg3: window._visualData.strip[2], stripCap3: getVal('strip-03-caption'),
-      primaryColor: getVal('set-color-primary') || '#d4ff3a'
+      primaryColor: getVal('set-color-primary') || '#d4ff3a',
+      accentColor: getVal('set-color-accent') || '#d4ff3a'
     });
 
     await saveManifesto({ content: getVal('manifesto-lines') });
@@ -230,7 +229,7 @@ window.saveAll = async () => {
         } catch(e) { console.error('[ElevateAdmin] Base64 Migration Error:', e); }
       } else if (!finalImg) { finalImg = src; }
       if (finalImg.startsWith('data:image')) finalImg = '';
-      return { el, data: { id: el.getAttribute('data-id') || undefined, name: el.querySelector('.s-name').value, role: el.querySelector('.s-role').value, title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '', status: el.querySelector('.s-status').value, bio: el.querySelector('.s-bio') ? el.querySelector('.s-bio').value : '', img: finalImg, display_order: i } };
+      return { el, data: { id: el.getAttribute('data-id') || undefined, name: el.querySelector('.s-name').value, role: el.querySelector('.s-role').value, title: el.querySelector('.s-title') ? el.querySelector('.s-title').value : '', status: el.querySelector('.s-status').value, bio: el.querySelector('.s-bio') ? el.querySelector('.s-bio').value : '', linkedin: el.querySelector('.s-linkedin') ? el.querySelector('.s-linkedin').value : '', img: finalImg, display_order: i } };
     });
     const speakersWithEl = await Promise.all(speakerPromises);
     await syncTableDeletes('speakers', speakersWithEl.map(s => s.data.id));

@@ -18,9 +18,22 @@ import './main-sync-ui.js'; // registers window.syncEverything
 window.escapeHtml = window.escapeHtml || function(value) {
   if (value === null || value === undefined) return '';
   return String(value)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 };
+
+// ── SCROLL PROGRESS BAR ──────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const progress = document.getElementById('scroll-progress');
+  if (progress) {
+    const winScroll = window.pageYOffset || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    progress.style.width = ((winScroll / height) * 100) + '%';
+  }
+}, { passive: true });
 
 // ── CHOOSER FLOW ──────────────────────────────────────────────────────────────
 function toggleFloatingCta(show) {
