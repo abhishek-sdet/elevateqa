@@ -62,11 +62,16 @@ export const handler = async (event, context) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>Application Received — Elevate QA</title>
   <style>
+    :root { color-scheme: light; supported-color-schemes: light; }
     body { margin: 0; padding: 0; background-color: #07070f; }
     table { border-spacing: 0; }
     td { border-collapse: collapse; }
+    [data-ogsc] body, [data-ogsc] table, [data-ogsc] td { background-color: #07070f !important; }
+    [data-ogsc] p, [data-ogsc] h2, [data-ogsc] span { color: inherit !important; }
     img { border: 0; line-height: 100%; outline: none; text-decoration: none; }
     @media only screen and (max-width: 620px) {
       .wrapper { width: 100% !important; padding: 15px !important; }

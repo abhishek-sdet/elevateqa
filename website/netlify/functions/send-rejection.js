@@ -66,14 +66,19 @@ export const handler = async (event, context) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>Registration Received — Elevate QA 2026</title>
   <!--[if mso]>
   <noscript><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
   <![endif]-->
   <style>
+    :root { color-scheme: light; supported-color-schemes: light; }
     body { margin: 0; padding: 0; background-color: #07070f; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table { border-spacing: 0; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
     td { border-collapse: collapse; }
+    [data-ogsc] body, [data-ogsc] table, [data-ogsc] td { background-color: #07070f !important; }
+    [data-ogsc] p, [data-ogsc] h2, [data-ogsc] span { color: inherit !important; }
     img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
     @media only screen and (max-width: 620px) {
       .wrapper { width: 100% !important; padding: 15px !important; }
