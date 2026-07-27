@@ -666,7 +666,7 @@ export function populateUI(data) {
 
   // Email templates
   const et = sc.emailTemplates || {};
-  const fillTpl = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  const fillTpl = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || el.getAttribute('placeholder') || ''; };
   const reg = et.registration || {};
   fillTpl('et-registration-subject', reg.subject);
   fillTpl('et-registration-body1',   reg.body1);
