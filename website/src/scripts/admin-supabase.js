@@ -473,6 +473,25 @@ export async function savePillar(item) {
   return res.data && res.data[0] ? res.data[0].id : null;
 }
 
+export async function addAttendee(attendee) {
+  try {
+    const { data, error } = await supabase.from('registrations').insert([{
+      name: attendee.name,
+      email: attendee.email,
+      phone: attendee.phone || null,
+      company: attendee.company || null,
+      designation: attendee.designation || null,
+      linkedin: attendee.linkedin || null,
+      status: 'verified'
+    }]).select();
+    if (error) throw error;
+    return (data && data.length > 0) ? data[0] : true;
+  } catch (err) {
+    console.error('Error adding attendee:', err);
+    return false;
+  }
+}
+
 export async function updateRegistrationStatus(id, status) {
   try {
     const { error } = await supabase.from('registrations').update({ status }).eq('id', id);

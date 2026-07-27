@@ -169,6 +169,26 @@
   flex: 1 1 auto;
   min-height: 0;
 }
+/* Mouse-follow colorful spotlight, confined to the photo itself (clipped by
+   the wrap's own overflow:hidden so it never bleeds onto the caption bar).
+   The card's own ::before spotlight is invisible on photo cards since the
+   opaque photo sits on top of it, so this re-implements it one layer up
+   with a blend mode that washes the (now full-color, on hover) photo in a
+   colorful glow instead of just revealing its natural colors. */
+.speaker-has-photo .speaker-photo-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(240px circle at var(--mouse-x) var(--mouse-y), rgba(212, 255, 58, 0.6), rgba(107, 158, 255, 0.4) 45%, transparent 75%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.speaker-has-photo:hover .speaker-photo-wrap::before {
+  opacity: 1;
+}
 .speaker-has-photo .top {
   position: absolute;
   top: 20px;

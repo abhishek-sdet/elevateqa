@@ -4,7 +4,71 @@
  * Contains: renderAttendees, deleteAttendee, exportAttendees, showPass, generateAdminQR
  * Extracted from admin-core.js for maintainability.
  */
-import { deleteItem, loadAllData, updateRegistrationStatus, restoreData } from './admin-supabase.js';
+import { deleteItem, loadAllData, updateRegistrationStatus, restoreData, addAttendee } from './admin-supabase.js';
+
+// ── ADD ATTENDEE MANUALLY ────────────────────────────────────────────────────
+window.openAddAttendeeModal = () => {
+  ['aa-name', 'aa-email', 'aa-company', 'aa-designation', 'aa-phone', 'aa-linkedin'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const errEl = document.getElementById('add-attendee-error');
+  if (errEl) errEl.style.display = 'none';
+  const modal = document.getElementById('add-attendee-modal');
+  if (modal) modal.style.display = 'flex';
+};
+
+window.closeAddAttendeeModal = () => {
+  const modal = document.getElementById('add-attendee-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.submitAddAttendee = async () => {
+  const name = document.getElementById('aa-name').value.trim();
+  const email = document.getElementById('aa-email').value.trim();
+  const company = document.getElementById('aa-company').value.trim();
+  const designation = document.getElementById('aa-designation').value.trim();
+  const phone = document.getElementById('aa-phone').value.trim();
+  const linkedin = document.getElementById('aa-linkedin').value.trim();
+  const errEl = document.getElementById('add-attendee-error');
+  const btn = document.getElementById('btn-submit-add-attendee');
+
+  if (!name || !email) {
+    if (errEl) { errEl.textContent = 'Name and Email are required.'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (errEl) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  const alreadyExists = (window.rawAttendees || []).some(p => (p.email || '').toLowerCase() === email.toLowerCase());
+  if (alreadyExists) {
+    if (errEl) { errEl.textContent = 'An attendee with this email is already registered.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  if (errEl) errEl.style.display = 'none';
+  const defaultLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Adding...';
+
+  const result = await addAttendee({ name, email, company, designation, phone, linkedin });
+
+  btn.disabled = false;
+  btn.innerHTML = defaultLabel;
+
+  if (!result) {
+    if (errEl) { errEl.textContent = 'Failed to add attendee. Please try again.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  window.closeAddAttendeeModal();
+  window.showToast(`${name} added to the attendee list.`, 'success', 'Attendee Added');
+
+  const data = await loadAllData();
+  if (data && data.registrations) window.renderAttendees(data.registrations);
+};
 
 window.showPass = (id, name, email) => {
   const modal   = document.getElementById('qr-modal');
@@ -92,13 +156,17 @@ window.renderAttendees = (registrations) => {
     if (desigFilter && !(p.designation || '').toLowerCase().includes(desigFilter)) return false;
     if (emailFilter && !(p.email || '').toLowerCase().includes(emailFilter)) return false;
     if (mobileFilter && !(p.phone || '').toLowerCase().includes(mobileFilter)) return false;
+    const status = (p.status || 'verified').toLowerCase();
     if (statusFilter) {
-      const status = (p.status || 'verified').toLowerCase();
       if (statusFilter === 'ticket_sent') {
         if (status !== 'ticket_sent' && status !== 'pass sent') return false;
       } else {
         if (status !== statusFilter) return false;
       }
+    } else {
+      // ALL LIST = still-pending attendees only; once a final pass or house-full
+      // email has been sent, they move to their own tab and drop out of here.
+      if (status === 'ticket_sent' || status === 'pass sent' || status === 'rejected') return false;
     }
     return true;
   });

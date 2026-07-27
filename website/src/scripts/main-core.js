@@ -65,6 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const y = (e.clientY / window.innerHeight - 0.5) * 20;
       grid.style.transform = `translate(${x}px, ${y}px)`;
     }
+    // Mouse-follow spotlight glow on speaker/pillar cards (drives the
+    // radial-gradient(--mouse-x, --mouse-y) already defined in CSS)
+    const spotlightCard = e.target.closest && e.target.closest('.speaker-card, .pillar-card');
+    if (spotlightCard) {
+      const rect = spotlightCard.getBoundingClientRect();
+      spotlightCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+      spotlightCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    }
   });
 
   // 3. Scroll Progress Bar & Sticky Header
