@@ -156,7 +156,27 @@
 .speaker-card.has-bio:hover .speaker-photo-wrap::after { background: linear-gradient(to top, rgba(11,11,16,0.98) 0%, rgba(11,11,16,0.85) 45%, transparent 70%), linear-gradient(to bottom, rgba(11,11,16,0.75) 0%, transparent 30%); }
 .speaker-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: grayscale(100%) brightness(0.8) contrast(1.1); transition: filter 0.8s var(--ease-out), transform 0.8s var(--ease-out); display: block; }
 .speaker-card:hover .speaker-photo { filter: grayscale(0%) brightness(1) contrast(1); transform: scale(1.05); }
-.speaker-has-photo .top, .speaker-has-photo .name, .speaker-has-photo .designation { text-shadow: 0 4px 12px rgba(0,0,0,0.9); }
+.speaker-has-photo .top { text-shadow: 0 4px 12px rgba(0,0,0,0.9); }
+
+/* Solid caption bar for photo cards — guarantees the name/designation/LinkedIn
+   are always readable regardless of the photo underneath, instead of relying
+   on a gradient scrim. Uses the site's paper tone so it reads as a deliberate
+   editorial caption rather than a plain white box. */
+.speaker-has-photo .speaker-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: auto;
+  background: var(--paper);
+  padding: 16px 20px 18px;
+  border-radius: 0 0 24px 24px;
+  justify-content: flex-start;
+}
+.speaker-has-photo .name { color: #0b0b10; text-shadow: none; }
+.speaker-has-photo .designation { color: rgba(11, 11, 16, 0.65); text-shadow: none; }
+.speaker-has-photo .bio { color: rgba(11, 11, 16, 0.75); text-shadow: none; }
+.speaker-has-photo .linkedin-btn { color: #0b0b10 !important; }
 
 .speaker-cta-card { background: var(--accent) !important; color: #000 !important; border: none; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .speaker-cta-card .silhouette { color: rgba(0,0,0,0.05); }
