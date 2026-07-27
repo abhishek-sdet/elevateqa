@@ -156,19 +156,38 @@
 .speaker-card.has-bio:hover .speaker-photo-wrap::after { background: linear-gradient(to top, rgba(11,11,16,0.98) 0%, rgba(11,11,16,0.85) 45%, transparent 70%), linear-gradient(to bottom, rgba(11,11,16,0.75) 0%, transparent 30%); }
 .speaker-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: grayscale(100%) brightness(0.8) contrast(1.1); transition: filter 0.8s var(--ease-out), transform 0.8s var(--ease-out); display: block; }
 .speaker-card:hover .speaker-photo { filter: grayscale(0%) brightness(1) contrast(1); transform: scale(1.05); }
-.speaker-has-photo .top { text-shadow: 0 4px 12px rgba(0,0,0,0.9); }
+/* Photo cards: stack the photo ABOVE the caption bar instead of overlaying the
+   bar on top of it — the photo gets exactly the space that's left over after
+   the caption, so every pixel that gets rendered is actually visible (nothing
+   is cropped away a second time by an opaque bar sitting on top of it). */
+.speaker-card.speaker-has-photo {
+  padding: 0;
+}
+.speaker-has-photo .speaker-photo-wrap {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.speaker-has-photo .top {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  width: auto;
+  z-index: 3;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.9);
+}
 
 /* Solid caption bar for photo cards — guarantees the name/designation/LinkedIn
-   are always readable regardless of the photo underneath, instead of relying
-   on a gradient scrim. Uses the site's paper tone so it reads as a deliberate
-   editorial caption rather than a plain white box. Name and designation each
-   reserve a fixed 2-line height so every card gets an identically sized bar,
-   whether the name/designation wraps to one line or two. */
+   are always readable regardless of the photo underneath. Uses the site's
+   paper tone so it reads as a deliberate editorial caption rather than a
+   plain white box. Name and designation each reserve a fixed 2-line height
+   so every card gets an identically sized bar, whether the name/designation
+   wraps to one line or two. */
 .speaker-has-photo .speaker-content {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
+  flex: 0 0 auto;
   height: auto;
   background: var(--paper);
   padding: 10px 16px;
