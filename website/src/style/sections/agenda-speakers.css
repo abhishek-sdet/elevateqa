@@ -171,7 +171,7 @@
   bottom: 0;
   height: auto;
   background: var(--paper);
-  padding: 14px 16px;
+  padding: 10px 16px;
   border-radius: 0 0 24px 24px;
   justify-content: flex-start;
 }
@@ -183,10 +183,10 @@
 }
 .speaker-has-photo .speaker-info { flex: 1; min-width: 0; }
 .speaker-has-photo .name {
-  font-size: 15px;
-  line-height: 1.2;
-  height: 2.4em;
-  margin: 0 0 4px 0;
+  font-size: 17px;
+  line-height: 1.15;
+  height: 2.3em;
+  margin: 0 0 2px 0;
   display: -webkit-box;
   line-clamp: 2;
   -webkit-line-clamp: 2;
@@ -196,9 +196,9 @@
   text-shadow: none;
 }
 .speaker-has-photo .designation {
-  font-size: 8.5px;
-  line-height: 1.35;
-  height: 2.7em;
+  font-size: 7.5px;
+  line-height: 1.3;
+  height: 2.6em;
   display: -webkit-box;
   line-clamp: 2;
   -webkit-line-clamp: 2;
