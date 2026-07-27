@@ -206,7 +206,9 @@ window.sendBulkTickets = async () => {
 
   const btn = document.getElementById('btn-send-bulk-tickets');
   const prog = document.getElementById('bulk-progress');
+  const defaultLabel = btn.innerHTML;
   btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
   prog.style.display = 'block';
 
   let sent = 0;
@@ -239,14 +241,14 @@ window.sendBulkTickets = async () => {
   }
 
   prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
+  btn.innerHTML = '✓ Sent!';
   window.showToast(`Sent ${sent} passes.`, 'success');
   btn.disabled = false;
-  setTimeout(() => { prog.style.display = 'none'; }, 3000);
-  
+  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+
   // Refresh UI to show updated badges
   const data = await loadAllData();
   if (data && data.registrations) window.renderAttendees(data.registrations);
-  setTimeout(() => { prog.style.display = 'none'; }, 3000);
 };
 
 window.sendBulkRejections = async () => {
@@ -258,7 +260,9 @@ window.sendBulkRejections = async () => {
 
   const btn = document.getElementById('btn-send-bulk-rejections');
   const prog = document.getElementById('bulk-progress');
+  const defaultLabel = btn.innerHTML;
   btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
   prog.style.display = 'block';
 
   let sent = 0;
@@ -267,7 +271,7 @@ window.sendBulkRejections = async () => {
     try {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
-      
+
       const payload = {
         name: attendee.name,
         email: attendee.email
@@ -287,13 +291,14 @@ window.sendBulkRejections = async () => {
   }
 
   prog.textContent = `Done. Sent ${sent} rejections.`;
+  btn.innerHTML = '✓ Sent!';
   window.showToast(`Sent ${sent} rejection emails.`, 'success');
   btn.disabled = false;
-  
+  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+
   // Refresh UI to show updated badges
   const data = await loadAllData();
   if (data && data.registrations) window.renderAttendees(data.registrations);
-  setTimeout(() => { prog.style.display = 'none'; }, 3000);
 };
 
 window.resetAttendeeStatus = async (id) => {

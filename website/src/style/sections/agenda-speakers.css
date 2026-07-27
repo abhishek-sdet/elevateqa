@@ -161,7 +161,9 @@
 /* Solid caption bar for photo cards — guarantees the name/designation/LinkedIn
    are always readable regardless of the photo underneath, instead of relying
    on a gradient scrim. Uses the site's paper tone so it reads as a deliberate
-   editorial caption rather than a plain white box. */
+   editorial caption rather than a plain white box. Name and designation each
+   reserve a fixed 2-line height so every card gets an identically sized bar,
+   whether the name/designation wraps to one line or two. */
 .speaker-has-photo .speaker-content {
   position: absolute;
   left: 0;
@@ -169,12 +171,43 @@
   bottom: 0;
   height: auto;
   background: var(--paper);
-  padding: 16px 20px 18px;
+  padding: 14px 16px;
   border-radius: 0 0 24px 24px;
   justify-content: flex-start;
 }
-.speaker-has-photo .name { color: #0b0b10; text-shadow: none; }
-.speaker-has-photo .designation { color: rgba(11, 11, 16, 0.65); text-shadow: none; }
+.speaker-has-photo .speaker-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.speaker-has-photo .speaker-info { flex: 1; min-width: 0; }
+.speaker-has-photo .name {
+  font-size: 15px;
+  line-height: 1.2;
+  height: 2.4em;
+  margin: 0 0 4px 0;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #0b0b10;
+  text-shadow: none;
+}
+.speaker-has-photo .designation {
+  font-size: 8.5px;
+  line-height: 1.35;
+  height: 2.7em;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: rgba(11, 11, 16, 0.65);
+  text-shadow: none;
+}
+.speaker-has-photo .social-links { flex-shrink: 0; margin-top: 2px; }
 .speaker-has-photo .bio { color: rgba(11, 11, 16, 0.75); text-shadow: none; }
 .speaker-has-photo .linkedin-btn { color: #0b0b10 !important; }
 
@@ -275,15 +308,21 @@
     width: 100%;
   }
 
-  .speaker-card .name { 
-    font-size: 24px; 
+  .speaker-card .name {
+    font-size: 24px;
     margin-bottom: 4px;
     text-shadow: 0 4px 16px rgba(0,0,0,0.8);
   }
-  
+
   .speaker-card .designation {
     font-size: 11px;
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  /* Photo cards keep the compact, shadow-free caption bar on mobile too */
+  .speaker-has-photo .name,
+  .speaker-has-photo .designation {
+    text-shadow: none;
   }
 
   .speaker-photo-wrap::after {

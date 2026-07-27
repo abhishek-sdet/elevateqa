@@ -493,8 +493,12 @@ function renderSpeakers(speakers) {
       }
       <div class="top"><span>${safeRole}</span><span>${safeWave}</span></div>
       <div class="speaker-content">
-        <div class="name">${parseAccent(s.name || 'To be revealed')}</div>
-        <div class="designation">${safeDesignation}</div>
+        <div class="speaker-row">
+          <div class="speaker-info">
+            <div class="name">${parseAccent(s.name || 'To be revealed')}</div>
+            <div class="designation">${safeDesignation}</div>
+          </div>
+        </div>
         ${safeBio ? `<div class="bio">${safeBio}</div>` : ''}
       </div>`;
     fragment.appendChild(card);

@@ -906,7 +906,9 @@ window.sendCustomEmail = async () => {
 
   statusMsg.style.color = 'var(--text-dim)';
   statusMsg.textContent = `Sending to ${targetEmails.length} recipient(s)...`;
-  document.getElementById('btn-send-email').disabled = true;
+  const defaultLabel = btnSend.innerHTML;
+  btnSend.disabled = true;
+  btnSend.innerHTML = '<span class="spinner"></span> Sending...';
 
     try {
       const BACKEND_URL = '/.netlify/functions';
@@ -958,7 +960,9 @@ window.sendCustomEmail = async () => {
 
       statusMsg.style.color = 'var(--accent)';
       statusMsg.textContent = `Success! Email blast sent to ${totalSent} recipient(s).`;
-      
+      btnSend.innerHTML = '✓ Sent!';
+      window.showToast(`Email blast sent to ${totalSent} recipient(s).`, 'success', 'Sent');
+
       // Clear the form after sending
       document.getElementById('email-subject').value = '';
       document.getElementById('email-message').value = '';
@@ -970,7 +974,9 @@ window.sendCustomEmail = async () => {
     console.error('Error sending custom email:', err);
     statusMsg.style.color = 'var(--accent-red)';
     statusMsg.textContent = 'Error sending email: ' + err.message;
+    btnSend.innerHTML = defaultLabel;
   } finally {
-    document.getElementById('btn-send-email').disabled = false;
+    btnSend.disabled = false;
+    setTimeout(() => { btnSend.innerHTML = defaultLabel; }, 2000);
   }
 };
