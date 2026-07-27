@@ -86,8 +86,26 @@ export const handler = async (event, context) => {
     img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
     /* Stop Outlook/Gmail/Apple Mail auto dark-mode from recoloring our
        intentionally-dark palette (turns black bg gray, white text blue) */
-    [data-ogsc] body, [data-ogsc] table, [data-ogsc] td { background-color: #07070f !important; }
-    [data-ogsc] p, [data-ogsc] h2, [data-ogsc] span { color: inherit !important; }
+    .bg-page  { background-color: #07070f; }
+    .bg-card  { background-color: #0d0d18; }
+    .bg-panel { background-color: #07070f; }
+    .text-white  { color: #ffffff; }
+    .text-dim    { color: #d5d5d5; }
+    .text-accent { color: #d4ff3a; }
+    @media (prefers-color-scheme: dark) {
+      .bg-page  { background-color: #07070f !important; }
+      .bg-card  { background-color: #0d0d18 !important; }
+      .bg-panel { background-color: #07070f !important; }
+      .text-white  { color: #ffffff !important; }
+      .text-dim    { color: #d5d5d5 !important; }
+      .text-accent { color: #d4ff3a !important; }
+    }
+    [data-ogsc] .bg-page  { background-color: #07070f !important; }
+    [data-ogsc] .bg-card  { background-color: #0d0d18 !important; }
+    [data-ogsc] .bg-panel { background-color: #07070f !important; }
+    [data-ogsc] .text-white  { color: #ffffff !important; }
+    [data-ogsc] .text-dim    { color: #d5d5d5 !important; }
+    [data-ogsc] .text-accent { color: #d4ff3a !important; }
     @media only screen and (max-width: 620px) {
       .wrapper { width: 100% !important; padding: 15px !important; }
       .content-td { padding: 28px 20px !important; }
@@ -108,15 +126,15 @@ export const handler = async (event, context) => {
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#07070f;">
+<body class="bg-page" style="margin:0;padding:0;background-color:#07070f;">
 <!-- Outer wrapper -->
-<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#07070f;">
+<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="bg-page" style="background-color:#07070f;">
   <tr>
-    <td align="center" style="padding: 36px 16px;">
+    <td align="center" class="bg-page" style="padding: 36px 16px;background-color:#07070f;">
 
       <!-- Email Card: 600px max-width -->
       <!--[if mso]><table role="presentation" width="600" border="0" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
-      <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:600px;border-radius:18px;overflow:hidden;background-color:#0d0d18;border:1px solid #1f1f30;">
+      <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="bg-card" style="max-width:600px;border-radius:18px;overflow:hidden;background-color:#0d0d18;border:1px solid #1f1f30;">
 
         <!-- ===== HEADER ===== -->
         <tr>
@@ -142,12 +160,12 @@ export const handler = async (event, context) => {
 
         <!-- ===== WELCOME SECTION ===== -->
         <tr>
-          <td class="content-td" style="padding:40px 38px 0 38px;background-color:#0d0d18;">
-            <p style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#6060a0;font-family:Arial,sans-serif;text-transform:uppercase;">Registration Confirmed ✓</p>
-            <h2 class="hero-name" style="margin:10px 0 18px 0;font-size:24px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.35;">
-              Welcome, <span style="color:#d4ff3a;">${name}!</span>
+          <td class="content-td bg-card" style="padding:40px 38px 0 38px;background-color:#0d0d18;">
+            <p class="text-accent" style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;text-transform:uppercase;">Registration Confirmed ✓</p>
+            <h2 class="hero-name text-white" style="margin:10px 0 18px 0;font-size:24px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.35;">
+              Welcome, <span class="text-accent" style="color:#d4ff3a;">${name}!</span>
             </h2>
-            <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
+            <p class="text-dim" style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#d5d5d5;font-family:Arial,sans-serif;">
               ${bodyPara1}
             </p>
           </td>
@@ -156,17 +174,17 @@ export const handler = async (event, context) => {
 
         <!-- ===== TICKET AND QR SECTION ===== -->
         <tr>
-          <td align="center" style="padding:0 38px 32px 38px;background-color:#0d0d18;">
+          <td align="center" class="bg-card" style="padding:0 38px 32px 38px;background-color:#0d0d18;">
             <!-- TICKET AND QR ROW -->
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <tr>
                 <!-- Left side: ID -->
-                <td class="ticket-id-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-right:1px dashed #2a2a3e;padding:24px;border-radius:12px 0 0 12px;">
-                  <p style="margin:0 0 4px 0;font-size:10px;letter-spacing:1px;font-weight:700;color:#8080a8;font-family:Arial,sans-serif;text-transform:uppercase;">Ticket ID</p>
-                  <p style="margin:0;font-size:20px;font-weight:800;color:#ffffff;font-family:monospace;letter-spacing:1px;">${ticketId}</p>
+                <td class="ticket-id-td bg-panel" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-right:1px dashed #2a2a3e;padding:24px;border-radius:12px 0 0 12px;">
+                  <p class="text-accent" style="margin:0 0 4px 0;font-size:10px;letter-spacing:1px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;text-transform:uppercase;">Ticket ID</p>
+                  <p class="text-white" style="margin:0;font-size:20px;font-weight:800;color:#ffffff;font-family:monospace;letter-spacing:1px;">${ticketId}</p>
                 </td>
                 <!-- Right side: QR Code -->
-                <td class="ticket-info-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-left:none;padding:16px;border-radius:0 12px 12px 0;">
+                <td class="ticket-info-td bg-panel" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-left:none;padding:16px;border-radius:0 12px 12px 0;">
                   <div style="background:#ffffff;padding:8px;border-radius:8px;display:inline-block;">
                     <img src="cid:qrcode@elevateqa" alt="QR Code" width="120" height="120" style="display:block;border:0;">
                   </div>
@@ -178,7 +196,7 @@ export const handler = async (event, context) => {
 
         <!-- ===== EVENT DETAILS ===== -->
         <tr>
-          <td style="padding:0 38px 32px 38px;background-color:#0d0d18;">
+          <td class="bg-card" style="padding:0 38px 32px 38px;background-color:#0d0d18;">
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <!-- WHEN -->
               <tr>
@@ -202,29 +220,29 @@ export const handler = async (event, context) => {
 
         <!-- ===== THANK YOU SECTION ===== -->
         <tr>
-          <td align="center" style="padding:0 38px 40px 38px;background-color:#0d0d18;">
+          <td align="center" class="bg-card" style="padding:0 38px 40px 38px;background-color:#0d0d18;">
             <!-- Decorative line with diamond -->
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
               <tr>
                 <td style="border-top:1px solid #1f1f38;font-size:0;line-height:0;" width="45%">&nbsp;</td>
-                <td align="center" width="10%" style="color:#d4ff3a;font-size:14px;font-family:Arial,sans-serif;padding:0 8px;">&#9670;</td>
+                <td align="center" width="10%" class="text-accent" style="color:#d4ff3a;font-size:14px;font-family:Arial,sans-serif;padding:0 8px;">&#9670;</td>
                 <td style="border-top:1px solid #1f1f38;font-size:0;line-height:0;" width="45%">&nbsp;</td>
               </tr>
             </table>
 
-            <p style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">${closingMsg}</p>
-            <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">${tagline}</p>
+            <p class="text-white" style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">${closingMsg}</p>
+            <p class="text-dim" style="margin:12px 0 0 0;font-size:15px;color:#d5d5d5;font-family:Arial,sans-serif;line-height:1.7;">${tagline}</p>
           </td>
         </tr>
 
         <!-- ===== CAN'T MAKE IT NOTE ===== -->
         <tr>
-          <td style="padding:0 38px 32px 38px;background-color:#0d0d18;">
+          <td class="bg-card" style="padding:0 38px 32px 38px;background-color:#0d0d18;">
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="background-color:#13131f;border-left:4px solid #6060a0;padding:15px 18px;border-radius:0 8px 8px 0;">
-                  <p style="margin:0;font-size:13px;color:#a0a0c0;font-family:Arial,sans-serif;line-height:1.7;">
-                    If, by any chance, you're unable to make it on 8th August, kindly do let us know by <strong style="color:#d4ff3a;">30th July 2026</strong> — this simply helps us plan better and offer your spot to someone on the waitlist.
+                <td style="background-color:#13131f;border-left:4px solid #d4ff3a;padding:15px 18px;border-radius:0 8px 8px 0;">
+                  <p class="text-dim" style="margin:0;font-size:13px;color:#d5d5d5;font-family:Arial,sans-serif;line-height:1.7;">
+                    If, by any chance, you're unable to make it on 8th August, kindly do let us know by <strong class="text-accent" style="color:#d4ff3a;">30th July 2026</strong> — this simply helps us plan better and offer your spot to someone on the waitlist.
                   </p>
                 </td>
               </tr>
@@ -234,10 +252,9 @@ export const handler = async (event, context) => {
 
         <!-- ===== FOOTER ===== -->
         <tr>
-          <td align="center" bgcolor="#07070f" style="background-color:#07070f;padding:24px 30px;border-top:1px solid #16162a;">
-            <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#4040a0;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">ELEVATE QA 2026</p>
-            <p style="margin:0;font-size:11px;color:#383860;font-family:Arial,sans-serif;line-height:1.6;">
-              Please keep this email safe. We will contact you soon.<br>
+          <td align="center" bgcolor="#07070f" class="bg-panel" style="background-color:#07070f;padding:24px 30px;border-top:1px solid #16162a;">
+            <p class="text-accent" style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">ELEVATE QA 2026</p>
+            <p style="margin:0;font-size:11px;color:#8a8a8a;font-family:Arial,sans-serif;line-height:1.6;">
               &copy; 2026 SDET Technologies. All rights reserved.
             </p>
           </td>

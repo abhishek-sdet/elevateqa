@@ -70,7 +70,7 @@ export const handler = async (event, context) => {
                         <!-- Main Content -->
                         <div style="padding: 40px 30px;">
                             <h2 style="color: #ffffff; margin-top: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.01em;">Secure <span style="color: #ff5a36; font-style: italic;">Login</span></h2>
-                            <p style="color: #b0b0cc; font-size: 15px; line-height: 1.7; margin-bottom: 30px;">
+                            <p style="color: #d5d5d5; font-size: 15px; line-height: 1.7; margin-bottom: 30px;">
                                 Please use the secure verification code below to log into the Admin Portal. This code expires in 10 minutes.
                             </p>
                             

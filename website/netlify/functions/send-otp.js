@@ -71,7 +71,7 @@ export const handler = async (event, context) => {
                         <!-- Main Content -->
                         <div style="padding: 40px 30px;">
                             <h2 style="color: #ffffff; margin-top: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em;">Confirm your <span style="color: #d4ff3a; font-style: italic;">Access</span></h2>
-                            <p style="color: #b0b0cc; font-size: 14.5px; line-height: 1.7; margin-bottom: 30px;">
+                            <p style="color: #d5d5d5; font-size: 14.5px; line-height: 1.7; margin-bottom: 30px;">
                                 Thank you for your interest in joining 300+ QE leaders. Please use the secure verification code below to authenticate your professional email. This code expires in 10 minutes.
                             </p>
                             
@@ -82,7 +82,7 @@ export const handler = async (event, context) => {
                             
                             <hr style="border: 0; border-top: 1px solid #1f1f30; margin-bottom: 24px;" />
                             
-                            <p style="color: #505070; font-size: 12px; line-height: 1.6; margin-bottom: 0; font-family: monospace;">
+                            <p style="color: #8a8a8a; font-size: 12px; line-height: 1.6; margin-bottom: 0; font-family: monospace;">
                                 If you did not request this code, please ignore this email.<br />
                                 &copy; 2026 SDET Technologies. All rights reserved.
                             </p>

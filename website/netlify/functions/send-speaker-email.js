@@ -70,20 +70,43 @@ export const handler = async (event, context) => {
     body { margin: 0; padding: 0; background-color: #07070f; }
     table { border-spacing: 0; }
     td { border-collapse: collapse; }
-    [data-ogsc] body, [data-ogsc] table, [data-ogsc] td { background-color: #07070f !important; }
-    [data-ogsc] p, [data-ogsc] h2, [data-ogsc] span { color: inherit !important; }
+    .bg-page  { background-color: #07070f; }
+    .bg-card  { background-color: #0d0d18; }
+    .bg-panel { background-color: #07070f; }
+    .text-white  { color: #ffffff; }
+    .text-dim    { color: #d5d5d5; }
+    .text-accent { color: #d4ff3a; }
+    @media (prefers-color-scheme: dark) {
+      .bg-page  { background-color: #07070f !important; }
+      .bg-card  { background-color: #0d0d18 !important; }
+      .bg-panel { background-color: #07070f !important; }
+      .text-white  { color: #ffffff !important; }
+      .text-dim    { color: #d5d5d5 !important; }
+      .text-accent { color: #d4ff3a !important; }
+    }
+    [data-ogsc] .bg-page  { background-color: #07070f !important; }
+    [data-ogsc] .bg-card  { background-color: #0d0d18 !important; }
+    [data-ogsc] .bg-panel { background-color: #07070f !important; }
+    [data-ogsc] .text-white  { color: #ffffff !important; }
+    [data-ogsc] .text-dim    { color: #d5d5d5 !important; }
+    [data-ogsc] .text-accent { color: #d4ff3a !important; }
     img { border: 0; line-height: 100%; outline: none; text-decoration: none; }
     @media only screen and (max-width: 620px) {
       .wrapper { width: 100% !important; padding: 15px !important; }
       .content-td { padding: 28px 20px !important; }
     }
+    a, a[x-apple-data-detectors], .aBn {
+      color: #d4ff3a !important;
+      text-decoration: none !important;
+      border-bottom: none !important;
+    }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#07070f;">
-<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#07070f;">
+<body class="bg-page" style="margin:0;padding:0;background-color:#07070f;">
+<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="bg-page" style="background-color:#07070f;">
   <tr>
-    <td align="center" style="padding: 36px 16px;">
-      <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:600px;border-radius:18px;overflow:hidden;background-color:#0d0d18;border:1px solid #1f1f30;">
+    <td align="center" class="bg-page" style="padding: 36px 16px;background-color:#07070f;">
+      <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="bg-card" style="max-width:600px;border-radius:18px;overflow:hidden;background-color:#0d0d18;border:1px solid #1f1f30;">
         
         <!-- Header -->
         <tr>
@@ -108,15 +131,15 @@ export const handler = async (event, context) => {
 
         <!-- Content -->
         <tr>
-          <td class="content-td" style="padding:40px 38px 40px 38px;background-color:#0d0d18;">
-            <p style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#6060a0;font-family:Arial,sans-serif;text-transform:uppercase;">Application Received ✓</p>
-            <h2 style="margin:10px 0 18px 0;font-size:24px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.35;">
-              Thank you, <span style="color:#d4ff3a;">${name}!</span>
+          <td class="content-td bg-card" style="padding:40px 38px 40px 38px;background-color:#0d0d18;">
+            <p class="text-accent" style="margin:0 0 4px 0;font-size:12px;letter-spacing:3px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;text-transform:uppercase;">Application Received ✓</p>
+            <h2 class="text-white" style="margin:10px 0 18px 0;font-size:24px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.35;">
+              Thank you, <span class="text-accent" style="color:#d4ff3a;">${name}!</span>
             </h2>
-            <p style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
+            <p class="text-dim" style="margin:0 0 16px 0;font-size:15px;line-height:1.75;color:#d5d5d5;font-family:Arial,sans-serif;">
               ${bodyPara1}
             </p>
-            <p style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#b0b0cc;font-family:Arial,sans-serif;">
+            <p class="text-dim" style="margin:0 0 28px 0;font-size:15px;line-height:1.75;color:#d5d5d5;font-family:Arial,sans-serif;">
               ${bodyPara2}
             </p>
             
@@ -134,7 +157,7 @@ export const handler = async (event, context) => {
               </tr>
             </table>
             
-            <p style="margin:0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">
+            <p class="text-dim" style="margin:0;font-size:15px;color:#d5d5d5;font-family:Arial,sans-serif;line-height:1.7;">
               ${contactLine}
             </p>
           </td>
@@ -142,9 +165,9 @@ export const handler = async (event, context) => {
 
         <!-- Footer -->
         <tr>
-          <td align="center" bgcolor="#07070f" style="background-color:#07070f;padding:24px 30px;border-top:1px solid #16162a;">
-            <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#4040a0;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">ELEVATE QA 2026</p>
-            <p style="margin:0;font-size:11px;color:#383860;font-family:Arial,sans-serif;line-height:1.6;">
+          <td align="center" bgcolor="#07070f" class="bg-panel" style="background-color:#07070f;padding:24px 30px;border-top:1px solid #16162a;">
+            <p class="text-accent" style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#d4ff3a;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">ELEVATE QA 2026</p>
+            <p style="margin:0;font-size:11px;color:#8a8a8a;font-family:Arial,sans-serif;line-height:1.6;">
               &copy; 2026 SDET Technologies. All rights reserved.
             </p>
           </td>
