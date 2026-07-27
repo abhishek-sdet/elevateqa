@@ -15,7 +15,12 @@ window.openAddAttendeeModal = () => {
   const errEl = document.getElementById('add-attendee-error');
   if (errEl) errEl.style.display = 'none';
   const modal = document.getElementById('add-attendee-modal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.scrollTop = 0;
+    const card = modal.querySelector('.manager-card');
+    if (card) card.scrollTop = 0;
+  }
 };
 
 window.closeAddAttendeeModal = () => {
