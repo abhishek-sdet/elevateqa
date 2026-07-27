@@ -41,7 +41,7 @@ export const handler = async (event, context) => {
         const subject    = tpl.subject || '🎫 Your Official Pass — Elevate QA 2026';
         const bodyPara1  = tpl.body1   || 'Your spot at the <strong style="color:#ffffff;">Elevate QA Tech Summit</strong> is confirmed. Please present this QR code at the registration desk upon your arrival.';
         const closingMsg = tpl.closing || 'See you at Elevate QA 2026!';
-        const tagline    = tpl.tagline || 'Keep this email handy. This QR code is your entry ticket.';
+        const tagline    = tpl.tagline || 'This QR code IS your entry ticket — no other document is required for entry. Keep this email handy.';
 
         const qrBuffer = await QRCode.toBuffer(qrData, {
             errorCorrectionLevel: 'H',
@@ -87,6 +87,17 @@ export const handler = async (event, context) => {
       .ticket-info-td { display: block !important; width: 100% !important; text-align: left !important; padding-right: 0 !important; padding-bottom: 15px !important; }
       .ticket-id-td { display: block !important; width: 100% !important; text-align: left !important; }
       h1.hero-name { font-size: 20px !important; }
+    }
+    /* Force any client auto-detected links (dates/times get turned blue by
+       Apple Mail / Outlook mobile) to match the site's green accent theme */
+    a, a[x-apple-data-detectors], .aBn {
+      color: #d4ff3a !important;
+      text-decoration: none !important;
+      border-bottom: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
     }
   </style>
 </head>
@@ -136,6 +147,28 @@ export const handler = async (event, context) => {
         </tr>
 
 
+        <!-- ===== TICKET AND QR SECTION ===== -->
+        <tr>
+          <td align="center" style="padding:0 38px 32px 38px;background-color:#0d0d18;">
+            <!-- TICKET AND QR ROW -->
+            <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <!-- Left side: ID -->
+                <td class="ticket-id-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-right:1px dashed #2a2a3e;padding:24px;border-radius:12px 0 0 12px;">
+                  <p style="margin:0 0 4px 0;font-size:10px;letter-spacing:1px;font-weight:700;color:#8080a8;font-family:Arial,sans-serif;text-transform:uppercase;">Ticket ID</p>
+                  <p style="margin:0;font-size:20px;font-weight:800;color:#ffffff;font-family:monospace;letter-spacing:1px;">${ticketId}</p>
+                </td>
+                <!-- Right side: QR Code -->
+                <td class="ticket-info-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-left:none;padding:16px;border-radius:0 12px 12px 0;">
+                  <div style="background:#ffffff;padding:8px;border-radius:8px;display:inline-block;">
+                    <img src="cid:qrcode@elevateqa" alt="QR Code" width="120" height="120" style="display:block;border:0;">
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
         <!-- ===== EVENT DETAILS ===== -->
         <tr>
           <td style="padding:0 38px 32px 38px;background-color:#0d0d18;">
@@ -172,25 +205,23 @@ export const handler = async (event, context) => {
               </tr>
             </table>
 
-            <!-- TICKET AND QR ROW -->
+            <p style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">${closingMsg}</p>
+            <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">${tagline}</p>
+          </td>
+        </tr>
+
+        <!-- ===== CAN'T MAKE IT NOTE ===== -->
+        <tr>
+          <td style="padding:0 38px 32px 38px;background-color:#0d0d18;">
             <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
               <tr>
-                <!-- Left side: ID -->
-                <td class="ticket-id-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-right:1px dashed #2a2a3e;padding:24px;border-radius:12px 0 0 12px;">
-                  <p style="margin:0 0 4px 0;font-size:10px;letter-spacing:1px;font-weight:700;color:#8080a8;font-family:Arial,sans-serif;text-transform:uppercase;">Ticket ID</p>
-                  <p style="margin:0;font-size:20px;font-weight:800;color:#ffffff;font-family:monospace;letter-spacing:1px;">${ticketId}</p>
-                </td>
-                <!-- Right side: QR Code -->
-                <td class="ticket-info-td" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-left:none;padding:16px;border-radius:0 12px 12px 0;">
-                  <div style="background:#ffffff;padding:8px;border-radius:8px;display:inline-block;">
-                    <img src="cid:qrcode@elevateqa" alt="QR Code" width="120" height="120" style="display:block;border:0;">
-                  </div>
+                <td style="background-color:#13131f;border-left:4px solid #6060a0;padding:15px 18px;border-radius:0 8px 8px 0;">
+                  <p style="margin:0;font-size:13px;color:#a0a0c0;font-family:Arial,sans-serif;line-height:1.7;">
+                    If, by any chance, you're unable to make it on 8th August, kindly do let us know by <strong style="color:#d4ff3a;">30th July 2026</strong> — this simply helps us plan better and offer your spot to someone on the waitlist.
+                  </p>
                 </td>
               </tr>
             </table>
-
-            <p style="margin:24px 0 8px 0;font-size:22px;font-weight:800;color:#ffffff;font-family:Arial,sans-serif;line-height:1.4;">${closingMsg}</p>
-            <p style="margin:12px 0 0 0;font-size:15px;color:#8080a8;font-family:Arial,sans-serif;line-height:1.7;">${tagline}</p>
           </td>
         </tr>
 
