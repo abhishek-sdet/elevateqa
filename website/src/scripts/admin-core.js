@@ -18,6 +18,25 @@ import {
 } from './admin-supabase.js?v=2';
 import { populateUI, ALLOWED_ADMINS, setAllowedAdmins } from './admin-ui.js?v=2';
 
+// ── Multi-admin conflict detection ───────────────────────────────────────────
+// saveAll() below reconciles speakers/agenda/maturity_stages/pillars against
+// whatever is CURRENTLY in this browser's DOM (see syncTableDeletes calls) and
+// blindly overwrites site_content/branding/manifesto with this session's
+// current field values. If a second admin is logged in on another device and
+// saves in between, this session's next Save silently deletes their new rows
+// (anything not in this stale DOM) and reverts their edits (anything this
+// session never touched still gets written back with its OLD value). This
+// snapshot lets saveAll() detect "the server has moved since I loaded" and
+// warn before doing any of that, instead of silently clobbering the other
+// admin's work. registrations/speaker_applications are deliberately excluded —
+// those change constantly from real attendee activity and aren't part of what
+// saveAll() writes, so including them would just cause constant false alarms.
+const snapshotOf = (data) => JSON.stringify({
+  speakers: data.speakers, agenda: data.agenda,
+  maturity_stages: data.maturity_stages, pillars: data.pillars,
+  site_content: data.site_content, branding: data.branding, manifesto: data.manifesto,
+});
+
 // ── Initialization ────────────────────────────────────────────────────────────
 const initAdmin = async () => {
   console.log('[ElevateQA] Admin Core Initialized (Supabase Mode)');
@@ -33,6 +52,7 @@ const initAdmin = async () => {
     const freshData = await loadAllData();
     if (freshData) {
       window._lastLoadedData = freshData;
+      window._lastLoadedSnapshot = snapshotOf(freshData);
       populateUI(freshData);
     }
   };
@@ -40,6 +60,7 @@ const initAdmin = async () => {
   const data = await loadAllData();
   if (data) {
     window._lastLoadedData = data;
+    window._lastLoadedSnapshot = snapshotOf(data);
     populateUI(data);
   }
 
@@ -113,6 +134,26 @@ if (document.readyState === 'loading') {
 window.saveAll = async () => {
   const btn = document.getElementById('btn-publish');
   const originalText = btn.innerHTML;
+
+  // Conflict check FIRST, before touching the button/spinner state or writing
+  // anything — if another admin has changed speakers/agenda/site content etc.
+  // since this session loaded, saving now would silently delete their new
+  // rows (via syncTableDeletes reconciling against this stale DOM) and/or
+  // revert their edits (this session re-writes every field's last-loaded
+  // value, including ones it never touched). Give the admin a chance to back
+  // out and refresh instead of finding out after the fact.
+  if (window._lastLoadedSnapshot) {
+    const freshCheck = await loadAllData();
+    if (freshCheck && snapshotOf(freshCheck) !== window._lastLoadedSnapshot) {
+      const proceed = await window.showConfirm(
+        'Site data has changed since you loaded this page — most likely another admin saved changes in the meantime. Publishing now could overwrite their edits or delete anything they added (speakers, agenda items, etc). Refresh this page first to load the latest data, then re-apply your changes.',
+        'Data Changed Elsewhere',
+        'PUBLISH ANYWAY (RISKY)'
+      );
+      if (!proceed) return;
+    }
+  }
+
   btn.innerHTML = '<span class="spinner"></span> Syncing Everything...';
   btn.disabled = true;
 
@@ -267,7 +308,11 @@ window.saveAll = async () => {
     btn.innerHTML = originalText;
     btn.disabled = false;
     window.showToast('All your changes have been successfully synced to the cloud and are now live on the site.', 'success', '100% Synced');
-    await loadAllData();
+    const postSaveData = await loadAllData();
+    if (postSaveData) {
+      window._lastLoadedData = postSaveData;
+      window._lastLoadedSnapshot = snapshotOf(postSaveData);
+    }
   } catch (err) {
     console.error('[ElevateAdmin] Save Error:', err);
     btn.innerHTML = 'Error! Try Again';
