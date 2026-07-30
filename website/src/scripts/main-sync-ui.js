@@ -152,10 +152,7 @@ window.syncEverything = () => {
     if (site.navSpeakers)  setHtml('nav-speakers', site.navSpeakers);
     if (site.navJoin)      setHtml('nav-join', site.navJoin);
 
-    setHtml('prizes-title', parseEm(site.prizesHeadline));
-    setHtml('prizes-s1-val', site.prizesS1Num); setHtml('prizes-s1-text', site.prizesS1Lbl);
-    setHtml('prizes-s2-val', site.prizesS2Num); setHtml('prizes-s2-text', site.prizesS2Lbl);
-    setHtml('prizes-s3-val', site.prizesS3Num); setHtml('prizes-s3-text', site.prizesS3Lbl);
+    if (site.prizesMessage) setHtml('prizes-message', parseEm(site.prizesMessage));
 
     setHtml('experience-section-num', site.experienceSectionNum || '03 / The Experience');
     setHtml('experience-title',       site.pillarsTitle         || 'A day built around <em>signal,</em> not noise.');

@@ -557,8 +557,7 @@ export function populateUI(data) {
   setVal('hero-audience', sc.heroAudience); setVal('hero-cta-text', sc.heroCtaText);
   [1,2,3,4].forEach(i => { setVal(`stat${i}-num`, sc[`stat${i}Num`]); setVal(`stat${i}-lbl`, sc[`stat${i}Lbl`]); });
   for (let i = 1; i <= 9; i++) setVal(`ticker-${i}`, sc[`ticker${i}`]);
-  setVal('prizes-title-input', sc.prizesHeadline);
-  [1,2,3].forEach(i => { setVal(`prizes-s${i}-num`, sc[`prizesS${i}Num`]); setVal(`prizes-s${i}-text`, sc[`prizesS${i}Lbl`]); });
+  setVal('prizes-message-input', sc.prizesMessage);
   setVal('manifesto-section-num', sc.manifestoSectionNum); setVal('manifesto-pill', sc.manifestoPill);
   setVal('manifesto-aside', sc.manifestoAside);
   if (data.manifesto) setVal('manifesto-lines', data.manifesto.content);
@@ -664,7 +663,7 @@ export function populateUI(data) {
         { name: 'To be revealed', role: 'KEYNOTE', wave: 'WAVE 01' },
         { name: 'To be revealed', role: 'KEYNOTE', wave: 'WAVE 01' },
         { name: 'To be revealed', role: 'INDUSTRY', wave: 'WAVE 01' }
-      ]).forEach(s => window.addSpeakerItem({ id: s.id, name: s.name, role: s.role, title: s.title, status: s.status, img: s.image_url || s.img, display_order: s.display_order, bio: s.bio }));
+      ]).forEach(s => window.addSpeakerItem({ id: s.id, name: s.name, role: s.role, title: s.title, status: s.status, img: s.image_url || s.img, display_order: s.display_order, bio: s.bio, linkedin: s.linkedin }));
     }
   }
 

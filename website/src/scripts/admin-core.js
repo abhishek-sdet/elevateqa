@@ -127,10 +127,7 @@ window.saveAll = async () => {
       ticker4: getVal('ticker-4'), ticker5: getVal('ticker-5'), ticker6: getVal('ticker-6'),
       ticker7: getVal('ticker-7'), ticker8: getVal('ticker-8'), ticker9: getVal('ticker-9'),
 
-      prizesHeadline: getVal('prizes-title-input'),
-      prizesS1Num: getVal('prizes-s1-num'), prizesS1Lbl: getVal('prizes-s1-text'),
-      prizesS2Num: getVal('prizes-s2-num'), prizesS2Lbl: getVal('prizes-s2-text'),
-      prizesS3Num: getVal('prizes-s3-num'), prizesS3Lbl: getVal('prizes-s3-text'),
+      prizesMessage: getVal('prizes-message-input'),
 
       manifestoSectionNum: getVal('manifesto-section-num'),
       manifestoPill: getVal('manifesto-pill'), manifestoAside: getVal('manifesto-aside'),
