@@ -102,12 +102,18 @@ async function verifyOTP() {
 
       console.log('[ElevateAuth] Successfully authenticated!');
       sessionStorage.setItem('admin_logged_in', 'true');
-      
+
+      // #protected-content is only revealed via html.is-logged-in (see the
+      // "AUTH GUARDIAN" inline script in admin.html's <head>, which applies
+      // this same class from sessionStorage on a fresh page load). This is
+      // the actual reveal switch — #login-overlay hiding on its own isn't
+      // enough, and #admin-main doesn't exist in the DOM at all.
+      document.documentElement.classList.add('is-logged-in');
+      document.documentElement.classList.remove('not-logged-in');
+
       const overlay = document.getElementById('login-overlay');
-      const main = document.getElementById('admin-main');
       if (overlay) overlay.style.display = 'none';
-      if (main) main.classList.add('authorized');
-      
+
       // Force a fresh data load since session is now established
       if (window.forceDataSync) window.forceDataSync();
 
@@ -139,14 +145,15 @@ async function checkSession() {
   // We now rely solely on sessionStorage since anon has access to what we need
   const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
   const overlay = document.getElementById('login-overlay');
-  const main = document.getElementById('admin-main');
-  
+
   if (isLoggedIn) {
+    document.documentElement.classList.add('is-logged-in');
+    document.documentElement.classList.remove('not-logged-in');
     if (overlay) overlay.style.display = 'none';
-    if (main) main.classList.add('authorized');
   } else {
+    document.documentElement.classList.add('not-logged-in');
+    document.documentElement.classList.remove('is-logged-in');
     if (overlay) overlay.style.display = 'flex';
-    if (main) main.classList.remove('authorized');
   }
 }
 
