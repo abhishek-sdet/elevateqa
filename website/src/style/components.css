@@ -25,7 +25,7 @@
 /* NAV */
 nav {
   position: fixed;
-  top: 22px; left: 0; right: 0;
+  top: 37px; left: 0; right: 0; /* matches .ticker's rendered height so nav/logo never sit under it */
   z-index: 110; 
   display: flex;
   justify-content: space-between;
@@ -275,7 +275,7 @@ nav.scrolled #site-logo-img {
   nav {
     padding: 16px var(--pad-mobile);
     justify-content: space-between;
-    top: 22px;
+    top: 34px; /* matches .ticker's rendered height on mobile (smaller font) */
     /* Solid background on mobile — backdrop-filter+mask not supported on Android */
     background: rgba(8, 8, 12, 0.92) !important;
     backdrop-filter: blur(16px);
