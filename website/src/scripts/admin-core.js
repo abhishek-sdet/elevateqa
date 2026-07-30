@@ -21,12 +21,13 @@ import { populateUI, ALLOWED_ADMINS, setAllowedAdmins } from './admin-ui.js?v=2'
 // ── Initialization ────────────────────────────────────────────────────────────
 const initAdmin = async () => {
   console.log('[ElevateQA] Admin Core Initialized (Supabase Mode)');
-  const data = await loadAllData();
-  if (data) {
-    window._lastLoadedData = data;
-    populateUI(data);
-  }
-  
+
+  // Defined BEFORE the initial fetch (not after) so it's already callable the
+  // instant the login overlay appears — the overlay is visible by default via
+  // CSS, so a fast OTP login can otherwise complete before this line below it
+  // ever ran, leaving window.forceDataSync undefined and its post-login call
+  // in admin-auth.js a silent no-op (data only ever shows up after a manual
+  // refresh, once a fresh page load starts the fetch again from the top).
   window.forceDataSync = async () => {
     console.log('[ElevateQA] Force syncing data after auth...');
     const freshData = await loadAllData();
@@ -35,6 +36,13 @@ const initAdmin = async () => {
       populateUI(freshData);
     }
   };
+
+  const data = await loadAllData();
+  if (data) {
+    window._lastLoadedData = data;
+    populateUI(data);
+  }
+
   window.checkSession();
 
   // Sidebar hamburger
