@@ -231,7 +231,7 @@ h1.title .accent {
 
 @media (max-width: 768px) {
   .hero {
-    padding-top: 150px;
+    padding-top: 170px;
     padding-left: var(--pad-mobile);
     padding-right: var(--pad-mobile);
     min-height: 100svh; /* Changed to 100svh to ensure it fills the screen and pushes the next section down */
@@ -382,7 +382,7 @@ h1.title .accent {
 }
 
 @media (max-width: 480px) {
-  .hero { padding-top: 140px; }
+  .hero { padding-top: 160px; }
   h1.title { font-size: 1.8rem; }
   .tagline { font-size: 1.0rem; }
   .hero-bottom-item { padding: 14px 12px; gap: 6px; }

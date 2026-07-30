@@ -349,7 +349,7 @@ nav.scrolled #site-logo-img {
 
 @media (max-width: 600px) {
   .btn { padding: 8px 18px; font-size: 10px; letter-spacing: 0.08em; }
-  #site-logo-img { height: 56px; }
+  #site-logo-img { height: 76px; }
 }
 
 /* CARDS */
