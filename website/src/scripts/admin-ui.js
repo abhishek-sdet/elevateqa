@@ -3,7 +3,8 @@
  * ==============================
  * Contains: showToast, showConfirm, populateUI, handleSpeakerImg,
  *           handleVisualUpload, triggerVisualUpload, showSection,
- *           showIdentitySubSection, addSpeakerItem, addAgendaItem,
+ *           showIdentitySubSection, addSpeakerItem, renumberSpeakers,
+ *           reorderSpeaker, addAgendaItem,
  *           addMaturityStage, addPillarItem, updateAgendaIndexes,
  *           handleAgendaTagChange, toggleSidebar, logout, addAdminEmail
  * Extracted from admin-core.js for maintainability.
@@ -321,7 +322,16 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
   div.className = 'dynamic-item';
   div.setAttribute('data-id', data.id || '');
   div.innerHTML = `
-    <div class="dynamic-header"><div class="badge">Speaker Node</div><button class="btn-del" onclick="this.parentElement.parentElement.remove()">&times;</button></div>
+    <div class="dynamic-header">
+      <div class="badge">Speaker Node</div>
+      <div class="dynamic-header-actions">
+        <div class="speaker-order-control">
+          <label>Order</label>
+          <input type="number" class="s-order" min="1" step="1" title="Position in lineup" onchange="window.reorderSpeaker(this)">
+        </div>
+        <button class="btn-del" onclick="this.closest('.dynamic-item').remove(); window.renumberSpeakers();">&times;</button>
+      </div>
+    </div>
     <div class="form-grid-2">
       <div class="speaker-img-column">
         <label>Speaker Photo</label>
@@ -343,11 +353,42 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
     </div>
   `;
   container.appendChild(div);
-  
+  window.renumberSpeakers();
+
   const appendedImg = div.querySelector('.img-upload-wrap img');
   if (appendedImg && appendedImg.src && window.injectImageStats) {
     window.injectImageStats(appendedImg.parentElement, appendedImg.src);
   }
+};
+
+// Refreshes every speaker card's visible "Order" number to match its actual
+// DOM position (1-based) — called after add/delete/reorder so the numbers
+// never drift from what will actually be saved as display_order.
+window.renumberSpeakers = () => {
+  document.querySelectorAll('#speaker-list .dynamic-item .s-order').forEach((input, idx) => {
+    input.value = idx + 1;
+  });
+};
+
+// Moves a speaker card to the position typed into its "Order" input, re-sorts
+// the rest of the list around it, then renumbers everything so the visible
+// order always matches what Save will persist as display_order.
+window.reorderSpeaker = (inputEl) => {
+  const container = document.getElementById('speaker-list');
+  if (!container) return;
+  const item = inputEl.closest('.dynamic-item');
+  const items = Array.from(container.children);
+  const currentIndex = items.indexOf(item);
+  if (currentIndex === -1) return;
+
+  let target = parseInt(inputEl.value, 10);
+  if (!Number.isFinite(target)) target = currentIndex + 1;
+  target = Math.min(Math.max(target, 1), items.length) - 1;
+
+  items.splice(currentIndex, 1);
+  items.splice(target, 0, item);
+  items.forEach(el => container.appendChild(el));
+  window.renumberSpeakers();
 };
 
 window.updateAgendaIndexes = () => {

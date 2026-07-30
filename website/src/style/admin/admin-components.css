@@ -114,8 +114,22 @@ tr:last-child td { border-bottom: none; }
   box-shadow: 0 10px 30px rgba(212, 255, 58, 0.05);
 }
 .dynamic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+.dynamic-header-actions { display: flex; align-items: center; gap: 16px; }
 
-.btn-del { 
+.speaker-order-control {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-dim);
+}
+.speaker-order-control input.s-order {
+  width: 52px; padding: 8px; text-align: center;
+  background: var(--bg-3); color: var(--accent);
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  font-family: var(--mono); font-weight: bold; font-size: 13px;
+}
+.speaker-order-control input.s-order:focus { border-color: var(--accent); outline: none; }
+
+.btn-del {
   background: rgba(255, 90, 54, 0.05); color: var(--accent-red); 
   border: 1px solid rgba(255, 90, 54, 0.1); width: 48px; height: 48px; 
   border-radius: 12px; cursor: pointer; transition: 0.3s;
