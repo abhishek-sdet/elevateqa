@@ -308,14 +308,24 @@
     gap: 20px;
   }
   
-  .speaker-card { 
-    padding: 24px; 
+  .speaker-card {
+    padding: 24px;
     border-radius: 24px;
     min-height: 220px;
     aspect-ratio: 16 / 10;
     justify-content: flex-end;
   }
-  
+
+  /* Photo cards need a taller frame than the 16/10 silhouette cards — most
+     speaker photos are portrait/square, and a short landscape frame only
+     left room to show a thin sliver near the top (object-position: center
+     top), cropping away most of the photo. A taller ratio gives the photo
+     enough height to actually be visible alongside the caption bar. */
+  .speaker-card.speaker-has-photo {
+    aspect-ratio: 3 / 4;
+    min-height: 320px;
+  }
+
   .speaker-card .top {
     position: absolute;
     top: 24px; left: 24px; right: 24px;
