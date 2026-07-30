@@ -211,6 +211,25 @@ CREATE POLICY "registrations_anon_update" ON public.registrations
 CREATE POLICY "registrations_anon_delete" ON public.registrations
   FOR DELETE TO anon, authenticated USING (true);
 
+-- ─── otps: deny anon/authenticated entirely — service_role only ───
+-- Holds short-lived login codes for admin/attendee/speaker OTP verification.
+-- RLS with NO anon/authenticated policies means only the service_role key
+-- (used server-side in the Netlify OTP functions, never shipped to the
+-- browser) can read or write this table. Without this, anyone holding the
+-- public anon key could SELECT a pending code straight out of the table and
+-- log in without ever touching the target inbox.
+CREATE TABLE IF NOT EXISTS public.otps (
+  email text PRIMARY KEY,
+  code text NOT NULL,
+  expires_at bigint NOT NULL
+);
+ALTER TABLE public.otps ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "otps_anon_select" ON public.otps;
+DROP POLICY IF EXISTS "otps_anon_insert" ON public.otps;
+DROP POLICY IF EXISTS "otps_anon_update" ON public.otps;
+DROP POLICY IF EXISTS "otps_anon_delete" ON public.otps;
+-- (intentionally no CREATE POLICY here — default-deny for anon/authenticated)
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- STORAGE BUCKET — elevate-media
 -- Run this ONCE in Supabase SQL Editor.

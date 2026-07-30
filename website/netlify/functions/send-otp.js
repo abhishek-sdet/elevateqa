@@ -2,7 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://wbgxcadajmdjxfhsgose.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY;
+// Service role key — bypasses RLS. Required because the `otps` table denies
+// anon access entirely (otherwise anyone with the public anon key could read
+// pending OTP codes straight out of the table and verify without needing
+// email access at all). This key must stay server-side only.
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const generateOTP = () => {

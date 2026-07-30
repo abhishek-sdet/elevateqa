@@ -415,14 +415,21 @@
   async function scanFrameLoop() {
     if (!scanLoopActive) return;
 
-    if (nativeVideo.readyState >= 2) { // HAVE_CURRENT_DATA or better
+    // Skip the (relatively expensive) draw+detect work while a result is
+    // being reviewed on screen — nothing scanned during this window would be
+    // actioned anyway (isProcessing gates it), so this just saves CPU/battery
+    // on every device sitting idle at a gate between attendees.
+    if (!isProcessing && nativeVideo.readyState >= 2) { // HAVE_CURRENT_DATA or better
       nativeCanvas.width = nativeVideo.videoWidth;
       nativeCanvas.height = nativeVideo.videoHeight;
       nativeCtx.drawImage(nativeVideo, 0, 0);
 
       try {
         const barcodes = await nativeDetector.detect(nativeCanvas);
-        if (barcodes.length > 0) {
+        // Re-check scanLoopActive: detect() is async and stopScan() may have
+        // torn down the camera while this call was in flight — without this,
+        // a scan could still get admitted a beat after "stop" was pressed.
+        if (scanLoopActive && barcodes.length > 0) {
           await onScanSuccess(barcodes[0].rawValue);
         }
       } catch (_) { /* detection errors are non-fatal */ }
@@ -465,6 +472,11 @@
     if (html5QrCode) {
       try { await html5QrCode.stop(); } catch (_) {}
     }
+
+    // Torch dies with the camera stream — reset the tracked/visual state so
+    // the button doesn't look "on" after a restart when the hardware isn't.
+    torchOn = false;
+    document.getElementById('torch-btn').classList.remove('active');
 
     document.getElementById('toggle-btn').classList.remove('active');
     document.getElementById('toggle-btn').querySelector('span').textContent = 'START SCANNER';
@@ -528,17 +540,28 @@
         return;
       }
 
-      if (user.status === 'PRESENT') {
+      // Atomic, conditional admit — this UPDATE only touches the row if it
+      // ISN'T already 'PRESENT' at the moment the write lands. Checking
+      // user.status from the SELECT above is not enough by itself: with
+      // multiple gate devices scanning concurrently, two devices can both
+      // read "not present yet" in the same instant and both would admit the
+      // same ticket. The .or() below matches status=NULL too (plain .neq()
+      // is NULL-unsafe in SQL and would silently never match brand-new rows).
+      const { data: updated, error: upErr } = await supabaseClient
+        .from('registrations')
+        .update({ status: 'PRESENT' })
+        .eq('id', ticketId)
+        .or('status.is.null,status.neq.PRESENT')
+        .select();
+
+      if (upErr) throw upErr;
+
+      if (!updated || updated.length === 0) {
+        // Lost the race (or already admitted earlier) — another gate's
+        // device got there first.
         renderResult('already', 'DUPLICATE', user.name, user.company || user.email, 'ALREADY IN');
         return;
       }
-
-      const { error: upErr } = await supabaseClient
-        .from('registrations')
-        .update({ status: 'PRESENT' })
-        .eq('id', ticketId);
-
-      if (upErr) throw upErr;
 
       renderResult('success', 'CONFIRMED', user.name, user.company || user.email, 'ADMITTED');
       playBeep('success');
