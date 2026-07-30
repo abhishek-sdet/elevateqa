@@ -1,7 +1,8 @@
 /**
  * ELEVATE QA — ADMIN REGISTRATIONS MODULE
  * =========================================
- * Contains: renderAttendees, deleteAttendee, exportAttendees, showPass, generateAdminQR
+ * Contains: renderAttendees, deleteAttendee, exportAttendees, showPass, generateAdminQR,
+ *           resetAttendeeStatus, revokeAttendeePresent
  * Extracted from admin-core.js for maintainability.
  */
 import { deleteItem, loadAllData, updateRegistrationStatus, restoreData, addAttendee } from './admin-supabase.js';
@@ -230,6 +231,7 @@ window.renderAttendees = (registrations) => {
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            ${isPresent ? `<button class="btn-mini" onclick="revokeAttendeePresent('${p.id}')" title="Revoke Check-in (back to Pass Sent)" style="color:var(--accent); border-color:rgba(212,255,58,0.3); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">↩</button>` : ''}
             <button class="btn-mini" onclick="resetAttendeeStatus('${p.id}')" title="Reset Status to Verified" style="color:var(--ink-main); border-color:rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">↻</button>
             <button class="btn-mini" onclick="deleteAttendee('${p.id}')" title="Delete Registration" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">✕</button>
           </div>
@@ -382,6 +384,20 @@ window.resetAttendeeStatus = async (id) => {
     if (data) window.renderAttendees(data.registrations);
   } else {
     window.showToast('Failed to reset status', 'error');
+  }
+};
+
+// Undoes a scanner check-in — puts a 'PRESENT' attendee back to 'TICKET_SENT'
+// (Pass Sent) so the same QR code can be scanned again. Meant for testing
+// the scanner without needing to delete/re-add the registration each time.
+window.revokeAttendeePresent = async (id) => {
+  const success = await updateRegistrationStatus(id, 'TICKET_SENT');
+  if (success) {
+    window.showToast('Check-in revoked — back to Pass Sent', 'success');
+    const data = await loadAllData();
+    if (data) window.renderAttendees(data.registrations);
+  } else {
+    window.showToast('Failed to revoke check-in', 'error');
   }
 };
 
