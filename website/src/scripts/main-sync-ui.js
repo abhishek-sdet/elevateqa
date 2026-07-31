@@ -320,6 +320,7 @@ window.syncEverything = () => {
     finalSpeakers = DEFAULT_SPEAKERS;
   }
   if (finalSpeakers.length > 0) {
+    const chiefGuestGrid = document.querySelector('.speakers-grid.chief-guest-grid');
     const keynoteGrid = document.querySelector('.speakers-grid.keynote-grid');
     const regularGrid = document.querySelector('.speakers-grid.regular-grid');
     
@@ -349,9 +350,19 @@ window.syncEverything = () => {
     };
 
     if (keynoteGrid && regularGrid) {
-      const keynotes = finalSpeakers.filter(s => (s.role || '').toUpperCase().includes('KEYNOTE'));
-      const regulars = finalSpeakers.filter(s => !(s.role || '').toUpperCase().includes('KEYNOTE'));
+      const chiefGuests = finalSpeakers.filter(s => (s.role || '').toUpperCase().includes('CHIEF GUEST'));
+      const keynotes = finalSpeakers.filter(s => (s.role || '').toUpperCase().includes('KEYNOTE') && !(s.role || '').toUpperCase().includes('CHIEF GUEST'));
+      const regulars = finalSpeakers.filter(s => !(s.role || '').toUpperCase().includes('KEYNOTE') && !(s.role || '').toUpperCase().includes('CHIEF GUEST'));
       
+      if (chiefGuestGrid) {
+        if (chiefGuests.length > 0) {
+          chiefGuestGrid.style.display = 'grid';
+          chiefGuestGrid.innerHTML = buildHtml(chiefGuests);
+        } else {
+          chiefGuestGrid.style.display = 'none';
+        }
+      }
+
       if (keynotes.length > 0) {
         keynoteGrid.style.display = 'grid';
         keynoteGrid.innerHTML = buildHtml(keynotes);
