@@ -328,7 +328,7 @@ function populateUI(data) {
   setVal('stat4-num', siteContent.stat4Num); setVal('stat4-lbl', siteContent.stat4Lbl);
 
   // Tickers
-  for (let i = 1; i <= 8; i++) setVal(`ticker-${i}`, siteContent[`ticker${i}`]);
+  for (let i = 1; i <= 9; i++) setVal(`ticker-${i}`, siteContent[`ticker${i}`]);
 
   // Manifesto & Sections
   setVal('manifesto-pill', siteContent.manifestoPill);
@@ -492,6 +492,7 @@ window.saveAll = async () => {
       ticker3: getVal('ticker-3'), ticker4: getVal('ticker-4'),
       ticker5: getVal('ticker-5'), ticker6: getVal('ticker-6'),
       ticker7: getVal('ticker-7'), ticker8: getVal('ticker-8'),
+      ticker9: getVal('ticker-9'),
       // Sections
       manifestoPill: getVal('manifesto-pill'),
       manifestoAside: getVal('manifesto-aside'),

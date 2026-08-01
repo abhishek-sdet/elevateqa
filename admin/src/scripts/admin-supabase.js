@@ -247,6 +247,7 @@ export async function saveSiteContent(data) {
       ticker3: data.ticker3, ticker4: data.ticker4,
       ticker5: data.ticker5, ticker6: data.ticker6,
       ticker7: data.ticker7, ticker8: data.ticker8,
+      ticker9: data.ticker9,
       manifestoSectionNum: data.manifestoSectionNum,
       manifestoPill: data.manifestoPill,
       manifestoAside: data.manifestoAside,
