@@ -235,20 +235,6 @@ export const handler = async (event, context) => {
           </td>
         </tr>
 
-        <!-- ===== CAN'T MAKE IT NOTE ===== -->
-        <tr>
-          <td class="bg-card" style="padding:0 38px 32px 38px;background-color:#0d0d18;">
-            <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="background-color:#13131f;border-left:4px solid #d4ff3a;padding:15px 18px;border-radius:0 8px 8px 0;">
-                  <p class="text-dim" style="margin:0;font-size:13px;color:#d5d5d5;font-family:Arial,sans-serif;line-height:1.7;">
-                    If, by any chance, you're unable to make it on 8th August, kindly do let us know by <strong class="text-accent" style="color:#d4ff3a;">30th July 2026</strong> — this simply helps us plan better and offer your spot to someone on the waitlist.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
 
         <!-- ===== FOOTER ===== -->
         <tr>
