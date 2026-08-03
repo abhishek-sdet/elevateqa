@@ -117,6 +117,17 @@ const initAdmin = async () => {
     }
   }, 30000);
 
+  // Cross-tab communication for local scanner
+  window.addEventListener('storage', async (e) => {
+    if (e.key === 'elevate_last_scan') {
+      console.log('[ElevateQA] Scanner update detected, refreshing data...');
+      const updatedData = await loadAllData();
+      if (updatedData && updatedData.registrations) {
+        window.renderAttendees(updatedData.registrations);
+      }
+    }
+  });
+
   // Dismiss preloader
   setTimeout(() => {
     const preloader = document.getElementById('admin-preloader');

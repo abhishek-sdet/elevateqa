@@ -474,6 +474,9 @@
         .eq('id', ticketId);
 
       if (upErr) throw upErr;
+      
+      // Trigger local storage event for admin dashboard to auto-refresh if on same device
+      localStorage.setItem('elevate_last_scan', Date.now().toString());
 
       renderResult('success', 'CONFIRMED', user.name, user.company || user.email, 'ADMITTED');
       playBeep('success');

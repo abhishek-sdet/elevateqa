@@ -186,6 +186,7 @@ window.renderAttendees = (registrations) => {
 
   const tbody      = document.getElementById('attendee-table');
   const countBadge = document.getElementById('attendee-count');
+  const presentBadge = document.getElementById('present-count');
   if (!tbody) return;
 
   if (countBadge) {
@@ -194,6 +195,11 @@ window.renderAttendees = (registrations) => {
     } else {
       countBadge.textContent = `${filtered.length} found (${raw.length} total)`;
     }
+  }
+  
+  if (presentBadge) {
+    const presentCount = raw.filter(p => p.status && p.status.toUpperCase() === 'PRESENT').length;
+    presentBadge.textContent = `${presentCount} present`;
   }
 
   if (filtered.length === 0) {
