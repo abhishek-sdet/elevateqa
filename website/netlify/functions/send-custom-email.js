@@ -16,7 +16,8 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { subject, message, targetEmails, ccEmails, bccEmails } = JSON.parse(event.body);
+        const { subject, message, targetEmails, ccEmails, bccEmails, attachments } = JSON.parse(event.body);
+        const mailAttachments = Array.isArray(attachments) ? attachments : [];
 
         if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required email data (subject, message, or targetEmails array)' }) };
@@ -88,7 +89,8 @@ export const handler = async (event, context) => {
                     from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                     to: email,
                     subject: subject,
-                    html: getHtml(finalMessage)
+                    html: getHtml(finalMessage),
+                    attachments: mailAttachments
                 };
                 return transporter.sendMail(mailOptions);
             });
@@ -108,12 +110,16 @@ export const handler = async (event, context) => {
                 cc: ccList,
                 bcc: extraBccList,
                 subject: `[CC/BCC Copy] ${subject}`,
-                html: getHtml(ccMessage)
+                html: getHtml(ccMessage),
+                attachments: mailAttachments
             });
         }
 
         console.log(`[CUSTOM EMAIL] Blast sent. Success: ${successCount}, Failed: ${failCount}`);
-        return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Blast sent successfully. (${successCount} succeeded, ${failCount} failed)` }) };
+        if (successCount === 0 && failCount > 0) {
+            return { statusCode: 502, headers, body: JSON.stringify({ error: `All ${failCount} email(s) in this batch failed to send.`, successCount, failCount }) };
+        }
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, successCount, failCount, message: `Blast sent. (${successCount} succeeded, ${failCount} failed)` }) };
 
     } catch (error) {
         console.error('[CUSTOM EMAIL Error]', error);

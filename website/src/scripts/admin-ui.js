@@ -967,6 +967,7 @@ window.sendCustomEmail = async () => {
 
       const CHUNK_SIZE = 20;
       let totalSent = 0;
+      let totalFailed = 0;
 
       // Read attachments
       const fileInput = document.getElementById('email-attachments');
@@ -1034,18 +1035,28 @@ window.sendCustomEmail = async () => {
         if (!response.ok) {
             throw new Error(result.error || 'Failed to send custom email batch');
         }
-        
-        totalSent += chunk.length;
+
+        totalSent += result.successCount ?? chunk.length;
+        totalFailed += result.failCount ?? 0;
       }
 
-      statusMsg.style.color = 'var(--accent)';
-      statusMsg.textContent = `Success! Email blast sent to ${totalSent} recipient(s).`;
-      btnSend.innerHTML = '✓ Sent!';
-      window.showToast(`Email blast sent to ${totalSent} recipient(s).`, 'success', 'Sent');
+      if (totalFailed > 0) {
+        statusMsg.style.color = 'var(--accent-red)';
+        statusMsg.textContent = `Sent to ${totalSent} recipient(s), but ${totalFailed} failed.`;
+        btnSend.innerHTML = '⚠ Partial send';
+        window.showToast(`${totalSent} sent, ${totalFailed} failed. Check recipient addresses.`, 'error', 'Partial Send');
+      } else {
+        statusMsg.style.color = 'var(--accent)';
+        statusMsg.textContent = `Success! Email blast sent to ${totalSent} recipient(s).`;
+        btnSend.innerHTML = '✓ Sent!';
+        window.showToast(`Email blast sent to ${totalSent} recipient(s).`, 'success', 'Sent');
+      }
 
       // Clear the form after sending
       document.getElementById('email-subject').value = '';
-      document.getElementById('email-message').value = '';
+      if (window.quillEditor) window.quillEditor.setContents([]);
+      previewTextarea.value = '';
+      if (fileInput) fileInput.value = '';
       if (target === 'custom') document.getElementById('custom-emails-input').value = '';
       if (document.getElementById('cc-emails-input')) document.getElementById('cc-emails-input').value = '';
       if (document.getElementById('bcc-emails-input')) document.getElementById('bcc-emails-input').value = '';
