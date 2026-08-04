@@ -184,8 +184,8 @@
     }
 
     .res-label { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; margin-bottom: 8px; }
-    .res-name { font-family: var(--display); font-size: 42px; line-height: 1.1; margin-bottom: 12px; }
-    .res-org { font-family: var(--body); font-size: 16px; color: var(--ink-dim); margin-bottom: 48px; }
+    .res-name { font-family: var(--display); font-size: 36px; line-height: 1.2; margin-bottom: 12px; word-break: break-word; overflow-wrap: break-word; }
+    .res-org { font-family: var(--body); font-size: 16px; color: var(--ink-dim); margin-bottom: 48px; word-break: break-word; overflow-wrap: break-word; }
     
     .res-badge {
       padding: 16px 32px; border-radius: 16px; font-family: var(--mono);
@@ -559,11 +559,13 @@
       if (!updated || updated.length === 0) {
         // Lost the race (or already admitted earlier) — another gate's
         // device got there first.
-        renderResult('already', 'DUPLICATE', user.name, user.company || user.email, 'ALREADY IN');
+        const roleStr = user.role ? user.role.toUpperCase() : 'ATTENDEE';
+        renderResult('already', 'DUPLICATE', user.name, `${roleStr} • ${user.company || user.email}`, 'ALREADY IN');
         return;
       }
 
-      renderResult('success', 'CONFIRMED', user.name, user.company || user.email, 'ADMITTED');
+      const roleStr = user.role ? user.role.toUpperCase() : 'ATTENDEE';
+      renderResult('success', 'CONFIRMED', user.name, `${roleStr} • ${user.company || user.email}`, 'ADMITTED');
       playBeep('success');
 
     } catch (e) {
