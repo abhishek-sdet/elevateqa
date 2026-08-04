@@ -281,11 +281,12 @@ window.renderAttendees = (registrations) => {
   }).join('');
 };
 
-window.setTabFilter = (status) => {
+window.setTabFilter = (tabName) => {
+  window.currentAttendeeTab = tabName || 'all';
   const statusSelect = document.getElementById('col-filter-status');
-  if (statusSelect) {
-    statusSelect.value = status;
-  }
+  if (statusSelect) statusSelect.value = '';
+  const roleSelect = document.getElementById('col-filter-role');
+  if (roleSelect) roleSelect.value = '';
   window.filterAttendees();
 };
 
@@ -294,12 +295,13 @@ window.filterAttendees = () => {
 };
 
 window.resetAllFilters = () => {
-  const ids = ['attendee-search', 'col-filter-name', 'col-filter-org', 'col-filter-desig', 'col-filter-email', 'col-filter-mobile', 'col-filter-status'];
+  const ids = ['attendee-search', 'col-filter-name', 'col-filter-org', 'col-filter-desig', 'col-filter-email', 'col-filter-mobile', 'col-filter-status', 'col-filter-role'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  window.renderAttendees();
+  window.currentAttendeeTab = 'all';
+  window.filterAttendees();
 };
 
 window.toggleAllAttendees = (source) => {
