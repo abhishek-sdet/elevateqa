@@ -252,23 +252,32 @@ window.renderAttendees = (registrations) => {
   if (tabSpeakerBtn) tabSpeakerBtn.textContent = `Speakers / Keynotes (${countSpeaker})`;
   if (tabRejectBtn) tabRejectBtn.textContent = `House Full Sent (${countReject})`;
 
-  if (presentBadgeAttendee && presentBadgeSpeaker) {
+  const scannedBadgeTotal = document.getElementById('scanned-count-total');
+  const badgeCountAttendee = document.getElementById('badge-count-attendee');
+  const badgeCountSpeaker = document.getElementById('badge-count-speaker');
+
+  if (scannedBadgeTotal && badgeCountAttendee && badgeCountSpeaker) {
     const isSpecialRole = role => ['Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'].includes(role || 'Attendee');
     
-    const presentAttendees = raw.filter(p => p.status && p.status.toUpperCase() === 'PRESENT' && !isSpecialRole(p.role)).length;
-    const presentSpeakers = raw.filter(p => p.status && p.status.toUpperCase() === 'PRESENT' && isSpecialRole(p.role)).length;
+    // Scanned includes both 'PRESENT' and 'BADGE_GIVEN'
+    const totalScanned = raw.filter(p => p.status && (p.status.toUpperCase() === 'PRESENT' || p.status.toUpperCase() === 'BADGE_GIVEN')).length;
     
-    presentBadgeAttendee.textContent = `${presentAttendees} Attendee Present`;
-    presentBadgeSpeaker.textContent = `${presentSpeakers} Speaker Present`;
+    // Badge Given counts only 'BADGE_GIVEN'
+    const badgeAttendees = raw.filter(p => p.status && p.status.toUpperCase() === 'BADGE_GIVEN' && !isSpecialRole(p.role)).length;
+    const badgeSpeakers = raw.filter(p => p.status && p.status.toUpperCase() === 'BADGE_GIVEN' && isSpecialRole(p.role)).length;
     
-    if (presentAttendees >= 200) {
-      presentBadgeAttendee.style.background = 'var(--accent-red)';
-      presentBadgeAttendee.style.color = '#fff';
-      presentBadgeAttendee.style.borderColor = 'var(--accent-red)';
+    scannedBadgeTotal.textContent = `${totalScanned} Scanned`;
+    badgeCountAttendee.textContent = `${badgeAttendees} Attendee Badge`;
+    badgeCountSpeaker.textContent = `${badgeSpeakers} Speaker Badge`;
+    
+    if (badgeAttendees >= 200) {
+      badgeCountAttendee.style.background = 'var(--accent-red)';
+      badgeCountAttendee.style.color = '#fff';
+      badgeCountAttendee.style.borderColor = 'var(--accent-red)';
     } else {
-      presentBadgeAttendee.style.background = 'var(--accent)';
-      presentBadgeAttendee.style.color = '#000';
-      presentBadgeAttendee.style.borderColor = 'var(--accent)';
+      badgeCountAttendee.style.background = 'var(--accent)';
+      badgeCountAttendee.style.color = '#000';
+      badgeCountAttendee.style.borderColor = 'var(--accent)';
     }
   }
 
@@ -285,12 +294,14 @@ window.renderAttendees = (registrations) => {
       ? `<a href="${p.linkedin}" target="_blank" style="color:var(--accent); font-weight:600; text-decoration:none;">LinkedIn ↗</a>`
       : '—';
 
-    const isPresent = (p.status && p.status.toUpperCase() === 'PRESENT');
+    const isBadgeGiven = (p.status && p.status.toUpperCase() === 'BADGE_GIVEN');
+    const isPresent = (p.status && p.status.toUpperCase() === 'PRESENT') || isBadgeGiven;
     const isSent = (p.status && p.status.toUpperCase() === 'TICKET_SENT');
     const isSpeaker = (p.status && p.status.toUpperCase() === 'SPEAKER');
     const isRejected = (p.status && p.status.toUpperCase() === 'REJECTED');
     let badgeHtml = '<span class="badge">Verified</span>';
-    if (isPresent) badgeHtml = '<span class="badge" style="background:var(--accent); color:#000;">Present</span>';
+    if (isBadgeGiven) badgeHtml = '<span class="badge" style="background:#2196F3; color:#fff; border-color:#2196F3;">Badge Given</span>';
+    else if (isPresent) badgeHtml = '<span class="badge" style="background:var(--accent); color:#000;">Present</span>';
     else if (isSent) badgeHtml = '<span class="badge" style="background:#4CAF50; color:#fff; border-color:#4CAF50;">Pass Sent</span>';
     else if (isSpeaker) badgeHtml = '<span class="badge" style="background:#9C27B0; color:#fff; border-color:#9C27B0;">Speaker</span>';
     else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
@@ -318,7 +329,8 @@ window.renderAttendees = (registrations) => {
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: flex-end;">
-            ${!isPresent ? `<button class="btn-mini" onclick="markAttendeePresent('${p.id}')" title="Mark as Present" style="color:var(--accent); border-color:rgba(212,255,58,0.3); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px; font-weight: bold;">✓</button>` : ''}
+            ${(isPresent && !isBadgeGiven) ? `<button class="btn-mini" onclick="window.markBadgeGiven('${p.id}')" title="Mark Badge Given" style="background:#2196F3; color:#fff; border-color:#2196F3; display: flex; align-items: center; justify-content: center; height: 28px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: bold;">GIVE BADGE</button>` : ''}
+            ${(!isPresent && !isBadgeGiven) ? `<button class="btn-mini" onclick="markAttendeePresent('${p.id}')" title="Mark as Present" style="color:var(--accent); border-color:rgba(212,255,58,0.3); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px; font-weight: bold;">✓</button>` : ''}
             ${isPresent ? `<button class="btn-mini" onclick="revokeAttendeePresent('${p.id}')" title="Revoke Check-in (back to Pass Sent)" style="color:var(--accent); border-color:rgba(212,255,58,0.3); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">↩</button>` : ''}
             <button class="btn-mini" onclick="resetAttendeeStatus('${p.id}')" title="Reset Status to Verified" style="color:var(--ink-main); border-color:rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">↻</button>
             <button class="btn-mini" onclick="deleteAttendee('${p.id}')" title="Delete Registration" style="color:var(--accent-red); border-color:rgba(255,90,54,0.2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">✕</button>
@@ -573,6 +585,21 @@ window.updateAttendeeRoleInline = async (id, role) => {
   } catch(e) {
     console.error('Failed to update inline role', e);
     window.showToast('Failed to update role', 'error');
+  }
+};
+
+window.markBadgeGiven = async (id) => {
+  const { supabase } = await import('./supabase-config.js');
+  const { loadAllData } = await import('./admin-supabase.js');
+  try {
+    const { error } = await supabase.from('registrations').update({ status: 'BADGE_GIVEN' }).eq('id', id);
+    if (error) throw error;
+    window.showToast('Badge Marked as Given', 'success');
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+  } catch(e) {
+    console.error('Failed to mark badge', e);
+    window.showToast('Failed to mark badge', 'error');
   }
 };
 

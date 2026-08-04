@@ -302,7 +302,10 @@
       <div class="res-role" id="res-role">ATTENDEE</div>
       <div class="res-org" id="res-org">Acme Corp</div>
       <div class="res-badge" id="res-badge">ADMITTED</div>
-      <button class="next-btn" onclick="resetScanner()">NEXT ATTENDEE</button>
+      <div style="display: flex; gap: 12px; margin-top: 20px; width: 100%;">
+        <button class="next-btn" id="btn-badge-given" onclick="markBadgeGiven()" style="background:#2196F3; flex: 1; padding: 16px 0; font-size: 14px;">GIVE BADGE</button>
+        <button class="next-btn" onclick="resetScanner()" style="flex: 1; padding: 16px 0; font-size: 14px;">NEXT</button>
+      </div>
     </div>
   </div>
 </div>
@@ -319,6 +322,8 @@
 
   let isScanning = false;
   let isProcessing = false;
+  let qrScanner = null;
+  let lastScannedTicketId = null;
   let torchOn = false;
   let lastScanned = '';
   let lastScannedTime = 0;
@@ -559,6 +564,7 @@
       // read "not present yet" in the same instant and both would admit the
       // same ticket. The .or() below matches status=NULL too (plain .neq()
       // is NULL-unsafe in SQL and would silently never match brand-new rows).
+      lastScannedTicketId = ticketId;
       const { data: updated, error: upErr } = await supabaseClient
         .from('registrations')
         .update({ status: 'PRESENT' })
@@ -586,6 +592,22 @@
     }
   }
 
+  async function markBadgeGiven() {
+    if (!lastScannedTicketId) return;
+    const btn = document.getElementById('btn-badge-given');
+    btn.textContent = 'UPDATING...';
+    try {
+      const { error } = await supabaseClient.from('registrations').update({ status: 'BADGE_GIVEN' }).eq('id', lastScannedTicketId);
+      if (error) throw error;
+      btn.textContent = '✓ BADGE GIVEN';
+      btn.style.background = '#4CAF50';
+      btn.disabled = true;
+    } catch(e) {
+      console.error(e);
+      btn.textContent = 'ERROR';
+    }
+  }
+
   function renderResult(type, label, name, role, org, badge) {
     const overlay = document.getElementById('result-overlay');
     const card = document.getElementById('result-card');
@@ -608,10 +630,16 @@
     
     if (type === 'success') {
       iconContainer.innerHTML = successSvg;
+      document.getElementById('btn-badge-given').style.display = 'block';
+      document.getElementById('btn-badge-given').textContent = 'GIVE BADGE';
+      document.getElementById('btn-badge-given').style.background = '#2196F3';
+      document.getElementById('btn-badge-given').disabled = false;
     } else if (type === 'error') {
       iconContainer.innerHTML = errorSvg;
+      document.getElementById('btn-badge-given').style.display = 'none';
     } else {
       iconContainer.innerHTML = `<div style="font-size: 40px;">⚠️</div>`;
+      document.getElementById('btn-badge-given').style.display = 'none';
     }
 
     document.getElementById('res-label').textContent = label;
@@ -637,7 +665,10 @@
 
   function resetScanner() {
     document.getElementById('result-overlay').classList.remove('active');
-    setTimeout(() => { isProcessing = false; }, 500);
+    setTimeout(() => { 
+      isProcessing = false; 
+      lastScannedTicketId = null;
+    }, 500);
   }
 
   function triggerFlash() {
