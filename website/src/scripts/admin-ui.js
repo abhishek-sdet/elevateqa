@@ -729,6 +729,12 @@ export function populateUI(data) {
   fillTpl('et-rejection-body2',   rej.body2);
   fillTpl('et-rejection-closing', rej.closing);
   fillTpl('et-rejection-tagline', rej.tagline);
+  
+  const food = et.food || {};
+  fillTpl('et-food-subject', food.subject);
+  fillTpl('et-food-body1',   food.body1);
+  fillTpl('et-food-body2',   food.body2);
+  fillTpl('et-food-closing', food.closing);
 }
 
 function _renderImgPreview(id, url) {
@@ -787,6 +793,12 @@ window.saveEmailTemplates = async () => {
         body2:    getVal('et-rejection-body2'),
         closing:  getVal('et-rejection-closing'),
         tagline:  getVal('et-rejection-tagline'),
+      },
+      food: {
+        subject: getVal('et-food-subject'),
+        body1:   getVal('et-food-body1'),
+        body2:   getVal('et-food-body2'),
+        closing: getVal('et-food-closing'),
       },
     }
   };
