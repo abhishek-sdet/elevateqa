@@ -279,7 +279,15 @@ CREATE POLICY "elevate-media-anon-delete" ON storage.objects
 -- 8. REAL-TIME ENABLEMENT
 -- ═══════════════════════════════════════════════════════════════════════════
 -- Allow the registrations table to broadcast changes to the Admin Portal
-ALTER PUBLICATION supabase_realtime ADD TABLE registrations;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'registrations'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE registrations;
+  END IF;
+END $$;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 9. REFRESH SCHEMA CACHE

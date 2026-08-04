@@ -180,6 +180,7 @@ window.renderAttendees = (registrations) => {
       // Must have special role OR legacy speaker status
       if (!isSpecialRole && status !== 'speaker') return false;
     } else if (currentTab === 'ticket_sent') {
+      if (isSpecialRole) return false;
       if (status !== 'ticket_sent' && status !== 'pass sent') return false;
     } else if (currentTab === 'rejected') {
       if (status !== 'rejected') return false;
@@ -217,10 +218,14 @@ window.renderAttendees = (registrations) => {
   if (!tbody) return;
 
   if (countBadge) {
+    const totalPassSent = raw.filter(p => p.status && (p.status.toLowerCase() === 'ticket_sent' || p.status.toLowerCase() === 'pass sent')).length;
+    const totalRejected = raw.filter(p => p.status && p.status.toLowerCase() === 'rejected').length;
+    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected`;
+
     if (raw.length === filtered.length) {
-      countBadge.textContent = `${raw.length} registered`;
+      countBadge.textContent = `${raw.length} total${extras}`;
     } else {
-      countBadge.textContent = `${filtered.length} found (${raw.length} total)`;
+      countBadge.textContent = `${filtered.length} found (${raw.length} total)${extras}`;
     }
   }
   
