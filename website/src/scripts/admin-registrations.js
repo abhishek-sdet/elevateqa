@@ -352,6 +352,14 @@ window.setTabFilter = (tabName) => {
   }, 10);
 };
 
+let filterTimeout;
+window.debouncedFilterAttendees = () => {
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
+    window.renderAttendees();
+  }, 300);
+};
+
 window.filterAttendees = () => {
   window.renderAttendees();
 };
