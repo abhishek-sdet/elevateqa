@@ -831,7 +831,7 @@ window.toggleCustomEmailInput = () => {
 
 window.sendCustomEmail = async () => {
   const subject = document.getElementById('email-subject').value.trim();
-  const message = window.quillEditor ? window.quillEditor.root.innerHTML : document.getElementById('quill-editor').innerHTML;
+  const message = document.getElementById('email-message').value.trim();
   const target = document.querySelector('input[name="email-target"]:checked').value;
   const statusMsg = document.getElementById('email-status-msg');
   
@@ -969,37 +969,7 @@ window.sendCustomEmail = async () => {
       let totalSent = 0;
       let totalFailed = 0;
 
-      // Read attachments
-      const fileInput = document.getElementById('email-attachments');
-      let attachments = [];
-      if (fileInput && fileInput.files.length > 0) {
-        const files = Array.from(fileInput.files);
-        const maxTotalSize = 20 * 1024 * 1024; // 20MB
-        const totalSize = files.reduce((acc, file) => acc + file.size, 0);
-        
-        if (totalSize > maxTotalSize) {
-          statusMsg.style.color = 'var(--accent-red)';
-          statusMsg.textContent = 'Total attachments size exceeds 20MB limit.';
-          btnSend.innerHTML = 'SEND EMAIL BLAST <span aria-hidden="true" style="margin-left: 8px;">🚀</span>';
-          btnSend.disabled = false;
-          return;
-        }
-        
-        statusMsg.style.color = 'var(--text-dim)';
-        statusMsg.textContent = 'Processing attachments...';
-        
-        attachments = await Promise.all(files.map(file => {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64Data = reader.result.split(',')[1];
-              resolve({ filename: file.name, content: base64Data, encoding: 'base64' });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        }));
-      }
+
 
       for (let i = 0; i < targetEmails.length; i += CHUNK_SIZE) {
         const chunk = targetEmails.slice(i, i + CHUNK_SIZE);
@@ -1020,8 +990,7 @@ window.sendCustomEmail = async () => {
             message,
             targetEmails: chunk,
             ccEmails: currentCc,
-            bccEmails: currentBcc,
-            attachments
+            bccEmails: currentBcc
           })
         });
 
@@ -1054,9 +1023,8 @@ window.sendCustomEmail = async () => {
 
       // Clear the form after sending
       document.getElementById('email-subject').value = '';
-      if (window.quillEditor) window.quillEditor.setContents([]);
+      document.getElementById('email-message').value = '';
       previewTextarea.value = '';
-      if (fileInput) fileInput.value = '';
       if (target === 'custom') document.getElementById('custom-emails-input').value = '';
       if (document.getElementById('cc-emails-input')) document.getElementById('cc-emails-input').value = '';
       if (document.getElementById('bcc-emails-input')) document.getElementById('bcc-emails-input').value = '';
@@ -1072,33 +1040,4 @@ window.sendCustomEmail = async () => {
   }
 };
 
-// Initialize Quill Editor for Email
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('quill-editor') && typeof Quill !== 'undefined') {
-    window.quillEditor = new Quill('#quill-editor', {
-      theme: 'snow',
-      placeholder: 'Type your email content here. You can use formatting tools...',
-      modules: {
-        toolbar: [
-          [{ 'header': [1, 2, 3, false] }],
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ 'color': [] }, { 'background': [] }],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          ['link', 'image'],
-          ['clean']
-        ]
-      }
-    });
-    // Add custom styling overrides to match theme
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .ql-toolbar.ql-snow { border-color: var(--line-light); background: rgba(255,255,255,0.02); border-radius: 12px 12px 0 0; }
-      .ql-container.ql-snow { border-color: var(--line-light); font-family: inherit; font-size: 16px; color: var(--text-main); }
-      .ql-editor.ql-blank::before { color: var(--text-dim); font-style: normal; }
-      .ql-snow .ql-stroke { stroke: var(--text-dim); }
-      .ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill { fill: var(--text-dim); }
-      .ql-snow .ql-picker { color: var(--text-dim); }
-    `;
-    document.head.appendChild(style);
-  }
-});
+

@@ -14,13 +14,8 @@
       </div>
 
       <div class="form-group" style="margin-bottom: 24px;">
-        <label>Message</label>
-        <div id="quill-editor" style="background: rgba(255,255,255,0.02); min-height: 250px; border-radius: 0 0 12px 12px; border: 1px solid var(--line-light); border-top: none;"></div>
-      </div>
-      
-      <div class="form-group" style="margin-bottom: 24px;">
-        <label for="email-attachments">Attachments <span class="label-hint">(Optional, max 20MB total)</span></label>
-        <input type="file" id="email-attachments" multiple style="background: rgba(255,255,255,0.02); border: 1px solid var(--line-light); border-radius: 8px; padding: 12px; width: 100%; color: var(--text-main);">
+        <label for="email-message">Message <span class="label-hint">HTML is supported for bold, links, etc.</span></label>
+        <textarea id="email-message" rows="8" placeholder="Hello {{Name}},&#10;&#10;We are excited to announce..."></textarea>
       </div>
 
       <div class="form-group" style="margin-bottom: 24px; border-top: 1px dashed var(--line-light); padding-top: 24px;">
