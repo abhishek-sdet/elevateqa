@@ -230,6 +230,28 @@ window.renderAttendees = (registrations) => {
     }
   }
   
+  // Update Tab Counts
+  const isSpecialRoleGlobal = role => ['Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'].includes(role || 'Attendee');
+  
+  const countAll = raw.length;
+  const countSpeaker = raw.filter(p => isSpecialRoleGlobal(p.role)).length;
+  const countPass = raw.filter(p => {
+    if (isSpecialRoleGlobal(p.role)) return false;
+    const status = (p.status || '').toLowerCase();
+    return status === 'ticket_sent' || status === 'pass sent';
+  }).length;
+  const countReject = raw.filter(p => (p.status || '').toLowerCase() === 'rejected').length;
+
+  const tabAllBtn = document.getElementById('tab-all');
+  const tabPassBtn = document.getElementById('tab-pass');
+  const tabSpeakerBtn = document.getElementById('tab-speaker');
+  const tabRejectBtn = document.getElementById('tab-reject');
+  
+  if (tabAllBtn) tabAllBtn.textContent = `All List (${countAll})`;
+  if (tabPassBtn) tabPassBtn.textContent = `Final Pass Sent (${countPass})`;
+  if (tabSpeakerBtn) tabSpeakerBtn.textContent = `Speakers / Keynotes (${countSpeaker})`;
+  if (tabRejectBtn) tabRejectBtn.textContent = `House Full Sent (${countReject})`;
+
   if (presentBadgeAttendee && presentBadgeSpeaker) {
     const isSpecialRole = role => ['Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'].includes(role || 'Attendee');
     

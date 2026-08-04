@@ -402,7 +402,11 @@
   async function startNativeScan() {
     // Single getUserMedia call — no getCameras() to avoid iOS double-permission issue
     nativeStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' },
+      video: { 
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
       audio: false
     });
 
@@ -447,12 +451,17 @@
     if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
 
     const config = {
-      fps: 30,
-      qrbox: (w, h) => ({ width: Math.min(w, h) * 0.8, height: Math.min(w, h) * 0.8 }),
+      fps: 20,
+      qrbox: (w, h) => ({ width: Math.min(w, h) * 0.7, height: Math.min(w, h) * 0.7 }),
       aspectRatio: 1.0,
-      disableFlip: false,
+      disableFlip: true, // Disabling flip improves scanning speed significantly
       formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-      experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      videoConstraints: {
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
     };
 
     // No getCameras() call — single getUserMedia (iOS Safari fix)
