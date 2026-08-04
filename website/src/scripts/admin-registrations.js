@@ -291,7 +291,43 @@ window.setTabFilter = (tabName) => {
   if (statusSelect) statusSelect.value = '';
   const roleSelect = document.getElementById('col-filter-role');
   if (roleSelect) roleSelect.value = '';
-  window.filterAttendees();
+  
+  // Immediately update tab styles so the user sees they clicked it
+  const tabAll = document.getElementById('tab-all');
+  const tabPass = document.getElementById('tab-pass');
+  const tabSpeaker = document.getElementById('tab-speaker');
+  const tabReject = document.getElementById('tab-reject');
+  
+  if (tabAll && tabPass && tabSpeaker && tabReject) {
+    [tabAll, tabPass, tabSpeaker, tabReject].forEach(t => {
+      t.style.background = 'var(--bg-3)';
+      t.style.color = 'var(--ink)';
+    });
+    if (tabName === 'ticket_sent') {
+      tabPass.style.background = 'var(--accent)';
+      tabPass.style.color = '#000';
+    } else if (tabName === 'speaker') {
+      tabSpeaker.style.background = 'var(--accent)';
+      tabSpeaker.style.color = '#000';
+    } else if (tabName === 'rejected') {
+      tabReject.style.background = 'var(--accent)';
+      tabReject.style.color = '#000';
+    } else if (tabName === 'all' || !tabName) {
+      tabAll.style.background = 'var(--accent)';
+      tabAll.style.color = '#000';
+    }
+  }
+
+  // Show a loading indicator in the table body
+  const tbody = document.getElementById('attendee-table');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 40px; color: var(--ink-dim);">Loading...</td></tr>';
+  }
+
+  // Yield to the browser for repainting the tab styles
+  setTimeout(() => {
+    window.filterAttendees();
+  }, 10);
 };
 
 window.filterAttendees = () => {
@@ -475,7 +511,9 @@ window.sendBulkAssignRole = async () => {
 window.updateAttendeeRoleInline = async (id, role) => {
   const { updateRegistrationRole, loadAllData } = await import('./admin-supabase.js');
   try {
-    await updateRegistrationRole(id, role);
+    const success = await updateRegistrationRole(id, role);
+    if (!success) throw new Error("Database update failed (Check if 'role' column exists in Supabase)");
+    
     window.showToast(`Role updated to ${role}`, 'success');
     
     const data = await loadAllData();

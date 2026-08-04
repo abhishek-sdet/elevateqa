@@ -74,6 +74,7 @@ ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS phone text;
 ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS designation text;
 ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS linkedin text;
 ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS status text DEFAULT 'confirmed';
+ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS role text;
 
 -- Migration: Rename organization to company if it exists from older versions
 DO $$ 
