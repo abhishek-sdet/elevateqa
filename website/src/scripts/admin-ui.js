@@ -831,7 +831,7 @@ window.toggleCustomEmailInput = () => {
 
 window.sendCustomEmail = async () => {
   const subject = document.getElementById('email-subject').value.trim();
-  const message = document.getElementById('email-message').value.trim();
+  const message = window.quillEditor ? window.quillEditor.root.innerHTML : document.getElementById('quill-editor').innerHTML;
   const target = document.querySelector('input[name="email-target"]:checked').value;
   const statusMsg = document.getElementById('email-status-msg');
   
@@ -874,12 +874,12 @@ window.sendCustomEmail = async () => {
           return { name: extractedName, email: raw };
         }
       }).filter(e => e);
-    } else if (target === 'all' || target === 'sdet') {
+    } else if (target === 'all' || target === 'sdet' || target === 'speakers') {
       statusMsg.style.color = 'var(--text-dim)';
       statusMsg.textContent = 'Fetching attendee list...';
       try {
         const { supabase } = await import('./supabase-config.js');
-        let query = supabase.from('registrations').select('email, name').neq('status', 'cancelled');
+        let query = supabase.from('registrations').select('email, name, role').neq('status', 'cancelled');
         
         if (target === 'sdet') {
             query = query.ilike('email', '%@sdettech.com');
@@ -892,7 +892,14 @@ window.sendCustomEmail = async () => {
           statusMsg.textContent = 'No attendees found.';
           return;
         }
-        parsed = data.filter(row => row.email).map(row => ({ email: row.email, name: row.name || 'there' }));
+        
+        let filteredData = data;
+        if (target === 'speakers') {
+            const specialRoles = ['keynote', 'speaker', 'panelist', 'organiser', 'chief guest'];
+            filteredData = data.filter(row => row.role && specialRoles.includes(row.role.toLowerCase()));
+        }
+        
+        parsed = filteredData.filter(row => row.email).map(row => ({ email: row.email, name: row.name || 'there' }));
       } catch (err) {
         console.error('Error fetching attendees:', err);
         statusMsg.style.color = 'var(--accent-red)';
@@ -961,6 +968,38 @@ window.sendCustomEmail = async () => {
       const CHUNK_SIZE = 20;
       let totalSent = 0;
 
+      // Read attachments
+      const fileInput = document.getElementById('email-attachments');
+      let attachments = [];
+      if (fileInput && fileInput.files.length > 0) {
+        const files = Array.from(fileInput.files);
+        const maxTotalSize = 20 * 1024 * 1024; // 20MB
+        const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+        
+        if (totalSize > maxTotalSize) {
+          statusMsg.style.color = 'var(--accent-red)';
+          statusMsg.textContent = 'Total attachments size exceeds 20MB limit.';
+          btnSend.innerHTML = 'SEND EMAIL BLAST <span aria-hidden="true" style="margin-left: 8px;">🚀</span>';
+          btnSend.disabled = false;
+          return;
+        }
+        
+        statusMsg.style.color = 'var(--text-dim)';
+        statusMsg.textContent = 'Processing attachments...';
+        
+        attachments = await Promise.all(files.map(file => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64Data = reader.result.split(',')[1];
+              resolve({ filename: file.name, content: base64Data, encoding: 'base64' });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }));
+      }
+
       for (let i = 0; i < targetEmails.length; i += CHUNK_SIZE) {
         const chunk = targetEmails.slice(i, i + CHUNK_SIZE);
         
@@ -980,7 +1019,8 @@ window.sendCustomEmail = async () => {
             message,
             targetEmails: chunk,
             ccEmails: currentCc,
-            bccEmails: currentBcc
+            bccEmails: currentBcc,
+            attachments
           })
         });
 
@@ -1020,3 +1060,34 @@ window.sendCustomEmail = async () => {
     setTimeout(() => { btnSend.innerHTML = defaultLabel; }, 2000);
   }
 };
+
+// Initialize Quill Editor for Email
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('quill-editor') && typeof Quill !== 'undefined') {
+    window.quillEditor = new Quill('#quill-editor', {
+      theme: 'snow',
+      placeholder: 'Type your email content here. You can use formatting tools...',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['link', 'image'],
+          ['clean']
+        ]
+      }
+    });
+    // Add custom styling overrides to match theme
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .ql-toolbar.ql-snow { border-color: var(--line-light); background: rgba(255,255,255,0.02); border-radius: 12px 12px 0 0; }
+      .ql-container.ql-snow { border-color: var(--line-light); font-family: inherit; font-size: 16px; color: var(--text-main); }
+      .ql-editor.ql-blank::before { color: var(--text-dim); font-style: normal; }
+      .ql-snow .ql-stroke { stroke: var(--text-dim); }
+      .ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill { fill: var(--text-dim); }
+      .ql-snow .ql-picker { color: var(--text-dim); }
+    `;
+    document.head.appendChild(style);
+  }
+});

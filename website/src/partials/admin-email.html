@@ -14,8 +14,13 @@
       </div>
 
       <div class="form-group" style="margin-bottom: 24px;">
-        <label for="email-message">Message <span class="label-hint">(HTML supported)</span></label>
-        <textarea id="email-message" rows="8" placeholder="Type your email content here. You can use simple HTML tags like <b>, <i>, <br>, <p>, and <a>."></textarea>
+        <label>Message</label>
+        <div id="quill-editor" style="background: rgba(255,255,255,0.02); min-height: 250px; border-radius: 0 0 12px 12px; border: 1px solid var(--line-light); border-top: none;"></div>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label for="email-attachments">Attachments <span class="label-hint">(Optional, max 20MB total)</span></label>
+        <input type="file" id="email-attachments" multiple style="background: rgba(255,255,255,0.02); border: 1px solid var(--line-light); border-radius: 8px; padding: 12px; width: 100%; color: var(--text-main);">
       </div>
 
       <div class="form-group" style="margin-bottom: 24px; border-top: 1px dashed var(--line-light); padding-top: 24px;">
@@ -26,6 +31,9 @@
           </label>
           <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
             <input type="radio" name="email-target" value="sdet" onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> SDET Tech Employees
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
+            <input type="radio" name="email-target" value="speakers" onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> Speakers / Keynotes
           </label>
           <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
             <input type="radio" name="email-target" value="custom" onchange="toggleCustomEmailInput()" style="accent-color: var(--accent); transform: scale(1.2);"> Custom Email(s)

@@ -6,7 +6,8 @@ const QRCode = require('qrcode');
 
 const app = express();
 app.use(cors()); 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const PORT = process.env.PORT || 3000;
 
@@ -313,7 +314,7 @@ app.post('/api/send-ticket', async (req, res) => {
 // SEND CUSTOM BULK EMAIL ENDPOINT
 // ----------------------------------------------------
 app.post('/api/send-custom-email', async (req, res) => {
-    const { subject, message, targetEmails, ccEmails, bccEmails } = req.body;
+    const { subject, message, targetEmails, ccEmails, bccEmails, attachments } = req.body;
 
     if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
         return res.status(400).json({ error: 'Missing required email data (subject, message, or targetEmails array)' });
@@ -322,12 +323,14 @@ app.post('/api/send-custom-email', async (req, res) => {
     try {
         const combinedBcc = [...targetEmails, ...(Array.isArray(bccEmails) ? bccEmails : [])];
         const ccList = Array.isArray(ccEmails) ? ccEmails : [];
+        const attachmentList = Array.isArray(attachments) ? attachments : [];
 
         const mailOptions = {
             from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
             bcc: combinedBcc, // Using bcc to protect privacy
             cc: ccList,
             subject: subject,
+            attachments: attachmentList,
             html: `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
