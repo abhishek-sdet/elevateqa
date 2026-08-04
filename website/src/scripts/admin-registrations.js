@@ -214,7 +214,8 @@ window.renderAttendees = (registrations) => {
 
   const tbody      = document.getElementById('attendee-table');
   const countBadge = document.getElementById('attendee-count');
-  const presentBadge = document.getElementById('present-count');
+  const presentBadgeAttendee = document.getElementById('present-count-attendee');
+  const presentBadgeSpeaker = document.getElementById('present-count-speaker');
   if (!tbody) return;
 
   if (countBadge) {
@@ -229,9 +230,24 @@ window.renderAttendees = (registrations) => {
     }
   }
   
-  if (presentBadge) {
-    const presentCount = raw.filter(p => p.status && p.status.toUpperCase() === 'PRESENT').length;
-    presentBadge.textContent = `${presentCount} present`;
+  if (presentBadgeAttendee && presentBadgeSpeaker) {
+    const isSpecialRole = role => ['Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'].includes(role || 'Attendee');
+    
+    const presentAttendees = raw.filter(p => p.status && p.status.toUpperCase() === 'PRESENT' && !isSpecialRole(p.role)).length;
+    const presentSpeakers = raw.filter(p => p.status && p.status.toUpperCase() === 'PRESENT' && isSpecialRole(p.role)).length;
+    
+    presentBadgeAttendee.textContent = `${presentAttendees} Attendee Present`;
+    presentBadgeSpeaker.textContent = `${presentSpeakers} Speaker Present`;
+    
+    if (presentAttendees >= 200) {
+      presentBadgeAttendee.style.background = 'var(--accent-red)';
+      presentBadgeAttendee.style.color = '#fff';
+      presentBadgeAttendee.style.borderColor = 'var(--accent-red)';
+    } else {
+      presentBadgeAttendee.style.background = 'var(--accent)';
+      presentBadgeAttendee.style.color = '#000';
+      presentBadgeAttendee.style.borderColor = 'var(--accent)';
+    }
   }
 
   if (filtered.length === 0) {
