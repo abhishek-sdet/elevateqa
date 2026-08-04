@@ -255,7 +255,7 @@ window.renderAttendees = (registrations) => {
     const roleOptions = ['Attendee', 'Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'];
     const currentRole = p.role || 'Attendee';
     const roleBadgeHtml = `
-      <select onchange="window.updateAttendeeRoleInline('${p.id}', this.value)" style="background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; padding: 4px; width: 100%;">
+      <select onchange="window.updateAttendeeRoleInline('${p.id}', this.value)" style="background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; padding: 4px; width: 100%; min-width: 90px;">
         ${roleOptions.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${r}</option>`).join('')}
       </select>
     `;

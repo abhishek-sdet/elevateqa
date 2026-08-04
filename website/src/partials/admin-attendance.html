@@ -43,7 +43,7 @@
                     <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllAttendees" onchange="toggleAllAttendees(this)"></th>
                     <th>Name</th>
                     <th>Status</th>
-                    <th>Role</th>
+                    <th style="min-width: 90px;">Role</th>
                     <th>Organization</th>
                     <th>Designation</th>
                     <th>Email</th>
@@ -66,7 +66,7 @@
                       </select>
                     </th>
                     <th>
-                      <select id="col-filter-role" onchange="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; height: 26px;">
+                      <select id="col-filter-role" onchange="window.filterAttendees()" style="width:100%; min-width: 90px; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; height: 26px;">
                         <option value="">All Roles</option>
                         <option value="Attendee">Attendee</option>
                         <option value="Keynote">Keynote</option>
