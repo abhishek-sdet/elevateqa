@@ -252,9 +252,13 @@ window.renderAttendees = (registrations) => {
     else if (isSpeaker) badgeHtml = '<span class="badge" style="background:#9C27B0; color:#fff; border-color:#9C27B0;">Speaker</span>';
     else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
     
-    const roleBadgeHtml = p.role && p.role !== 'Attendee' 
-      ? `<span class="badge" style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);">${p.role}</span>`
-      : `<span style="color:var(--ink-dim); font-size:12px;">Attendee</span>`;
+    const roleOptions = ['Attendee', 'Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'];
+    const currentRole = p.role || 'Attendee';
+    const roleBadgeHtml = `
+      <select onchange="window.updateAttendeeRoleInline('${p.id}', this.value)" style="background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; padding: 4px; width: 100%;">
+        ${roleOptions.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${r}</option>`).join('')}
+      </select>
+    `;
 
     return `
       <tr data-id="${p.id}">
@@ -466,6 +470,20 @@ window.sendBulkAssignRole = async () => {
   const { loadAllData } = await import('./admin-supabase.js');
   const data = await loadAllData();
   if (data && data.registrations) window.renderAttendees(data.registrations);
+};
+
+window.updateAttendeeRoleInline = async (id, role) => {
+  const { updateRegistrationRole, loadAllData } = await import('./admin-supabase.js');
+  try {
+    await updateRegistrationRole(id, role);
+    window.showToast(`Role updated to ${role}`, 'success');
+    
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+  } catch(e) {
+    console.error('Failed to update inline role', e);
+    window.showToast('Failed to update role', 'error');
+  }
 };
 
 window.openBulkEmailModal = () => {
