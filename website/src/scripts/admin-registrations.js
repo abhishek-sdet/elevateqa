@@ -133,16 +133,20 @@ window.renderAttendees = (registrations) => {
   // Sync tab styles with statusFilter
   const tabAll = document.getElementById('tab-all');
   const tabPass = document.getElementById('tab-pass');
+  const tabSpeaker = document.getElementById('tab-speaker');
   const tabReject = document.getElementById('tab-reject');
   
-  if (tabAll && tabPass && tabReject) {
-    [tabAll, tabPass, tabReject].forEach(t => {
+  if (tabAll && tabPass && tabSpeaker && tabReject) {
+    [tabAll, tabPass, tabSpeaker, tabReject].forEach(t => {
       t.style.background = 'var(--bg-3)';
       t.style.color = 'var(--ink)';
     });
     if (statusFilter === 'ticket_sent') {
       tabPass.style.background = 'var(--accent)';
       tabPass.style.color = '#000';
+    } else if (statusFilter === 'speaker') {
+      tabSpeaker.style.background = 'var(--accent)';
+      tabSpeaker.style.color = '#000';
     } else if (statusFilter === 'rejected') {
       tabReject.style.background = 'var(--accent)';
       tabReject.style.color = '#000';
@@ -170,9 +174,9 @@ window.renderAttendees = (registrations) => {
         if (status !== statusFilter) return false;
       }
     } else {
-      // ALL LIST = still-pending attendees only; once a final pass or house-full
+      // ALL LIST = still-pending attendees only; once a final pass, speaker, or house-full
       // email has been sent, they move to their own tab and drop out of here.
-      if (status === 'ticket_sent' || status === 'pass sent' || status === 'rejected') return false;
+      if (status === 'ticket_sent' || status === 'pass sent' || status === 'speaker' || status === 'rejected') return false;
     }
     return true;
   });
@@ -217,10 +221,12 @@ window.renderAttendees = (registrations) => {
 
     const isPresent = (p.status && p.status.toUpperCase() === 'PRESENT');
     const isSent = (p.status && p.status.toUpperCase() === 'TICKET_SENT');
+    const isSpeaker = (p.status && p.status.toUpperCase() === 'SPEAKER');
     const isRejected = (p.status && p.status.toUpperCase() === 'REJECTED');
     let badgeHtml = '<span class="badge">Verified</span>';
     if (isPresent) badgeHtml = '<span class="badge" style="background:var(--accent); color:#000;">Present</span>';
     else if (isSent) badgeHtml = '<span class="badge" style="background:#4CAF50; color:#fff; border-color:#4CAF50;">Pass Sent</span>';
+    else if (isSpeaker) badgeHtml = '<span class="badge" style="background:#9C27B0; color:#fff; border-color:#9C27B0;">Speaker</span>';
     else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
     
     return `
@@ -374,6 +380,42 @@ window.sendBulkRejections = async () => {
   prog.textContent = `Done. Sent ${sent} rejections.`;
   btn.innerHTML = '✓ Sent!';
   window.showToast(`Sent ${sent} rejection emails.`, 'success');
+  btn.disabled = false;
+  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+
+  // Refresh UI to show updated badges
+  const data = await loadAllData();
+  if (data && data.registrations) window.renderAttendees(data.registrations);
+};
+
+window.sendBulkSpeakers = async () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  
+  const confirmed = await window.showConfirm(`Are you sure you want to mark ${selected.length} attendees as Speakers/Keynotes?`, 'Make Speaker/Keynote', 'PROCEED');
+  if (!confirmed) return;
+
+  const btn = document.getElementById('btn-send-bulk-speakers');
+  const prog = document.getElementById('bulk-progress');
+  const defaultLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Processing...';
+  prog.style.display = 'block';
+
+  let updated = 0;
+  for (const attendee of selected) {
+    prog.textContent = `Processing ${updated + 1} / ${selected.length}...`;
+    try {
+      await updateRegistrationStatus(attendee.id, 'SPEAKER');
+      updated++;
+    } catch(e) {
+      console.error('Failed to update status for', attendee.email, e);
+    }
+  }
+
+  prog.textContent = `Done. Marked ${updated} as Speakers.`;
+  btn.innerHTML = '✓ Updated!';
+  window.showToast(`Marked ${updated} attendees as Speakers/Keynotes.`, 'success');
   btn.disabled = false;
   setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
 

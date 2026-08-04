@@ -16,6 +16,7 @@
             <div id="bulk-actions" style="margin-bottom: 16px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); border-radius: 8px; display: flex; gap: 12px; align-items: center;">
               <span style="font-size: 13px; color: var(--ink-dim);">Bulk Actions:</span>
               <button class="btn-save-all" onclick="sendBulkTickets()" id="btn-send-bulk-tickets" style="font-size: 13px; padding: 6px 12px; background: var(--accent); color: #000;">Send Final Passes (QR)</button>
+              <button class="btn-save-all" onclick="sendBulkSpeakers()" id="btn-send-bulk-speakers" style="font-size: 13px; padding: 6px 12px; background: var(--bg-3); color: var(--ink);">Make Speaker/Keynote</button>
               <button class="btn-reset" onclick="sendBulkRejections()" id="btn-send-bulk-rejections" style="font-size: 13px; padding: 6px 12px;">Send House Full</button>
               <div id="bulk-progress" style="display: none; font-size: 12px; font-weight: 600; color: var(--accent); margin-left: auto;">Processing 0 / 0...</div>
             </div>
@@ -23,6 +24,7 @@
             <div style="margin-bottom: 16px; display: flex; gap: 8px; border-bottom: 1px solid var(--line-strong); padding-bottom: 16px; margin-top: 8px;">
               <button id="tab-all" class="btn-mini" style="background: var(--accent); color: #000; padding: 6px 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;" onclick="window.setTabFilter('')">All List</button>
               <button id="tab-pass" class="btn-mini" style="background: var(--bg-3); color: var(--ink); padding: 6px 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;" onclick="window.setTabFilter('ticket_sent')">Final Pass Sent</button>
+              <button id="tab-speaker" class="btn-mini" style="background: var(--bg-3); color: var(--ink); padding: 6px 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;" onclick="window.setTabFilter('speaker')">Speakers / Keynotes</button>
               <button id="tab-reject" class="btn-mini" style="background: var(--bg-3); color: var(--ink); padding: 6px 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;" onclick="window.setTabFilter('rejected')">House Full Sent</button>
             </div>
             <!-- Search & Filters -->
@@ -64,6 +66,7 @@
                         <option value="verified">Verified</option>
                         <option value="present">Present</option>
                         <option value="ticket_sent">Pass Sent</option>
+                        <option value="speaker">Speaker / Keynote</option>
                         <option value="rejected">Rejected</option>
                       </select>
                     </th>
