@@ -141,4 +141,33 @@
         <div style="font-size:12px; margin-top:10px;">Applied on: <span id="sa-date"></span></div>
       </div>
     </div>
+  <div id="bulk-email-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:11500; align-items:center; justify-content:center; backdrop-filter:blur(25px); padding: 20px; overflow-y: auto;">
+    <div class="manager-card" style="width:100%; max-width:600px; max-height: 90vh; background:var(--ink-deep); border:1px solid var(--line-strong); border-radius:24px; overflow-y:auto; box-shadow: 0 40px 100px rgba(0,0,0,0.8); position:relative; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line-strong); padding-bottom: 20px; margin-bottom: 24px;">
+        <h2 style="font-family:var(--display); font-size:24px; color:white; margin:0;">Send <em style="color:var(--accent);">Email</em></h2>
+        <button onclick="document.getElementById('bulk-email-modal').style.display='none'" class="btn-del" style="width:36px; height:36px; font-size:18px;">✕</button>
+      </div>
+
+      <p style="color: var(--ink-dim); font-size: 13px; margin: -8px 0 20px 0; line-height: 1.5;">
+        Send a custom email to the selected attendees. HTML tags are supported.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="form-group">
+          <label for="bulk-email-subject">Subject</label>
+          <input type="text" id="bulk-email-subject" placeholder="Enter email subject...">
+        </div>
+        <div class="form-group">
+          <label for="bulk-email-message">Message</label>
+          <textarea id="bulk-email-message" rows="8" placeholder="Type your message here..."></textarea>
+        </div>
+      </div>
+
+      <div id="bulk-email-error" style="color: var(--accent-red); font-size: 13px; margin-top: 12px; display:none;"></div>
+
+      <div style="display:flex; gap:16px; margin-top:28px;">
+        <button onclick="document.getElementById('bulk-email-modal').style.display='none'" class="btn-reset" style="flex:1;">CANCEL</button>
+        <button id="btn-submit-bulk-email" onclick="window.sendBulkEmail()" class="btn-save-all" style="flex:1;">SEND EMAIL <span aria-hidden="true" style="margin-left: 8px;">🚀</span></button>
+      </div>
+    </div>
   </div>

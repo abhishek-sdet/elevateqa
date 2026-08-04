@@ -17,6 +17,7 @@
               <span style="font-size: 13px; color: var(--ink-dim);">Bulk Actions:</span>
               <button class="btn-save-all" onclick="sendBulkTickets()" id="btn-send-bulk-tickets" style="font-size: 13px; padding: 6px 12px; background: var(--accent); color: #000;">Send Final Passes (QR)</button>
               <button class="btn-save-all" onclick="sendBulkSpeakers()" id="btn-send-bulk-speakers" style="font-size: 13px; padding: 6px 12px; background: var(--bg-3); color: var(--ink);">Make Speaker/Keynote</button>
+              <button class="btn-save-all" onclick="openBulkEmailModal()" id="btn-open-bulk-email" style="font-size: 13px; padding: 6px 12px; background: var(--bg-3); color: var(--ink);">Send Email</button>
               <button class="btn-reset" onclick="sendBulkRejections()" id="btn-send-bulk-rejections" style="font-size: 13px; padding: 6px 12px;">Send House Full</button>
               <div id="bulk-progress" style="display: none; font-size: 12px; font-weight: 600; color: var(--accent); margin-left: auto;">Processing 0 / 0...</div>
             </div>
@@ -41,25 +42,19 @@
                   <tr>
                     <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllAttendees" onchange="toggleAllAttendees(this)"></th>
                     <th>Name</th>
+                    <th>Status</th>
                     <th>Organization</th>
                     <th>Designation</th>
                     <th>Email</th>
                     <th>Mobile</th>
                     <th>LinkedIn</th>
                     <th>Registered</th>
-                    <th>Status</th>
                     <th>Pass</th>
                     <th style="text-align: right;">Action</th>
                   </tr>
                   <tr class="filter-row">
                     <th></th>
                     <th><input type="text" id="col-filter-name" placeholder="Filter Name..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
-                    <th><input type="text" id="col-filter-org" placeholder="Filter Org..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
-                    <th><input type="text" id="col-filter-desig" placeholder="Filter Desig..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
-                    <th><input type="text" id="col-filter-email" placeholder="Filter Email..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
-                    <th><input type="text" id="col-filter-mobile" placeholder="Filter Mobile..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
-                    <th></th>
-                    <th></th>
                     <th>
                       <select id="col-filter-status" onchange="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px; height: 26px;">
                         <option value="">All</option>
@@ -70,6 +65,12 @@
                         <option value="rejected">Rejected</option>
                       </select>
                     </th>
+                    <th><input type="text" id="col-filter-org" placeholder="Filter Org..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-desig" placeholder="Filter Desig..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-email" placeholder="Filter Email..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th><input type="text" id="col-filter-mobile" placeholder="Filter Mobile..." oninput="window.filterAttendees()" style="width:100%; padding: 4px 8px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 11px;"></th>
+                    <th></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                   </tr>

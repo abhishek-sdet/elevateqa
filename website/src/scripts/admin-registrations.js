@@ -233,13 +233,13 @@ window.renderAttendees = (registrations) => {
       <tr data-id="${p.id}">
         <td style="text-align: center;"><input type="checkbox" class="attendee-cb" value='${JSON.stringify({id: p.id, name: p.name, email: p.email, company: p.company, designation: p.designation, phone: p.phone, linkedin: p.linkedin}).replace(/'/g, "&#39;")}'></td>
         <td>${p.name  || '—'}</td>
+        <td>${badgeHtml}</td>
         <td>${p.company     || '—'}</td>
         <td>${p.designation || '—'}</td>
         <td>${p.email || '—'}</td>
         <td>${p.phone || '—'}</td>
         <td>${linkedinLink}</td>
         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '—'}</td>
-        <td>${badgeHtml}</td>
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -422,6 +422,70 @@ window.sendBulkSpeakers = async () => {
   // Refresh UI to show updated badges
   const data = await loadAllData();
   if (data && data.registrations) window.renderAttendees(data.registrations);
+};
+
+window.openBulkEmailModal = () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) {
+    return window.showToast('Select at least one attendee to send an email.', 'error');
+  }
+  document.getElementById('bulk-email-subject').value = '';
+  document.getElementById('bulk-email-message').value = '';
+  document.getElementById('bulk-email-error').style.display = 'none';
+  document.getElementById('bulk-email-modal').style.display = 'flex';
+};
+
+window.sendBulkEmail = async () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) return;
+
+  const subject = document.getElementById('bulk-email-subject').value.trim();
+  const message = document.getElementById('bulk-email-message').value.trim();
+  const errorEl = document.getElementById('bulk-email-error');
+
+  if (!subject || !message) {
+    errorEl.textContent = 'Please enter both a subject and a message.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  errorEl.style.display = 'none';
+  const btn = document.getElementById('btn-submit-bulk-email');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
+  btn.disabled = true;
+
+  try {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
+
+    // Map attendees to the expected format
+    const toList = selected.map(a => ({ name: a.name, email: a.email }));
+
+    const response = await fetch(`${baseUrl}/send-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject: subject,
+        message: message,
+        toList: toList
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to send email. Status: ${response.status}`);
+    }
+
+    window.showToast(`Successfully sent email to ${selected.length} attendees!`, 'success');
+    document.getElementById('bulk-email-modal').style.display = 'none';
+  } catch (error) {
+    console.error('Bulk email error:', error);
+    errorEl.textContent = 'Failed to send emails. Please try again.';
+    errorEl.style.display = 'block';
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
 };
 
 window.resetAttendeeStatus = async (id) => {
