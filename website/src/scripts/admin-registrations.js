@@ -121,16 +121,20 @@ window.renderAttendees = (registrations) => {
   }
   const raw = window.rawAttendees || [];
   
-  // Get filter inputs
+  // Get all column filters
+  const fName = document.getElementById('col-filter-name') ? document.getElementById('col-filter-name').value.toLowerCase().trim() : '';
+  const fOrg = document.getElementById('col-filter-org') ? document.getElementById('col-filter-org').value.toLowerCase().trim() : '';
+  const fDesig = document.getElementById('col-filter-desig') ? document.getElementById('col-filter-desig').value.toLowerCase().trim() : '';
+  const fEmail = document.getElementById('col-filter-email') ? document.getElementById('col-filter-email').value.toLowerCase().trim() : '';
+  const fMobile = document.getElementById('col-filter-mobile') ? document.getElementById('col-filter-mobile').value.toLowerCase().trim() : '';
+  const fStatus = document.getElementById('col-filter-status') ? document.getElementById('col-filter-status').value : '';
+  const fRole = document.getElementById('col-filter-role') ? document.getElementById('col-filter-role').value : '';
   const globalSearch = (document.getElementById('attendee-search')?.value || '').toLowerCase().trim();
-  const nameFilter = (document.getElementById('col-filter-name')?.value || '').toLowerCase().trim();
-  const orgFilter = (document.getElementById('col-filter-org')?.value || '').toLowerCase().trim();
-  const desigFilter = (document.getElementById('col-filter-desig')?.value || '').toLowerCase().trim();
-  const emailFilter = (document.getElementById('col-filter-email')?.value || '').toLowerCase().trim();
-  const mobileFilter = (document.getElementById('col-filter-mobile')?.value || '').toLowerCase().trim();
-  const statusFilter = (document.getElementById('col-filter-status')?.value || '').toLowerCase().trim();
 
-  // Sync tab styles with statusFilter
+  // Tab filter is based on window.currentAttendeeTab
+  const currentTab = window.currentAttendeeTab || 'all';
+
+  // Sync tab styles with currentTab
   const tabAll = document.getElementById('tab-all');
   const tabPass = document.getElementById('tab-pass');
   const tabSpeaker = document.getElementById('tab-speaker');
@@ -141,16 +145,16 @@ window.renderAttendees = (registrations) => {
       t.style.background = 'var(--bg-3)';
       t.style.color = 'var(--ink)';
     });
-    if (statusFilter === 'ticket_sent') {
+    if (currentTab === 'ticket_sent') {
       tabPass.style.background = 'var(--accent)';
       tabPass.style.color = '#000';
-    } else if (statusFilter === 'speaker') {
+    } else if (currentTab === 'speaker') {
       tabSpeaker.style.background = 'var(--accent)';
       tabSpeaker.style.color = '#000';
-    } else if (statusFilter === 'rejected') {
+    } else if (currentTab === 'rejected') {
       tabReject.style.background = 'var(--accent)';
       tabReject.style.color = '#000';
-    } else if (statusFilter === '') {
+    } else if (currentTab === 'all') {
       tabAll.style.background = 'var(--accent)';
       tabAll.style.color = '#000';
     }
@@ -161,23 +165,42 @@ window.renderAttendees = (registrations) => {
       const matchText = `${p.name || ''} ${p.company || ''} ${p.designation || ''} ${p.email || ''} ${p.phone || ''}`.toLowerCase();
       if (!matchText.includes(globalSearch)) return false;
     }
-    if (nameFilter && !(p.name || '').toLowerCase().includes(nameFilter)) return false;
-    if (orgFilter && !(p.company || '').toLowerCase().includes(orgFilter)) return false;
-    if (desigFilter && !(p.designation || '').toLowerCase().includes(desigFilter)) return false;
-    if (emailFilter && !(p.email || '').toLowerCase().includes(emailFilter)) return false;
-    if (mobileFilter && !(p.phone || '').toLowerCase().includes(mobileFilter)) return false;
+    if (fName && !(p.name || '').toLowerCase().includes(fName)) return false;
+    if (fOrg && !(p.company || '').toLowerCase().includes(fOrg)) return false;
+    if (fDesig && !(p.designation || '').toLowerCase().includes(fDesig)) return false;
+    if (fEmail && !(p.email || '').toLowerCase().includes(fEmail)) return false;
+    if (fMobile && !(p.phone || '').toLowerCase().includes(fMobile)) return false;
+    
     const status = (p.status || 'verified').toLowerCase();
-    if (statusFilter) {
-      if (statusFilter === 'ticket_sent') {
-        if (status !== 'ticket_sent' && status !== 'pass sent') return false;
-      } else {
-        if (status !== statusFilter) return false;
-      }
+    const role = p.role || 'Attendee';
+    const isSpecialRole = ['Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'].includes(role);
+
+    // 1. Tab Level Filtering
+    if (currentTab === 'speaker') {
+      // Must have special role OR legacy speaker status
+      if (!isSpecialRole && status !== 'speaker') return false;
+    } else if (currentTab === 'ticket_sent') {
+      if (status !== 'ticket_sent' && status !== 'pass sent') return false;
+    } else if (currentTab === 'rejected') {
+      if (status !== 'rejected') return false;
     } else {
-      // ALL LIST = still-pending attendees only; once a final pass, speaker, or house-full
-      // email has been sent, they move to their own tab and drop out of here.
-      if (status === 'ticket_sent' || status === 'pass sent' || status === 'speaker' || status === 'rejected') return false;
+      // 'all' tab: exclude those in special tabs
+      if (isSpecialRole || status === 'ticket_sent' || status === 'pass sent' || status === 'speaker' || status === 'rejected') {
+        return false;
+      }
     }
+
+    // 3. Status Column filter
+    if (fStatus) {
+      if (fStatus === 'ticket_sent' && (status !== 'ticket_sent' && status !== 'pass sent')) return false;
+      if (fStatus !== 'ticket_sent' && status !== fStatus) return false;
+    }
+
+    // 4. Role Column filter
+    if (fRole) {
+      if (role.toLowerCase() !== fRole.toLowerCase()) return false;
+    }
+
     return true;
   });
 
@@ -229,11 +252,16 @@ window.renderAttendees = (registrations) => {
     else if (isSpeaker) badgeHtml = '<span class="badge" style="background:#9C27B0; color:#fff; border-color:#9C27B0;">Speaker</span>';
     else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
     
+    const roleBadgeHtml = p.role && p.role !== 'Attendee' 
+      ? `<span class="badge" style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);">${p.role}</span>`
+      : `<span style="color:var(--ink-dim); font-size:12px;">Attendee</span>`;
+
     return `
       <tr data-id="${p.id}">
         <td style="text-align: center;"><input type="checkbox" class="attendee-cb" value='${JSON.stringify({id: p.id, name: p.name, email: p.email, company: p.company, designation: p.designation, phone: p.phone, linkedin: p.linkedin}).replace(/'/g, "&#39;")}'></td>
         <td>${p.name  || '—'}</td>
         <td>${badgeHtml}</td>
+        <td>${roleBadgeHtml}</td>
         <td>${p.company     || '—'}</td>
         <td>${p.designation || '—'}</td>
         <td>${p.email || '—'}</td>
@@ -388,38 +416,52 @@ window.sendBulkRejections = async () => {
   if (data && data.registrations) window.renderAttendees(data.registrations);
 };
 
-window.sendBulkSpeakers = async () => {
+window.openAssignRoleModal = () => {
   const selected = window.getSelectedAttendees();
   if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
-  
-  const confirmed = await window.showConfirm(`Are you sure you want to mark ${selected.length} attendees as Speakers/Keynotes?`, 'Make Speaker/Keynote', 'PROCEED');
-  if (!confirmed) return;
+  document.getElementById('assign-role-select').value = 'Attendee';
+  document.getElementById('assign-role-modal').style.display = 'flex';
+};
 
-  const btn = document.getElementById('btn-send-bulk-speakers');
+window.sendBulkAssignRole = async () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) return;
+  
+  const role = document.getElementById('assign-role-select').value;
+  
+  const btn = document.getElementById('btn-submit-assign-role');
   const prog = document.getElementById('bulk-progress');
   const defaultLabel = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Processing...';
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
   prog.style.display = 'block';
 
   let updated = 0;
+  // Use updateRegistrationRole from admin-supabase.js
+  const { updateRegistrationRole } = await import('./admin-supabase.js');
+
   for (const attendee of selected) {
     prog.textContent = `Processing ${updated + 1} / ${selected.length}...`;
     try {
-      await updateRegistrationStatus(attendee.id, 'SPEAKER');
+      await updateRegistrationRole(attendee.id, role);
       updated++;
     } catch(e) {
-      console.error('Failed to update status for', attendee.email, e);
+      console.error('Failed to update role for', attendee.email, e);
     }
   }
 
-  prog.textContent = `Done. Marked ${updated} as Speakers.`;
-  btn.innerHTML = '✓ Updated!';
-  window.showToast(`Marked ${updated} attendees as Speakers/Keynotes.`, 'success');
+  prog.textContent = `Done. Updated ${updated} roles.`;
+  btn.innerHTML = '✓ Saved!';
+  window.showToast(`Updated roles for ${updated} attendees.`, 'success');
   btn.disabled = false;
-  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+  setTimeout(() => { 
+    prog.style.display = 'none'; 
+    btn.innerHTML = defaultLabel; 
+    document.getElementById('assign-role-modal').style.display = 'none';
+  }, 1500);
 
-  // Refresh UI to show updated badges
+  // Refresh UI
+  const { loadAllData } = await import('./admin-supabase.js');
   const data = await loadAllData();
   if (data && data.registrations) window.renderAttendees(data.registrations);
 };

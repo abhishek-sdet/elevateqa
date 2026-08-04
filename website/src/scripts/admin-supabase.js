@@ -500,6 +500,17 @@ export async function updateRegistrationStatus(id, status) {
   }
 }
 
+export async function updateRegistrationRole(id, role) {
+  try {
+    const { error } = await supabase.from('registrations').update({ role }).eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error('Error updating role:', err);
+    return false;
+  }
+}
+
 export async function deleteItem(table, id) {
   const { error } = await supabase
     .from(table)

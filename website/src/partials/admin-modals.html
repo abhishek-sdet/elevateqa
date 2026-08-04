@@ -170,4 +170,33 @@
         <button id="btn-submit-bulk-email" onclick="window.sendBulkEmail()" class="btn-save-all" style="flex:1;">SEND EMAIL <span aria-hidden="true" style="margin-left: 8px;">🚀</span></button>
       </div>
     </div>
+  <div id="assign-role-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:11500; align-items:center; justify-content:center; backdrop-filter:blur(25px); padding: 20px;">
+    <div class="manager-card" style="width:100%; max-width:400px; background:var(--ink-deep); border:1px solid var(--line-strong); border-radius:24px; box-shadow: 0 40px 100px rgba(0,0,0,0.8); position:relative; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line-strong); padding-bottom: 20px; margin-bottom: 24px;">
+        <h2 style="font-family:var(--display); font-size:24px; color:white; margin:0;">Assign <em style="color:var(--accent);">Role</em></h2>
+        <button onclick="document.getElementById('assign-role-modal').style.display='none'" class="btn-del" style="width:36px; height:36px; font-size:18px;">✕</button>
+      </div>
+
+      <p style="color: var(--ink-dim); font-size: 13px; margin: -8px 0 20px 0; line-height: 1.5;">
+        Select a role for the selected attendees. Non-attendee roles will appear in the Speakers / Keynotes tab.
+      </p>
+
+      <div class="form-group">
+        <label for="assign-role-select">Select Role</label>
+        <select id="assign-role-select" style="width: 100%; padding: 12px; background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 8px; color: white;">
+          <option value="Attendee">Attendee</option>
+          <option value="Keynote">Keynote</option>
+          <option value="Speaker">Speaker</option>
+          <option value="Panelist">Panelist</option>
+          <option value="Organiser">Organiser</option>
+          <option value="Chief Guest">Chief Guest</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:16px; margin-top:28px;">
+        <button onclick="document.getElementById('assign-role-modal').style.display='none'" class="btn-reset" style="flex:1;">CANCEL</button>
+        <button id="btn-submit-assign-role" onclick="window.sendBulkAssignRole()" class="btn-save-all" style="flex:1;">SAVE ROLE</button>
+      </div>
+    </div>
+  </div>
   </div>
