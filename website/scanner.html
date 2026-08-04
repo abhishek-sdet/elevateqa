@@ -48,12 +48,13 @@
     }
 
     .top-bar {
-      padding: 24px; display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(to bottom, var(--bg), transparent);
       position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+      padding: calc(env(safe-area-inset-top) + 24px) 24px 24px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(180deg, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0) 100%);
     }
-    .brand { font-family: var(--display); font-size: 18px; font-style: italic; font-weight: 700; letter-spacing: -0.02em; }
-    .brand span { color: var(--accent); font-style: normal; }
+    .brand { font-family: var(--display); font-size: 20px; font-style: italic; display: flex; align-items: center; }
+    .brand img { height: 28px; }
     
     .status-pill { 
       background: rgba(212, 255, 58, 0.05); border: 1px solid var(--line);
@@ -184,7 +185,8 @@
     }
 
     .res-label { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; margin-bottom: 8px; }
-    .res-name { font-family: var(--display); font-size: 36px; line-height: 1.2; margin-bottom: 12px; word-break: break-word; overflow-wrap: break-word; }
+    .res-name { font-family: var(--display); font-size: 36px; line-height: 1.2; margin-bottom: 8px; word-break: break-word; overflow-wrap: break-word; }
+    .res-role { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
     .res-org { font-family: var(--body); font-size: 16px; color: var(--ink-dim); margin-bottom: 48px; word-break: break-word; overflow-wrap: break-word; }
     
     .res-badge {
@@ -258,7 +260,7 @@
 
 <div class="app-container">
   <header class="top-bar">
-    <div class="brand">Elevate <span>Scanner</span></div>
+    <div class="brand"><img src="./logo.png" alt="Elevate Scanner" onerror="this.src='./images/Logo.png'; this.onerror=null;"></div>
     <div class="status-pill" id="conn-status">
       <div class="status-dot"></div>
       OFFLINE
@@ -295,9 +297,10 @@
   <div class="result-overlay" id="result-overlay">
     <div class="result-card" id="result-card">
       <div class="result-icon" id="res-icon">✓</div>
-      <div class="res-label" id="res-label">SUCCESS</div>
-      <div class="res-name" id="res-name">Attendee Name</div>
-      <div class="res-org" id="res-org">Organization</div>
+      <div class="res-label" id="res-label">CONFIRMED</div>
+      <div class="res-name" id="res-name">Jane Doe</div>
+      <div class="res-role" id="res-role">ATTENDEE</div>
+      <div class="res-org" id="res-org">Acme Corp</div>
       <div class="res-badge" id="res-badge">ADMITTED</div>
       <button class="next-btn" onclick="resetScanner()">NEXT ATTENDEE</button>
     </div>
@@ -560,12 +563,12 @@
         // Lost the race (or already admitted earlier) — another gate's
         // device got there first.
         const roleStr = user.role ? user.role.toUpperCase() : 'ATTENDEE';
-        renderResult('already', 'DUPLICATE', user.name, `${roleStr} • ${user.company || user.email}`, 'ALREADY IN');
+        renderResult('already', 'DUPLICATE', user.name, roleStr, user.company || user.email, 'ALREADY IN');
         return;
       }
 
       const roleStr = user.role ? user.role.toUpperCase() : 'ATTENDEE';
-      renderResult('success', 'CONFIRMED', user.name, `${roleStr} • ${user.company || user.email}`, 'ADMITTED');
+      renderResult('success', 'CONFIRMED', user.name, roleStr, user.company || user.email, 'ADMITTED');
       playBeep('success');
 
     } catch (e) {
@@ -574,7 +577,7 @@
     }
   }
 
-  function renderResult(type, label, name, org, badge) {
+  function renderResult(type, label, name, role, org, badge) {
     const overlay = document.getElementById('result-overlay');
     const card = document.getElementById('result-card');
     const iconContainer = document.getElementById('res-icon');
@@ -604,6 +607,18 @@
 
     document.getElementById('res-label').textContent = label;
     document.getElementById('res-name').textContent = name;
+    
+    const roleEl = document.getElementById('res-role');
+    if (role) {
+      roleEl.textContent = role;
+      roleEl.style.display = 'block';
+      if (role === 'SPEAKER' || role === 'KEYNOTE') roleEl.style.color = '#9C27B0';
+      else if (role === 'ORGANISER' || role === 'CHIEF GUEST') roleEl.style.color = 'var(--accent)';
+      else roleEl.style.color = 'var(--ink-dim)';
+    } else {
+      roleEl.style.display = 'none';
+    }
+    
     document.getElementById('res-org').textContent = org;
     document.getElementById('res-badge').textContent = badge;
 
