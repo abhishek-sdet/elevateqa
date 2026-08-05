@@ -303,7 +303,6 @@
       <div class="res-org" id="res-org">Acme Corp</div>
       <div class="res-badge" id="res-badge">ADMITTED</div>
       <div style="display: flex; gap: 12px; margin-top: 20px; width: 100%;">
-        <button class="next-btn" id="btn-badge-given" onclick="markBadgeGiven()" style="background:#2196F3; flex: 1; padding: 16px 0; font-size: 14px;">GIVE BADGE</button>
         <button class="next-btn" onclick="resetScanner()" style="flex: 1; padding: 16px 0; font-size: 14px;">NEXT</button>
       </div>
     </div>
@@ -592,22 +591,6 @@
     }
   }
 
-  async function markBadgeGiven() {
-    if (!lastScannedTicketId) return;
-    const btn = document.getElementById('btn-badge-given');
-    btn.textContent = 'UPDATING...';
-    try {
-      const { error } = await supabaseClient.from('registrations').update({ status: 'BADGE_GIVEN' }).eq('id', lastScannedTicketId);
-      if (error) throw error;
-      btn.textContent = '✓ BADGE GIVEN';
-      btn.style.background = '#4CAF50';
-      btn.disabled = true;
-    } catch(e) {
-      console.error(e);
-      btn.textContent = 'ERROR';
-    }
-  }
-
   function renderResult(type, label, name, role, org, badge) {
     const overlay = document.getElementById('result-overlay');
     const card = document.getElementById('result-card');
@@ -630,16 +613,10 @@
     
     if (type === 'success') {
       iconContainer.innerHTML = successSvg;
-      document.getElementById('btn-badge-given').style.display = 'block';
-      document.getElementById('btn-badge-given').textContent = 'GIVE BADGE';
-      document.getElementById('btn-badge-given').style.background = '#2196F3';
-      document.getElementById('btn-badge-given').disabled = false;
     } else if (type === 'error') {
       iconContainer.innerHTML = errorSvg;
-      document.getElementById('btn-badge-given').style.display = 'none';
     } else {
       iconContainer.innerHTML = `<div style="font-size: 40px;">⚠️</div>`;
-      document.getElementById('btn-badge-given').style.display = 'none';
     }
 
     document.getElementById('res-label').textContent = label;
