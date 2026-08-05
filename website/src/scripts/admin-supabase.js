@@ -552,3 +552,5 @@ export async function restoreData(table, dataArray) {
   }
   return true;
 }
+
+export { supabase };
