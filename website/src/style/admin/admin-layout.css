@@ -87,7 +87,7 @@ body {
 
 /* CONTENT WRAPPER */
 /* CONTENT WRAPPER */
-#protected-content { width: 100%; height: 100%; display: none; }
+#protected-content { width: 100%; flex: 1; overflow: hidden; display: none; flex-direction: column; }
 html.is-logged-in #protected-content { display: flex; }
 
 /* LOGIN OVERLAY */
