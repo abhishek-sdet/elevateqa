@@ -735,6 +735,12 @@ export function populateUI(data) {
   fillTpl('et-food-body1',   food.body1);
   fillTpl('et-food-body2',   food.body2);
   fillTpl('et-food-closing', food.closing);
+
+  const loc = et.location || {};
+  fillTpl('et-location-subject', loc.subject);
+  fillTpl('et-location-body1',   loc.body1);
+  fillTpl('et-location-body2',   loc.body2);
+  fillTpl('et-location-closing', loc.closing);
 }
 
 function _renderImgPreview(id, url) {
@@ -799,6 +805,12 @@ window.saveEmailTemplates = async () => {
         body1:   getVal('et-food-body1'),
         body2:   getVal('et-food-body2'),
         closing: getVal('et-food-closing'),
+      },
+      location: {
+        subject: getVal('et-location-subject'),
+        body1:   getVal('et-location-body1'),
+        body2:   getVal('et-location-body2'),
+        closing: getVal('et-location-closing'),
       },
     }
   };

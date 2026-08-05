@@ -83,6 +83,7 @@
       <button class="tab-btn" id="etab-btn-speaker" onclick="showEmailTemplateTab('speaker')" style="font-size: 12px; padding: 10px 16px;">🎙️ Speaker App</button>
       <button class="tab-btn" id="etab-btn-rejection" onclick="showEmailTemplateTab('rejection')" style="font-size: 12px; padding: 10px 16px;">❌ Rejection</button>
       <button class="tab-btn" id="etab-btn-food" onclick="showEmailTemplateTab('food')" style="font-size: 12px; padding: 10px 16px;">🍔 Food Info</button>
+      <button class="tab-btn" id="etab-btn-location" onclick="showEmailTemplateTab('location')" style="font-size: 12px; padding: 10px 16px;">📍 Location</button>
     </div>
 
     <div class="card-body" style="padding-top: 28px;">
@@ -207,6 +208,41 @@
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-food-closing">Closing Message</label>
           <input type="text" id="et-food-closing" placeholder="See you bright and early!">
+        </div>
+      </div>
+
+      <!-- ── LOCATION / TRAVEL GUIDE ── -->
+      <div id="etab-location" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Manual Blast Template</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-location-subject">Email Subject</label>
+          <input type="text" id="et-location-subject" placeholder="ElevateQA 2026: Venue & Travel Guide" value="Elevate QA Tech Summit 2026: Travel & Location Guide">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-location-body1">Main Message</label>
+          <textarea id="et-location-body1" rows="5" placeholder="Hi everyone,&#10;We're excited to welcome you...">Hi {{Name}},
+
+We're excited to welcome you to Elevate QA Tech Summit 2026 on Saturday, 8 August 2026, at Crowne Plaza Mayur Vihar, New Delhi.
+
+To help you plan your journey, we've attached a Travel & Location Guide with directions from the nearest metro stations, IGI Airport, and Kashmere Gate, along with a Google Maps link for easy navigation.
+
+Registration opens at 8:00 AM IST. We recommend arriving on time for a smooth check-in experience before the sessions begin.</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-location-body2">Logistics / Points</label>
+          <textarea id="et-location-body2" rows="7" placeholder="As traffic in parts of Delhi NCR...">As traffic in parts of Delhi NCR may be heavier than usual due to the ongoing Kawad Yatra, we encourage you to plan your departure with a little extra buffer time to ensure a comfortable and stress-free journey.
+
+<img src="https://elevateqa.sdettech.com/location-guide.jpg" alt="Ways to reach Crowne Plaza Mayur Vihar" style="max-width: 100%; border-radius: 8px; margin: 16px 0;">
+
+📍 Venue: Crowne Plaza Mayur Vihar, New Delhi
+🗺️ Google Maps: https://maps.app.goo.gl/ocR2t1HAKxFNF4Fz9?g_st=iw
+🌐 Website: https://elevateqa.sdettech.com</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-location-closing">Closing Message</label>
+          <input type="text" id="et-location-closing" placeholder="Safe travels..." value="Safe travels, and we'll see you on 8 August for an exciting day of learning, innovation, and networking.">
         </div>
       </div>
 
