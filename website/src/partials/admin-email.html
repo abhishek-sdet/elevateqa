@@ -11,12 +11,11 @@
       <div class="form-group" style="margin-bottom: 24px;">
         <label for="load-template-select">Load Template <span class="label-hint">Pre-fill the subject and message</span></label>
         <div style="display: flex; gap: 12px;">
-          <select id="load-template-select" style="flex: 1; padding: 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text-main);">
+          <select id="load-template-select" onchange="loadSelectedTemplate()" style="flex: 1; padding: 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text-main);">
             <option value="">-- Select a template to load --</option>
             <option value="food">🍔 Food Info</option>
             <option value="location">📍 Location / Travel Guide</option>
           </select>
-          <button class="btn-secondary" onclick="loadSelectedTemplate()" style="padding: 0 24px; font-weight: bold; border-radius: 8px; background: var(--bg-3); border: 1px solid var(--line); color: var(--text-main); cursor: pointer;">LOAD</button>
         </div>
       </div>
 
