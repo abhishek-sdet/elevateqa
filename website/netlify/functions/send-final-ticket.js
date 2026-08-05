@@ -1,6 +1,22 @@
 import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+
+// See verify-otp.js's mintAdminToken. This is the admin's bulk "send final
+// pass" action; gate it the same way send-custom-email.js is gated. Falls
+// back to allowing the request through if ADMIN_TOKEN_SECRET isn't set yet.
+function isValidAdminToken(token) {
+    const secret = process.env.ADMIN_TOKEN_SECRET;
+    if (!secret) return true;
+    if (!token || token.split('.').length !== 3) return false;
+    const [emailB64, expires, sig] = token.split('.');
+    const expected = crypto.createHmac('sha256', secret).update(`${emailB64}.${expires}`).digest('hex');
+    const sigBuf = Buffer.from(sig, 'hex');
+    const expBuf = Buffer.from(expected, 'hex');
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) return false;
+    return Date.now() <= Number(expires);
+}
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://wbgxcadajmdjxfhsgose.supabase.co';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
@@ -18,7 +34,7 @@ async function fetchEmailTemplate(type) {
 export const handler = async (event, context) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
@@ -28,6 +44,10 @@ export const handler = async (event, context) => {
 
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: 'Method Not Allowed' };
+    }
+
+    if (!isValidAdminToken(event.headers['x-admin-token'])) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Unauthorized. Please log in again.' }) };
     }
 
     try {

@@ -5,7 +5,8 @@
  *           resetAttendeeStatus, revokeAttendeePresent
  * Extracted from admin-core.js for maintainability.
  */
-import { deleteItem, loadAllData, updateRegistrationStatus, restoreData, addAttendee } from './admin-supabase.js';
+import { deleteItem, loadAllData, updateRegistrationStatus, restoreData, addAttendee, purgeAllRegistrations } from './admin-supabase.js';
+import { escapeHtml, jsAttrSafe, safeHttpUrl } from './admin-utils.js';
 
 // ── ADD ATTENDEE MANUALLY ────────────────────────────────────────────────────
 window.openAddAttendeeModal = () => {
@@ -282,16 +283,17 @@ window.renderAttendees = (registrations) => {
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 40px; color: var(--ink-dim);">No registrations found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 40px; color: var(--ink-dim);">No registrations found</td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map((p) => {
     const qrHtml        = window.generateAdminQR(p);
-    const safeName      = (p.name  || '—').replace(/'/g, "\\'");
-    const safeEmail     = (p.email || '—').replace(/'/g, "\\'");
-    const linkedinLink  = p.linkedin
-      ? `<a href="${p.linkedin}" target="_blank" style="color:var(--accent); font-weight:600; text-decoration:none;">LinkedIn ↗</a>`
+    const safeName      = jsAttrSafe(p.name  || '—');
+    const safeEmail     = jsAttrSafe(p.email || '—');
+    const safeLinkedinUrl = safeHttpUrl(p.linkedin);
+    const linkedinLink  = safeLinkedinUrl
+      ? `<a href="${escapeHtml(safeLinkedinUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent); font-weight:600; text-decoration:none;">LinkedIn ↗</a>`
       : '—';
 
     const isBadgeGiven = (p.status && p.status.toUpperCase() === 'BADGE_GIVEN');
@@ -321,14 +323,14 @@ window.renderAttendees = (registrations) => {
 
     return `
       <tr data-id="${p.id}">
-        <td style="text-align: center;"><input type="checkbox" class="attendee-cb" value='${JSON.stringify({id: p.id, name: p.name, email: p.email, company: p.company, designation: p.designation, phone: p.phone, linkedin: p.linkedin}).replace(/'/g, "&#39;")}'></td>
-        <td>${p.name  || '—'}</td>
+        <td style="text-align: center;"><input type="checkbox" class="attendee-cb" value='${JSON.stringify({id: p.id, name: p.name, email: p.email, company: p.company, designation: p.designation, phone: p.phone, linkedin: p.linkedin}).replace(/&/g, "&amp;").replace(/'/g, "&#39;")}'></td>
+        <td>${escapeHtml(p.name  || '—')}</td>
         <td>${badgeHtml}</td>
         <td>${roleBadgeHtml}</td>
-        <td>${p.company     || '—'}</td>
-        <td>${p.designation || '—'}</td>
-        <td>${p.email || '—'}</td>
-        <td>${p.phone || '—'}</td>
+        <td>${escapeHtml(p.company     || '—')}</td>
+        <td>${escapeHtml(p.designation || '—')}</td>
+        <td>${escapeHtml(p.email || '—')}</td>
+        <td>${escapeHtml(p.phone || '—')}</td>
         <td>${linkedinLink}</td>
         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '—'}</td>
         <td class="qr-col" onclick="showPass('${p.id}', '${safeName}', '${safeEmail}')" title="Click to View Pass">${qrHtml}</td>
@@ -450,12 +452,12 @@ window.sendBulkTickets = async () => {
         company: attendee.company,
         designation: attendee.designation || '',
         ticketId: 'EQ26-' + String(attendee.id).split('-')[0].toUpperCase(),
-        qrData: `ELEVATE-QA:${attendee.id}|${attendee.name}|${attendee.company}`
+        qrData: `ELEVATE-QA:${attendee.id}|${attendee.name}|${attendee.email}`
       };
 
       const response = await fetch(`${baseUrl}/send-final-ticket`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Admin-Token": sessionStorage.getItem('admin_token') || '' },
         body: JSON.stringify(payload)
       });
       if (!response.ok) throw new Error('Failed');
@@ -689,19 +691,27 @@ window.resetAttendeeStatus = async (id) => {
 window.revokeAttendeePresent = async (id) => {
   const confirmed = await window.showConfirm("Are you sure you want to revoke this attendee's 'Present' status?", 'Revoke Check-in', 'REVOKE');
   if (!confirmed) return;
-  await updateRegistrationStatus(id, 'TICKET_SENT');
-  const data = await loadAllData();
-  if (data && data.registrations) window.renderAttendees(data.registrations);
-  window.showToast("Attendee status reverted to 'Pass Sent'", "success");
+  const success = await updateRegistrationStatus(id, 'TICKET_SENT');
+  if (success) {
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+    window.showToast("Attendee status reverted to 'Pass Sent'", "success");
+  } else {
+    window.showToast("Failed to revoke check-in status", "error");
+  }
 };
 
 window.markAttendeePresent = async (id) => {
   const confirmed = await window.showConfirm("Manually mark this attendee as PRESENT?", 'Mark Present', 'MARK PRESENT');
   if (!confirmed) return;
-  await updateRegistrationStatus(id, 'PRESENT');
-  const data = await loadAllData();
-  if (data && data.registrations) window.renderAttendees(data.registrations);
-  window.showToast("Attendee manually marked as Present", "success");
+  const success = await updateRegistrationStatus(id, 'PRESENT');
+  if (success) {
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+    window.showToast("Attendee manually marked as Present", "success");
+  } else {
+    window.showToast("Failed to mark attendee as present", "error");
+  }
 };
 
 window.deleteAttendee = async (id) => {
@@ -722,6 +732,27 @@ window.deleteAttendee = async (id) => {
   }
 };
 
+// "Clear Attendee List" (Settings tab). Permanently wipes every row in the
+// live `registrations` table — this is deleting real event registrations,
+// not just clearing a cache, so it's gated by a typed confirmation.
+window.purgeAttendees = async () => {
+  const confirmed = await window.showConfirm(
+    'This will permanently delete ALL registered attendees from the live database. This cannot be undone.',
+    'Clear Attendee List',
+    'PURGE'
+  );
+  if (!confirmed) return;
+
+  const success = await purgeAllRegistrations();
+  if (success) {
+    window.showToast('All attendee registrations have been purged.', 'success', 'Purged');
+    const data = await loadAllData();
+    if (data) window.renderAttendees(data.registrations);
+  } else {
+    window.showToast('Failed to purge attendees. Check console.', 'error');
+  }
+};
+
 window.exportAttendees = () => {
   const table = document.getElementById('attendee-table');
   if (!table) return;
@@ -737,17 +768,20 @@ window.exportAttendees = () => {
   
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
-    if (cells.length < 8) return;
-    
+    if (cells.length < 10) return;
+
+    // Row layout (see the row template above): 0 checkbox, 1 name, 2 status,
+    // 3 role, 4 company, 5 designation, 6 email, 7 phone, 8 linkedin, 9 date.
     excelData.push({
       "Name": cells[1]?.innerText.trim() || '',
-      "Company": cells[2]?.innerText.trim() || '',
-      "Designation": cells[3]?.innerText.trim() || '',
-      "Email": cells[4]?.innerText.trim() || '',
-      "Mobile": cells[5]?.innerText.trim() || '',
-      "LinkedIn": cells[6]?.querySelector('a')?.href || cells[6]?.innerText.trim() || '',
-      "Registered Date": cells[7]?.innerText.trim() || '',
-      "Status": cells[8]?.innerText.trim() || ''
+      "Status": cells[2]?.innerText.trim() || '',
+      "Role": cells[3]?.querySelector('select')?.value || '',
+      "Company": cells[4]?.innerText.trim() || '',
+      "Designation": cells[5]?.innerText.trim() || '',
+      "Email": cells[6]?.innerText.trim() || '',
+      "Mobile": cells[7]?.innerText.trim() || '',
+      "LinkedIn": cells[8]?.querySelector('a')?.href || cells[8]?.innerText.trim() || '',
+      "Registered Date": cells[9]?.innerText.trim() || ''
     });
   });
 
@@ -805,14 +839,14 @@ window.renderSpeakerApps = (appsList) => {
   if (emptyState) emptyState.style.display = 'none';
 
   tbody.innerHTML = apps.map((app) => {
-    const appKey = app.id || app.email;
+    const appKey = jsAttrSafe(app.id || app.email);
     const dateStr = app.created_at ? new Date(app.created_at).toLocaleDateString() : (app.date || new Date().toLocaleDateString());
     return `
-      <tr data-id="${app.id || ''}">
-        <td>${dateStr}</td>
-        <td><strong>${app.name}</strong><br><span style="font-size:11px;color:var(--ink-dim);">${app.email}</span></td>
-        <td>${app.company || app.organization || '—'}<br><span style="font-size:11px;color:var(--ink-dim);">${app.designation || '—'}</span></td>
-        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${app.topic || 'N/A'}">${app.topic || 'N/A'}</div></td>
+      <tr data-id="${escapeHtml(app.id || '')}">
+        <td>${escapeHtml(dateStr)}</td>
+        <td><strong>${escapeHtml(app.name)}</strong><br><span style="font-size:11px;color:var(--ink-dim);">${escapeHtml(app.email)}</span></td>
+        <td>${escapeHtml(app.company || app.organization || '—')}<br><span style="font-size:11px;color:var(--ink-dim);">${escapeHtml(app.designation || '—')}</span></td>
+        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(app.topic || 'N/A')}">${escapeHtml(app.topic || 'N/A')}</div></td>
         <td>
           <div style="display:flex; gap:8px; align-items:center;">
             <button class="btn-mini" onclick="viewSpeakerApp('${appKey}')" title="View Details" style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;">👁</button>
@@ -838,8 +872,9 @@ window.viewSpeakerApp = (key) => {
   document.getElementById('sa-designation').textContent = app.designation || '—';
   
   const ln = document.getElementById('sa-linkedin');
-  if (app.linkedin) {
-    ln.href = app.linkedin;
+  const safeLnUrl = safeHttpUrl(app.linkedin);
+  if (safeLnUrl) {
+    ln.href = safeLnUrl;
     ln.style.display = 'inline';
     ln.textContent = app.linkedin;
   } else {

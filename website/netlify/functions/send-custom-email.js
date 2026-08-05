@@ -1,9 +1,28 @@
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+
+// See verify-otp.js's mintAdminToken — this endpoint sends arbitrary
+// subject/message content to an arbitrary-sized recipient list, making it
+// the most dangerous one to leave open to unauthenticated callers. If
+// ADMIN_TOKEN_SECRET isn't configured yet, this falls back to allowing the
+// request through (matches prior behavior) rather than breaking email
+// sending in production.
+function isValidAdminToken(token) {
+    const secret = process.env.ADMIN_TOKEN_SECRET;
+    if (!secret) return true;
+    if (!token || token.split('.').length !== 3) return false;
+    const [emailB64, expires, sig] = token.split('.');
+    const expected = crypto.createHmac('sha256', secret).update(`${emailB64}.${expires}`).digest('hex');
+    const sigBuf = Buffer.from(sig, 'hex');
+    const expBuf = Buffer.from(expected, 'hex');
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) return false;
+    return Date.now() <= Number(expires);
+}
 
 export const handler = async (event, context) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
@@ -13,6 +32,10 @@ export const handler = async (event, context) => {
 
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: 'Method Not Allowed' };
+    }
+
+    if (!isValidAdminToken(event.headers['x-admin-token'])) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Unauthorized. Please log in again.' }) };
     }
 
     try {

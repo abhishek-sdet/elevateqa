@@ -11,6 +11,7 @@ import { supabase } from './supabase-config.js';
 import './admin-auth.js?v=6';
 import './admin-ui.js?v=2';
 import './admin-registrations.js?v=3';
+import './admin-ai-engine.js?v=1';
 import {
   loadAllData, saveBranding, saveSiteContent, saveManifesto,
   saveSpeaker, saveAgendaItem, saveMaturityStage, savePillar,
@@ -170,8 +171,9 @@ window.saveAll = async () => {
 
   try {
     const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : undefined; };
+    const failures = [];
 
-    await saveSiteContent({
+    const siteContentOk = await saveSiteContent({
       heroHeadline: getVal('hero-headline'), heroTagline: getVal('hero-tagline'),
       heroEyebrow: getVal('hero-eyebrow'),   heroEdition: getVal('hero-edition'),
       eventDate: getVal('event-date'),       eventVenue: getVal('event-venue'),
@@ -258,8 +260,9 @@ window.saveAll = async () => {
         },
       }
     });
+    if (!siteContentOk) failures.push('Site Content');
 
-    await saveBranding({
+    const brandingOk = await saveBranding({
       logoUrl:  window._visualData.logo,
       logoHeight: getVal('visual-logo-height'),
       heroBg:   window._visualData.heroBg,
@@ -269,8 +272,10 @@ window.saveAll = async () => {
       primaryColor: getVal('set-color-primary') || '#d4ff3a',
       accentColor: getVal('set-color-accent') || '#d4ff3a'
     });
+    if (!brandingOk) failures.push('Branding');
 
-    await saveManifesto({ content: getVal('manifesto-lines') });
+    const manifestoOk = await saveManifesto({ content: getVal('manifesto-lines') });
+    if (!manifestoOk) failures.push('Manifesto');
 
     // Speakers
     const speakerPromises = Array.from(document.querySelectorAll('#speaker-list .dynamic-item')).map(async (el, i) => {
@@ -290,7 +295,11 @@ window.saveAll = async () => {
     });
     const speakersWithEl = await Promise.all(speakerPromises);
     await syncTableDeletes('speakers', speakersWithEl.map(s => s.data.id));
-    for (const s of speakersWithEl) { const newId = await saveSpeaker(s.data); if (newId) s.el.setAttribute('data-id', newId); }
+    for (const s of speakersWithEl) {
+      const newId = await saveSpeaker(s.data);
+      if (newId) s.el.setAttribute('data-id', newId);
+      else failures.push(`Speaker "${s.data.name || '(unnamed)'}"`);
+    }
 
     // Agenda
     const agendaElements = Array.from(document.querySelectorAll('#agenda-list .dynamic-item'));
@@ -300,25 +309,41 @@ window.saveAll = async () => {
       return { el, data: { id: el.getAttribute('data-id') || undefined, time: el.querySelector('.a-time').value, tag, title: el.querySelector('.a-title').value, speaker_name: el.querySelector('.a-speaker').value, desc: el.querySelector('.a-desc').value, display_order: i } };
     });
     await syncTableDeletes('agenda', agendaData.map(a => a.data.id));
-    for (const a of agendaData) { const newId = await saveAgendaItem(a.data); if (newId) a.el.setAttribute('data-id', newId); }
+    for (const a of agendaData) {
+      const newId = await saveAgendaItem(a.data);
+      if (newId) a.el.setAttribute('data-id', newId);
+      else failures.push(`Agenda item "${a.data.title || '(untitled)'}"`);
+    }
 
     // Maturity stages
     const maturityData = Array.from(document.querySelectorAll('#maturity-stages-admin .dynamic-item')).map((el, i) => ({
       el, data: { id: el.getAttribute('data-id') || undefined, name: el.querySelector('.mat-name').value, pct: el.querySelector('.mat-pct').value, desc: el.querySelector('.mat-desc').value, display_order: i }
     }));
     await syncTableDeletes('maturity_stages', maturityData.map(m => m.data.id));
-    for (const m of maturityData) { const newId = await saveMaturityStage(m.data); if (newId) m.el.setAttribute('data-id', newId); }
+    for (const m of maturityData) {
+      const newId = await saveMaturityStage(m.data);
+      if (newId) m.el.setAttribute('data-id', newId);
+      else failures.push(`Maturity stage "${m.data.name || '(unnamed)'}"`);
+    }
 
     // Pillars
     const pillarsData = Array.from(document.querySelectorAll('#pillars-admin .dynamic-item')).map((el, i) => ({
       el, data: { id: el.getAttribute('data-id') || undefined, title: el.querySelector('.pil-title').value, desc: el.querySelector('.pil-desc').value, display_order: i }
     }));
     await syncTableDeletes('pillars', pillarsData.map(p => p.data.id));
-    for (const p of pillarsData) { const newId = await savePillar(p.data); if (newId) p.el.setAttribute('data-id', newId); }
+    for (const p of pillarsData) {
+      const newId = await savePillar(p.data);
+      if (newId) p.el.setAttribute('data-id', newId);
+      else failures.push(`Pillar "${p.data.title || '(untitled)'}"`);
+    }
 
     btn.innerHTML = originalText;
     btn.disabled = false;
-    window.showToast('All your changes have been successfully synced to the cloud and are now live on the site.', 'success', '100% Synced');
+    if (failures.length > 0) {
+      window.showToast(`${failures.length} item(s) failed to save and were skipped: ${failures.join(', ')}. Everything else synced — fix these and Publish again.`, 'error', 'Partial Sync');
+    } else {
+      window.showToast('All your changes have been successfully synced to the cloud and are now live on the site.', 'success', '100% Synced');
+    }
     const postSaveData = await loadAllData();
     if (postSaveData) {
       window._lastLoadedData = postSaveData;

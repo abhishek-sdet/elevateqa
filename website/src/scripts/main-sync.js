@@ -3,6 +3,7 @@
  * Handles Real-time synchronization from Supabase to Local UI.
  */
 import { supabase } from './supabase-config.js';
+import { unpackFields } from './field-pack.js';
 
 /** Transform raw DB row (snake_case) → camelCase object for main-ui.js */
 function transformSiteContent(rows) {
@@ -89,21 +90,17 @@ export async function initCloudSync() {
     if (data) {
       if (table === 'agenda') {
         data.forEach(a => {
-          if (a.title && a.title.includes('||')) {
-            const parts = a.title.split('||');
-            a.title = parts[0] || '';
-            a.tag = parts[1] || '';
-            a.desc = parts[2] || '';
+          if (a.title) {
+            const [title, tag, desc] = unpackFields(a.title, 3);
+            a.title = title; a.tag = tag; a.desc = desc;
           }
         });
       }
       if (table === 'speakers') {
         data.forEach(s => {
-          if (s.title && s.title.includes('||')) {
-            const parts = s.title.split('||');
-            s.title = parts[0] || '';
-            s.bio = parts[1] || '';
-            s.linkedin = parts[2] || '';
+          if (s.title) {
+            const [title, bio, linkedin] = unpackFields(s.title, 3);
+            s.title = title; s.bio = bio; s.linkedin = linkedin;
           }
         });
       }
@@ -152,21 +149,17 @@ async function fetchAndSync(table, ordered = false) {
   if (data) {
     if (table === 'agenda') {
       data.forEach(a => {
-        if (a.title && a.title.includes('||')) {
-          const parts = a.title.split('||');
-          a.title = parts[0] || '';
-          a.tag = parts[1] || '';
-          a.desc = parts[2] || '';
+        if (a.title) {
+          const [title, tag, desc] = unpackFields(a.title, 3);
+          a.title = title; a.tag = tag; a.desc = desc;
         }
       });
     }
     if (table === 'speakers') {
       data.forEach(s => {
-        if (s.title && s.title.includes('||')) {
-          const parts = s.title.split('||');
-          s.title = parts[0] || '';
-          s.bio = parts[1] || '';
-          s.linkedin = parts[2] || '';
+        if (s.title) {
+          const [title, bio, linkedin] = unpackFields(s.title, 3);
+          s.title = title; s.bio = bio; s.linkedin = linkedin;
         }
       });
     }

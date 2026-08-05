@@ -99,7 +99,7 @@ function applyAISuggestion(fieldId, value) {
     input.value = value;
     input.style.borderColor = 'var(--accent)';
     setTimeout(() => { input.style.borderColor = ''; }, 2000);
-    if (typeof showSavedToast === 'function') showSavedToast('✨ AI Suggestion Applied (Click Sync to Live)');
+    if (window.showToast) window.showToast('AI Suggestion Applied (Click Sync to Live)', 'success', 'Applied');
   }
 }
 

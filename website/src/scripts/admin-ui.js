@@ -11,6 +11,7 @@
  */
 import { supabase } from './supabase-config.js';
 import { uploadImageToStorage } from './admin-supabase.js';
+import { escapeHtml, safeHttpUrl } from './admin-utils.js';
 
 // ── Admin Whitelist (shared mutable reference) ─────────────────────────────
 export let ALLOWED_ADMINS = [
@@ -240,7 +241,7 @@ window.addAdminEmail = (email = '') => {
   div.className = 'dynamic-row';
   div.style.marginBottom = '12px';
   div.innerHTML = `
-    <div class="form-group" style="flex:1;"><input type="email" class="admin-email-entry" value="${email}" placeholder="admin@example.com"></div>
+    <div class="form-group" style="flex:1;"><input type="email" class="admin-email-entry" value="${escapeHtml(email)}" placeholder="admin@example.com"></div>
     <button class="btn-del" onclick="this.parentElement.remove()" title="Remove Admin">✕</button>
   `;
   container.appendChild(div);
@@ -321,6 +322,7 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
   const div = document.createElement('div');
   div.className = 'dynamic-item';
   div.setAttribute('data-id', data.id || '');
+  const safeImg = safeHttpUrl(data.img) || '';
   div.innerHTML = `
     <div class="dynamic-header">
       <div class="badge">Speaker Node</div>
@@ -336,19 +338,19 @@ window.addSpeakerItem = (data = { id: null, name: '', role: '', title: '', img: 
       <div class="speaker-img-column">
         <label>Speaker Photo</label>
         <div class="img-upload-wrap ${data.img ? 'has-img' : ''}" onclick="this.nextElementSibling.click()">
-          <img src="${data.img || ''}" data-storage-url="${data.img || ''}" alt="Preview" style="display: ${data.img ? 'block' : 'none'}">
+          <img src="${escapeHtml(safeImg)}" data-storage-url="${escapeHtml(safeImg)}" alt="Preview" style="display: ${data.img ? 'block' : 'none'}">
           <div class="placeholder">Click to replace</div>
         </div>
         <input type="file" class="s-img-input" accept="image/*" style="display:none;" onchange="window.handleSpeakerImg(this)">
-        <a href="${data.img || ''}" target="_blank" class="download-link s-download-link" style="display: ${data.img ? 'block' : 'none'}; margin-top: 10px; font-family: var(--mono, monospace); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent, #D4FF3A); cursor: pointer; text-decoration: none;" download>⬇ Download Photo</a>
+        <a href="${escapeHtml(safeImg)}" target="_blank" rel="noopener noreferrer" class="download-link s-download-link" style="display: ${data.img ? 'block' : 'none'}; margin-top: 10px; font-family: var(--mono, monospace); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent, #D4FF3A); cursor: pointer; text-decoration: none;" download>⬇ Download Photo</a>
       </div>
       <div class="speaker-info-column">
-        <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${data.name}" placeholder="Kapil Dev"></div>
-        <div class="form-group"><label>Role Tag (e.g. KEYNOTE)</label><input type="text" class="s-role" value="${data.role}" placeholder="e.g. KEYNOTE"></div>
-        <div class="form-group"><label>Designation</label><input type="text" class="s-title" value="${data.title || ''}" placeholder="e.g. Director of QE"></div>
-        <div class="form-group"><label>Status Label</label><input type="text" class="s-status" value="${data.status || ''}" placeholder="e.g. CONFIRMED / KEYNOTE SPEAKER"></div>
-        <div class="form-group"><label>LinkedIn URL</label><input type="text" class="s-linkedin" value="${data.linkedin || ''}" placeholder="https://linkedin.com/in/..."></div>
-        <div class="form-group"><label>Bio</label><textarea class="s-bio" rows="3" placeholder="Speaker bio...">${data.bio || ''}</textarea></div>
+        <div class="form-group"><label>Full Name</label><input type="text" class="s-name" value="${escapeHtml(data.name)}" placeholder="Kapil Dev"></div>
+        <div class="form-group"><label>Role Tag (e.g. KEYNOTE)</label><input type="text" class="s-role" value="${escapeHtml(data.role)}" placeholder="e.g. KEYNOTE"></div>
+        <div class="form-group"><label>Designation</label><input type="text" class="s-title" value="${escapeHtml(data.title || '')}" placeholder="e.g. Director of QE"></div>
+        <div class="form-group"><label>Status Label</label><input type="text" class="s-status" value="${escapeHtml(data.status || '')}" placeholder="e.g. CONFIRMED / KEYNOTE SPEAKER"></div>
+        <div class="form-group"><label>LinkedIn URL</label><input type="text" class="s-linkedin" value="${escapeHtml(data.linkedin || '')}" placeholder="https://linkedin.com/in/..."></div>
+        <div class="form-group"><label>Bio</label><textarea class="s-bio" rows="3" placeholder="Speaker bio...">${escapeHtml(data.bio || '')}</textarea></div>
       </div>
     </div>
   `;
@@ -430,16 +432,16 @@ window.addAgendaItem = (data = { id: null, time: '', tag: '', title: '', desc: '
     </div>
     <div class="agenda-card-grid">
       <div class="agenda-col-meta">
-        <div class="form-group"><label>Time Slot</label><input type="text" class="a-time" value="${data.time || data.time_slot || ''}" placeholder="09:00 – 09:30"></div>
+        <div class="form-group"><label>Time Slot</label><input type="text" class="a-time" value="${escapeHtml(data.time || data.time_slot || '')}" placeholder="09:00 – 09:30"></div>
         <div class="form-group"><label>Category Tag</label>
           <select class="a-tag-select" onchange="window.handleAgendaTagChange(this)">${optionsHtml}</select>
-          <input type="text" class="a-tag-custom" value="${isCustom ? tagVal : ''}" placeholder="Enter Custom Tag" style="margin-top:10px;display:${isCustom ? 'block' : 'none'};">
+          <input type="text" class="a-tag-custom" value="${isCustom ? escapeHtml(tagVal) : ''}" placeholder="Enter Custom Tag" style="margin-top:10px;display:${isCustom ? 'block' : 'none'};">
         </div>
-        <div class="form-group"><label>Speaker Name</label><input type="text" class="a-speaker" value="${data.speaker_name || ''}" placeholder="John Doe (Optional)"></div>
+        <div class="form-group"><label>Speaker Name</label><input type="text" class="a-speaker" value="${escapeHtml(data.speaker_name || '')}" placeholder="John Doe (Optional)"></div>
       </div>
       <div class="agenda-col-main">
-        <div class="form-group"><label>Topic Title</label><input type="text" class="a-title" value="${data.title || ''}" placeholder="The Proof of Value"></div>
-        <div class="form-group"><label>Session Description</label><textarea class="a-desc" rows="5" placeholder="Session details...">${data.desc || ''}</textarea></div>
+        <div class="form-group"><label>Topic Title</label><input type="text" class="a-title" value="${escapeHtml(data.title || '')}" placeholder="The Proof of Value"></div>
+        <div class="form-group"><label>Session Description</label><textarea class="a-desc" rows="5" placeholder="Session details...">${escapeHtml(data.desc || '')}</textarea></div>
       </div>
     </div>
   `;
@@ -466,25 +468,25 @@ window.addMaturityStage = (data = { id: null, name: '', pct: '', desc: '' }) => 
     <div class="dynamic-header">
       <div style="display:flex;align-items:center;gap:12px;">
         <span class="mat-stage-badge" style="background:rgba(255,255,255,0.04);border:1px solid var(--line-strong);border-radius:8px;padding:4px 12px;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--ink-dim);">STAGE 0${stageNum}</span>
-        <span class="mat-name-preview" style="font-family:var(--display);font-size:16px;font-weight:300;color:var(--ink);">${ data.name || 'Unnamed Stage' }</span>
+        <span class="mat-name-preview" style="font-family:var(--display);font-size:16px;font-weight:300;color:var(--ink);">${ escapeHtml(data.name) || 'Unnamed Stage' }</span>
       </div>
       <button class="btn-del" onclick="this.closest('.dynamic-item').remove()" title="Delete Stage">✕</button>
     </div>
     <div class="form-grid-2" style="margin-bottom:20px;">
       <div class="form-group">
         <label>Stage Name <span style="color:var(--accent);">*</span></label>
-        <input type="text" class="mat-name" value="${data.name || ''}" placeholder="e.g. Manual-first"
+        <input type="text" class="mat-name" value="${escapeHtml(data.name || '')}" placeholder="e.g. Manual-first"
           oninput="this.closest('.dynamic-item').querySelector('.mat-name-preview').textContent = this.value || 'Unnamed Stage'">
       </div>
       <div class="form-group">
         <label>Progress (% of orgs) <span style="color:var(--accent);">*</span></label>
-        <input type="text" class="mat-pct" value="${data.pct || ''}" placeholder="e.g. 25%"
+        <input type="text" class="mat-pct" value="${escapeHtml(data.pct || '')}" placeholder="e.g. 25%"
           oninput="const v=this.value.replace('%','').trim();const bar=this.closest('.dynamic-item').querySelector('.mat-meter-fill');if(bar){bar.style.width=(isNaN(v)?0:Math.min(v,100))+'%';}this.closest('.dynamic-item').querySelector('.mat-pct-preview').textContent=(v||'0')+'%';">
       </div>
     </div>
     <div class="form-group" style="margin-bottom:20px;">
       <label>Description <span style="color:var(--accent);">*</span></label>
-      <textarea class="mat-desc" rows="3" placeholder="What does this stage look like in practice?">${data.desc || ''}</textarea>
+      <textarea class="mat-desc" rows="3" placeholder="What does this stage look like in practice?">${escapeHtml(data.desc || '')}</textarea>
     </div>
     <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px 20px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -510,18 +512,18 @@ window.addPillarItem = (data = { id: null, title: '', desc: '' }) => {
     <div class="dynamic-header">
       <div style="display:flex;align-items:center;gap:12px;">
         <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-dim);border-radius:8px;padding:4px 12px;">&gt; 0${pilNum}</span>
-        <span class="pil-title-preview" style="font-family:var(--display);font-size:15px;font-weight:300;color:var(--ink);">${data.title || 'Untitled Pillar'}</span>
+        <span class="pil-title-preview" style="font-family:var(--display);font-size:15px;font-weight:300;color:var(--ink);">${escapeHtml(data.title || 'Untitled Pillar')}</span>
       </div>
       <button class="btn-del" onclick="this.closest('.dynamic-item').remove()" title="Delete Pillar">✕</button>
     </div>
     <div class="form-group" style="margin-bottom:16px;">
       <label>Pillar Title <span style="color:var(--accent);">*</span></label>
-      <input type="text" class="pil-title" value="${data.title || ''}" placeholder="e.g. Continuous Testing"
+      <input type="text" class="pil-title" value="${escapeHtml(data.title || '')}" placeholder="e.g. Continuous Testing"
         oninput="this.closest('.dynamic-item').querySelector('.pil-title-preview').textContent = this.value || 'Untitled Pillar'">
     </div>
     <div class="form-group">
       <label>Pillar Description <span style="color:var(--accent);">*</span></label>
-      <textarea class="pil-desc" rows="3" placeholder="What happens in this pillar?">${data.desc || ''}</textarea>
+      <textarea class="pil-desc" rows="3" placeholder="What happens in this pillar?">${escapeHtml(data.desc || '')}</textarea>
     </div>
   `;
   container.appendChild(div);
@@ -915,7 +917,7 @@ window.sendTestEmail = async () => {
 
     const response = await fetch('/.netlify/functions/send-custom-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': sessionStorage.getItem('admin_token') || '' },
       body: JSON.stringify({
         subject: `[TEST] ${subject}`,
         message: message,
@@ -1102,7 +1104,7 @@ window.sendCustomEmail = async () => {
 
         const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "X-Admin-Token": sessionStorage.getItem('admin_token') || '' },
           body: JSON.stringify({
             subject,
             message,

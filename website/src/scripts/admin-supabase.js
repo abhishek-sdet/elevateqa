@@ -3,6 +3,7 @@
  * Handles all database operations for the Admin Portal.
  */
 import { supabase } from './supabase-config.js';
+import { packFields, unpackFields } from './field-pack.js';
 
 // ─── IMAGE COMPRESSION UTILITY ───────────────────────────────────────────────
 async function compressImage(file, maxWidth = 1920, quality = 0.8) {
@@ -206,21 +207,17 @@ export async function loadAllData() {
   try {
     if (agenda) {
       agenda.forEach(a => {
-        if (a.title && a.title.includes('||')) {
-          const parts = a.title.split('||');
-          a.title = parts[0] || '';
-          a.tag = parts[1] || '';
-          a.desc = parts[2] || '';
+        if (a.title) {
+          const [title, tag, desc] = unpackFields(a.title, 3);
+          a.title = title; a.tag = tag; a.desc = desc;
         }
       });
     }
     if (speakers) {
       speakers.forEach(s => {
-        if (s.title && s.title.includes('||')) {
-          const parts = s.title.split('||');
-          s.title = parts[0] || '';
-          s.bio = parts[1] || '';
-          s.linkedin = parts[2] || '';
+        if (s.title) {
+          const [title, bio, linkedin] = unpackFields(s.title, 3);
+          s.title = title; s.bio = bio; s.linkedin = linkedin;
         }
       });
     }
@@ -380,7 +377,7 @@ export async function saveSpeaker(s) {
   const dbData = {
     name: s.name,
     role: s.role,
-    title: `${s.title || ''}||${s.bio || ''}||${s.linkedin || ''}`,
+    title: packFields(s.title, s.bio, s.linkedin),
     status: s.status,
     image_url: s.img || s.image_url,
     display_order: s.display_order
@@ -405,7 +402,7 @@ export async function saveAgendaItem(a) {
   const validId = sanitizeId(a.id);
   const dbData = {
     time_slot: a.time || a.time_slot,
-    title: `${a.title || ''}||${a.tag || ''}||${a.desc || ''}`,
+    title: packFields(a.title, a.tag, a.desc),
     speaker_name: a.speaker_name || a.speaker,
     display_order: a.display_order
   };
@@ -491,9 +488,11 @@ export async function addAttendee(attendee) {
 
 export async function updateRegistrationStatus(id, status) {
   try {
-    const { error } = await supabase.from('registrations').update({ status }).eq('id', id);
+    // .select('id') so we can tell "0 rows matched" (stale id, RLS block) apart
+    // from "matched and updated" — Supabase returns error:null in both cases.
+    const { data, error } = await supabase.from('registrations').update({ status }).eq('id', id).select('id');
     if (error) throw error;
-    return true;
+    return !!(data && data.length > 0);
   } catch (err) {
     console.error('Error updating status:', err);
     return false;
@@ -502,9 +501,9 @@ export async function updateRegistrationStatus(id, status) {
 
 export async function updateRegistrationRole(id, role) {
   try {
-    const { error } = await supabase.from('registrations').update({ role }).eq('id', id);
+    const { data, error } = await supabase.from('registrations').update({ role }).eq('id', id).select('id');
     if (error) throw error;
-    return true;
+    return !!(data && data.length > 0);
   } catch (err) {
     console.error('Error updating role:', err);
     return false;
@@ -512,15 +511,27 @@ export async function updateRegistrationRole(id, role) {
 }
 
 export async function deleteItem(table, id) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from(table)
     .delete()
-    .eq('id', id);
-  return !error;
+    .eq('id', id)
+    .select('id');
+  if (error) return false;
+  return !!(data && data.length > 0);
+}
+
+export async function purgeAllRegistrations() {
+  const { error } = await supabase.from('registrations').delete().not('id', 'is', null);
+  if (error) {
+    console.error('[Supabase] Purge registrations error:', error);
+    return false;
+  }
+  return true;
 }
 
 export async function syncTableDeletes(table, domIds) {
-  const { data } = await supabase.from(table).select('id');
+  const { data, error: fetchError } = await supabase.from(table).select('id');
+  if (fetchError) console.error(`[Supabase] Could not fetch existing ${table} rows for delete reconciliation:`, fetchError);
   if (data) {
     const dbIds = data.map(row => String(row.id));
     const safeDomIds = domIds.filter(id => id).map(String);

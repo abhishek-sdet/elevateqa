@@ -13,6 +13,24 @@ const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com', 'mugdha.shah@sdettech.com'];
+
+// The admin whitelist was previously only checked client-side (in admin-auth.js)
+// before calling this endpoint, so anyone could POST an arbitrary email here
+// directly and receive a real admin login OTP. This re-checks it server-side.
+async function isWhitelistedAdmin(email) {
+    const { data } = await supabase.from('site_content').select('hero_meta').single();
+    let whitelist = [];
+    if (data && data.hero_meta) {
+        const meta = typeof data.hero_meta === 'string' ? JSON.parse(data.hero_meta) : data.hero_meta;
+        if (meta.admin_whitelist && Array.isArray(meta.admin_whitelist)) {
+            whitelist = meta.admin_whitelist;
+        }
+    }
+    whitelist = [...new Set([...whitelist, ...MASTER_ADMINS])].map(e => e.toLowerCase());
+    return whitelist.includes(email.toLowerCase());
+}
+
 export const handler = async (event, context) => {
     // Enable CORS
     const headers = {
@@ -35,6 +53,10 @@ export const handler = async (event, context) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email is required' }) };
         }
         email = email.toLowerCase();
+
+        if (!(await isWhitelistedAdmin(email))) {
+            return { statusCode: 403, headers, body: JSON.stringify({ error: 'This email is not authorized for admin access.' }) };
+        }
 
         const otp = generateOTP();
         const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
