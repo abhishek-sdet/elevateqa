@@ -906,7 +906,9 @@ window.sendTestEmail = async () => {
   statusMsg.textContent = 'Sending test email to your admin address...';
   
   try {
-    const { sendEmailBlast, supabase } = await import('./admin-supabase.js?v=2');
+    const { sendEmailBlast } = await import('./admin-supabase.js?v=2');
+    
+    // Uses the statically imported supabase client from the top of admin-ui.js
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user || !user.email) throw new Error('Could not find your admin email address.');
