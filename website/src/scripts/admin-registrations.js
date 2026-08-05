@@ -301,7 +301,12 @@ window.renderAttendees = (registrations) => {
     const isRejected = (p.status && p.status.toUpperCase() === 'REJECTED');
     let badgeHtml = '<span class="badge">Verified</span>';
     if (isBadgeGiven) badgeHtml = '<span class="badge" style="background:#2196F3; color:#fff; border-color:#2196F3;">Badge Given</span>';
-    else if (isPresent) badgeHtml = '<span class="badge" style="background:var(--accent); color:#000;">Present</span>';
+    else if (isPresent) badgeHtml = `
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <span class="badge" style="background:var(--accent); color:#000;">Present</span>
+        <button class="btn-mini" onclick="window.markBadgeGiven('${p.id}')" title="Mark Badge Given" style="background:#2196F3; color:#fff; border-color:#2196F3; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: bold; line-height: 1; min-width: max-content;">GIVE BADGE</button>
+      </div>
+    `;
     else if (isSent) badgeHtml = '<span class="badge" style="background:#4CAF50; color:#fff; border-color:#4CAF50;">Pass Sent</span>';
     else if (isSpeaker) badgeHtml = '<span class="badge" style="background:#9C27B0; color:#fff; border-color:#9C27B0;">Speaker</span>';
     else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
