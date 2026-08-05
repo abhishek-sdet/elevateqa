@@ -858,27 +858,35 @@ window.loadSelectedTemplate = () => {
   const selectedKey = select.value;
   if (!selectedKey) return;
   
-  const et = window._lastLoadedData && window._lastLoadedData.site_content && window._lastLoadedData.site_content.emailTemplates;
-  if (!et || !et[selectedKey]) {
-    window.showToast('Template not found or not saved yet.', 'error', 'Error');
-    return;
-  }
+  const getVal = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    return el.value.trim() || el.getAttribute('placeholder') || '';
+  };
   
-  const tpl = et[selectedKey];
   const subjectEl = document.getElementById('email-subject');
   const messageEl = document.getElementById('email-message');
   
-  if (subjectEl && tpl.subject) subjectEl.value = tpl.subject;
-  
-  if (messageEl) {
-    let msg = '';
-    if (tpl.body1) msg += tpl.body1 + '\n\n';
-    if (tpl.body2) msg += tpl.body2 + '\n\n';
-    if (tpl.closing) msg += tpl.closing;
-    messageEl.value = msg.trim();
+  if (selectedKey === 'food' || selectedKey === 'location') {
+    const subj = getVal(`et-${selectedKey}-subject`);
+    const b1 = getVal(`et-${selectedKey}-body1`);
+    const b2 = getVal(`et-${selectedKey}-body2`);
+    const close = getVal(`et-${selectedKey}-closing`);
+    
+    if (subjectEl) subjectEl.value = subj;
+    
+    if (messageEl) {
+      let msg = '';
+      if (b1) msg += b1 + '\n\n';
+      if (b2) msg += b2 + '\n\n';
+      if (close) msg += close;
+      messageEl.value = msg.trim();
+    }
+    
+    window.showToast('Template loaded successfully!', 'success', 'Loaded');
+  } else {
+    window.showToast('Template not found.', 'error', 'Error');
   }
-  
-  window.showToast('Template loaded successfully!', 'success', 'Loaded');
 };
 
 window.sendTestEmail = async () => {
