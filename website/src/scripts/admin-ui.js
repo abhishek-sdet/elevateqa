@@ -893,54 +893,55 @@ window.sendTestEmail = async () => {
   const subject = document.getElementById('email-subject').value.trim();
   const message = document.getElementById('email-message').value.trim();
   const statusMsg = document.getElementById('email-status-msg');
-  
+
   if (!subject || !message) {
     statusMsg.style.color = 'var(--accent-red)';
     statusMsg.textContent = 'Please enter both a subject and a message to test.';
     return;
   }
-  
+
   const btnTest = document.getElementById('btn-test-email');
-  if (btnTest) { btnTest.disabled = true; btnTest.innerHTML = '<span class="spinner"></span> SENDING...'; }
+  if (btnTest) { btnTest.disabled = true; btnTest.textContent = 'SENDING...'; }
   statusMsg.style.color = 'var(--text-dim)';
-  statusMsg.textContent = 'Sending test email to your admin address...';
-  
+  statusMsg.textContent = 'Sending test email...';
+
   try {
-    const { sendEmailBlast } = await import('./admin-supabase.js?v=2');
-    
-    // Uses the statically imported supabase client from the top of admin-ui.js
+    // Get current logged-in admin user email
     const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user || !user.email) throw new Error('Could not find your admin email address.');
-    
-    const testRecipients = [
-      { email: user.email, name: 'Admin Test User' }
-    ];
-    
-    const payload = {
-      recipients: testRecipients,
-      subject: subject,
-      message: message,
-      cc: '',
-      bcc: ''
-    };
-    
-    const res = await sendEmailBlast(payload);
-    if (res && res.success) {
-      statusMsg.style.color = 'var(--accent)';
-      statusMsg.textContent = `Test email sent to ${user.email}!`;
-      window.showToast('Test email sent successfully.', 'success');
-    } else {
-      throw new Error(res.error || 'Unknown error');
-    }
+    if (!user || !user.email) throw new Error('Could not determine your admin email. Please log in again.');
+
+    const testEmail = { email: user.email, name: 'Admin (Test)' };
+
+    const response = await fetch('/.netlify/functions/send-custom-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: `[TEST] ${subject}`,
+        message: message,
+        targetEmails: [testEmail],
+        ccEmails: [],
+        bccEmails: []
+      })
+    });
+
+    let result;
+    try { result = await response.json(); }
+    catch (e) { throw new Error('Server timeout or invalid response.'); }
+
+    if (!response.ok) throw new Error(result.error || 'Failed to send test email.');
+
+    statusMsg.style.color = 'var(--accent)';
+    statusMsg.textContent = `✓ Test email sent to ${user.email}!`;
+    window.showToast(`Test email sent to ${user.email}`, 'success', 'Test Sent');
   } catch (err) {
     console.error('[sendTestEmail]', err);
     statusMsg.style.color = 'var(--accent-red)';
-    statusMsg.textContent = `Error sending test email: ${err.message}`;
+    statusMsg.textContent = `Error: ${err.message}`;
+    window.showToast(err.message, 'error', 'Test Failed');
   } finally {
-    if (btnTest) { 
-      btnTest.disabled = false; 
-      btnTest.innerHTML = 'SEND TEST EMAIL <span aria-hidden="true" style="margin-left: 8px;">🧪</span>'; 
+    if (btnTest) {
+      btnTest.disabled = false;
+      btnTest.innerHTML = 'SEND TEST EMAIL <span aria-hidden="true" style="margin-left: 8px;">🧪</span>';
     }
   }
 };
