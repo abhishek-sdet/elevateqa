@@ -853,6 +853,88 @@ window.toggleCustomEmailInput = () => {
   }
 };
 
+window.loadSelectedTemplate = () => {
+  const select = document.getElementById('load-template-select');
+  const selectedKey = select.value;
+  if (!selectedKey) return;
+  
+  const et = window._lastLoadedData && window._lastLoadedData.site_content && window._lastLoadedData.site_content.emailTemplates;
+  if (!et || !et[selectedKey]) {
+    window.showToast('Template not found or not saved yet.', 'error', 'Error');
+    return;
+  }
+  
+  const tpl = et[selectedKey];
+  const subjectEl = document.getElementById('email-subject');
+  const messageEl = document.getElementById('email-message');
+  
+  if (subjectEl && tpl.subject) subjectEl.value = tpl.subject;
+  
+  if (messageEl) {
+    let msg = '';
+    if (tpl.body1) msg += tpl.body1 + '\n\n';
+    if (tpl.body2) msg += tpl.body2 + '\n\n';
+    if (tpl.closing) msg += tpl.closing;
+    messageEl.value = msg.trim();
+  }
+  
+  window.showToast('Template loaded successfully!', 'success', 'Loaded');
+};
+
+window.sendTestEmail = async () => {
+  const subject = document.getElementById('email-subject').value.trim();
+  const message = document.getElementById('email-message').value.trim();
+  const statusMsg = document.getElementById('email-status-msg');
+  
+  if (!subject || !message) {
+    statusMsg.style.color = 'var(--accent-red)';
+    statusMsg.textContent = 'Please enter both a subject and a message to test.';
+    return;
+  }
+  
+  const btnTest = document.getElementById('btn-test-email');
+  if (btnTest) { btnTest.disabled = true; btnTest.innerHTML = '<span class="spinner"></span> SENDING...'; }
+  statusMsg.style.color = 'var(--text-dim)';
+  statusMsg.textContent = 'Sending test email to your admin address...';
+  
+  try {
+    const { sendEmailBlast, supabaseClient } = await import('./admin-supabase.js?v=2');
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!user || !user.email) throw new Error('Could not find your admin email address.');
+    
+    const testRecipients = [
+      { email: user.email, name: 'Admin Test User' }
+    ];
+    
+    const payload = {
+      recipients: testRecipients,
+      subject: subject,
+      message: message,
+      cc: '',
+      bcc: ''
+    };
+    
+    const res = await sendEmailBlast(payload);
+    if (res && res.success) {
+      statusMsg.style.color = 'var(--accent)';
+      statusMsg.textContent = `Test email sent to ${user.email}!`;
+      window.showToast('Test email sent successfully.', 'success');
+    } else {
+      throw new Error(res.error || 'Unknown error');
+    }
+  } catch (err) {
+    console.error('[sendTestEmail]', err);
+    statusMsg.style.color = 'var(--accent-red)';
+    statusMsg.textContent = `Error sending test email: ${err.message}`;
+  } finally {
+    if (btnTest) { 
+      btnTest.disabled = false; 
+      btnTest.innerHTML = 'SEND TEST EMAIL <span aria-hidden="true" style="margin-left: 8px;">🧪</span>'; 
+    }
+  }
+};
+
 window.sendCustomEmail = async () => {
   const subject = document.getElementById('email-subject').value.trim();
   const message = document.getElementById('email-message').value.trim();
