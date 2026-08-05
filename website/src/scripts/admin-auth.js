@@ -102,6 +102,7 @@ async function verifyOTP() {
 
       console.log('[ElevateAuth] Successfully authenticated!');
       sessionStorage.setItem('admin_logged_in', 'true');
+      sessionStorage.setItem('admin_email', currentAuthEmail);
 
       // #protected-content is only revealed via html.is-logged-in (see the
       // "AUTH GUARDIAN" inline script in admin.html's <head>, which applies
@@ -137,6 +138,7 @@ async function handleLogout() {
   // If they somehow had a supabase session, sign out of it too
   await supabase.auth.signOut();
   sessionStorage.removeItem('admin_logged_in');
+  sessionStorage.removeItem('admin_email');
   window.location.reload();
 }
 

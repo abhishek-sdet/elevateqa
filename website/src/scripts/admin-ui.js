@@ -906,11 +906,12 @@ window.sendTestEmail = async () => {
   statusMsg.textContent = 'Sending test email...';
 
   try {
-    // Get current logged-in admin user email
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !user.email) throw new Error('Could not determine your admin email. Please log in again.');
+    // Admin login is a custom OTP flow (no real Supabase Auth session — see admin-auth.js),
+    // so the logged-in admin's email is stashed in sessionStorage at verify time.
+    const adminEmail = sessionStorage.getItem('admin_email');
+    if (!adminEmail) throw new Error('Could not determine your admin email. Please log in again.');
 
-    const testEmail = { email: user.email, name: 'Admin (Test)' };
+    const testEmail = { email: adminEmail, name: 'Admin (Test)' };
 
     const response = await fetch('/.netlify/functions/send-custom-email', {
       method: 'POST',
@@ -931,8 +932,8 @@ window.sendTestEmail = async () => {
     if (!response.ok) throw new Error(result.error || 'Failed to send test email.');
 
     statusMsg.style.color = 'var(--accent)';
-    statusMsg.textContent = `✓ Test email sent to ${user.email}!`;
-    window.showToast(`Test email sent to ${user.email}`, 'success', 'Test Sent');
+    statusMsg.textContent = `✓ Test email sent to ${adminEmail}!`;
+    window.showToast(`Test email sent to ${adminEmail}`, 'success', 'Test Sent');
   } catch (err) {
     console.error('[sendTestEmail]', err);
     statusMsg.style.color = 'var(--accent-red)';
