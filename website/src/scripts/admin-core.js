@@ -300,6 +300,24 @@ window.saveAll = async () => {
           closing:  getVal('et-rejection-closing'),
           tagline:  getVal('et-rejection-tagline'),
         },
+        food: {
+          subject: getVal('et-food-subject'),
+          body1:   getVal('et-food-body1'),
+          body2:   getVal('et-food-body2'),
+          closing: getVal('et-food-closing'),
+        },
+        location: {
+          subject: getVal('et-location-subject'),
+          body1:   getVal('et-location-body1'),
+          body2:   getVal('et-location-body2'),
+          closing: getVal('et-location-closing'),
+        },
+        entry: {
+          subject: getVal('et-entry-subject'),
+          body1:   getVal('et-entry-body1'),
+          body2:   getVal('et-entry-body2'),
+          closing: getVal('et-entry-closing'),
+        },
       }
     });
     if (!siteContentOk) failures.push('Site Content');
