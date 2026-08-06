@@ -240,17 +240,40 @@ export async function loadAllData() {
     console.warn('[ElevateAdmin] LocalStorage cache fail:', err);
   }
 
-  return { 
-    branding, 
-    manifesto, 
-    speakers, 
-    agenda, 
-    site_content: siteContent, 
-    maturity_stages, 
-    pillars, 
+  return {
+    branding,
+    manifesto,
+    speakers,
+    agenda,
+    site_content: siteContent,
+    maturity_stages,
+    pillars,
     registrations,
     speaker_applications
   };
+}
+
+// Lightweight failsafe poll target — the check-in/registration/speaker-app
+// poll only ever uses these two tables (see admin-core.js), so it has no
+// reason to re-fetch all 9 tables via loadAllData() every cycle. Fetching
+// only what's needed lets the poll run much more frequently (a tight safety
+// net for the rare case realtime doesn't fire) without hammering Supabase.
+export async function fetchAttendanceUpdates() {
+  const fetchTable = async (table) => {
+    try {
+      const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: true });
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      console.error(`[Supabase] Fetch error for ${table}:`, e);
+      return null;
+    }
+  };
+  const [registrations, speaker_applications] = await Promise.all([
+    fetchTable('registrations'),
+    fetchTable('speaker_applications'),
+  ]);
+  return { registrations, speaker_applications };
 }
 
 export async function saveSiteContent(data) {

@@ -15,7 +15,7 @@ import './admin-ai-engine.js?v=1';
 import {
   loadAllData, saveBranding, saveSiteContent, saveManifesto,
   saveSpeaker, saveAgendaItem, saveMaturityStage, savePillar,
-  deleteItem, uploadImageToStorage, syncTableDeletes
+  deleteItem, uploadImageToStorage, syncTableDeletes, fetchAttendanceUpdates
 } from './admin-supabase.js?v=2';
 import { populateUI, ALLOWED_ADMINS, setAllowedAdmins } from './admin-ui.js?v=2';
 
@@ -109,14 +109,19 @@ const initAdmin = async () => {
     })
     .subscribe((status) => { console.log('[ElevateQA] Real-time Sync Status:', status); });
 
-  // Failsafe polling (every 30 seconds) to ensure updates are fetched
+  // Failsafe polling — the realtime subscription above is the primary path,
+  // but if it's ever misconfigured or drops (e.g. the table isn't actually
+  // in Supabase's realtime publication, or a websocket hiccup), this is the
+  // only thing that keeps scanner check-ins showing up at all. Runs every
+  // 3s rather than a slower interval since gate check-ins need to appear
+  // for every admin watching the Attendance tab without a noticeable delay.
+  // Only re-fetches registrations/speaker_applications (not every table via
+  // loadAllData) so a tight interval doesn't add unnecessary Supabase load.
   setInterval(async () => {
-    const updatedData = await loadAllData();
-    if (updatedData) {
-      if (updatedData.registrations) window.renderAttendees(updatedData.registrations);
-      if (updatedData.speaker_applications) window.renderSpeakerApps(updatedData.speaker_applications);
-    }
-  }, 30000);
+    const updated = await fetchAttendanceUpdates();
+    if (updated.registrations) window.renderAttendees(updated.registrations);
+    if (updated.speaker_applications) window.renderSpeakerApps(updated.speaker_applications);
+  }, 3000);
 
   // Cross-tab communication for local scanner
   window.addEventListener('storage', async (e) => {
