@@ -529,10 +529,10 @@ window.sendBulkRejections = async () => {
   if (data && data.registrations) window.renderAttendees(data.registrations);
 };
 
-// "Send Entry Reminder" (Bulk Actions bar). Deliberately does NOT attach a
-// QR code — each attendee's QR is unique to their registration, so a single
-// attached file would hand everyone the SAME (wrong) code. This just points
-// people back to the QR already in their earlier "Final Passes" email, using
+// "Send Entry Reminder" (Bulk Actions bar). Each recipient's own unique QR
+// is regenerated server-side from their registration id (send-custom-email.js,
+// includeQrForRecipients) and embedded per-email — never a single shared
+// attachment, since that would hand everyone the SAME (wrong) code. Uses
 // whatever copy is saved in the Entry/QR email template.
 window.sendBulkEntryReminder = async () => {
   const selected = window.getSelectedAttendees();
@@ -572,10 +572,11 @@ window.sendBulkEntryReminder = async () => {
         body: JSON.stringify({
           subject,
           message,
-          targetEmails: chunk.map(a => ({ email: a.email, name: a.name })),
+          targetEmails: chunk.map(a => ({ email: a.email, name: a.name, id: a.id })),
           ccEmails: [],
           bccEmails: [],
-          attachments: []
+          attachments: [],
+          includeQrForRecipients: true
         })
       });
       const result = await response.json().catch(() => ({}));

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import QRCode from 'qrcode';
 
 // See verify-otp.js's mintAdminToken — this endpoint sends arbitrary
 // subject/message content to an arbitrary-sized recipient list, making it
@@ -39,7 +40,7 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { subject, message, targetEmails, ccEmails, bccEmails, attachments } = JSON.parse(event.body);
+        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients } = JSON.parse(event.body);
         const mailAttachments = Array.isArray(attachments) ? attachments : [];
 
         if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
@@ -116,16 +117,40 @@ export const handler = async (event, context) => {
         for (const recipient of targetEmails) {
             const email = typeof recipient === 'object' ? recipient.email : recipient;
             const name = typeof recipient === 'object' ? recipient.name : '';
+            const id = typeof recipient === 'object' ? recipient.id : null;
 
             // Replace placeholders
-            const finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
+            let finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
+
+            // Each attendee's QR encodes their own registration id — never
+            // reuse one recipient's QR image for another, so this is
+            // generated fresh per recipient rather than passed in as a
+            // shared attachment.
+            let recipientAttachments = mailAttachments;
+            if (includeQrForRecipients && id) {
+                try {
+                    const qrBuffer = await QRCode.toBuffer(`ELEVATE-QA:${id}|${name}|${email}`, {
+                        errorCorrectionLevel: 'H',
+                        margin: 4,
+                        width: 500,
+                        color: { dark: '#000000', light: '#ffffff' }
+                    });
+                    recipientAttachments = [
+                        ...mailAttachments,
+                        { filename: 'entry-qr.png', content: qrBuffer, cid: 'entryqr@elevateqa' }
+                    ];
+                    finalMessage += `<br><br><div style="text-align:center;"><div style="background:#ffffff;padding:12px;border-radius:12px;display:inline-block;"><img src="cid:entryqr@elevateqa" width="200" height="200" style="display:block;border:0;"></div><p style="color:#8e8e9a;font-size:12px;margin-top:10px;">Your personal entry QR code — please have this ready at check-in.</p></div>`;
+                } catch (err) {
+                    console.error('[CUSTOM EMAIL] QR generation failed for', email, err.message);
+                }
+            }
 
             const mailOptions = {
                 from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                 to: email,
                 subject: subject,
                 html: getHtml(finalMessage),
-                attachments: mailAttachments
+                attachments: recipientAttachments
             };
             try {
                 await transporter.sendMail(mailOptions);
