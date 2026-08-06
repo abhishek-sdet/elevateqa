@@ -86,7 +86,7 @@ html.theme-light .main-content {
   font-size: 10px; text-transform: uppercase; color: var(--accent); letter-spacing: 0.2em; 
   background: var(--accent-soft); padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(212,255,58,0.1);
 }
-html.theme-light .status-indicator { border-color: rgba(79,107,0,0.18); }
+html.theme-light .status-indicator { border-color: rgba(93,130,0,0.18); }
 .pulse { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent); animation: pulse 2.5s infinite; }
 
 /* CONTENT WRAPPER */
@@ -268,7 +268,7 @@ html.theme-light .admin-preloader { background: #f5f2ec; }
   border-radius: 50%;
   border: 1px solid rgba(212, 255, 58, 0.05);
 }
-html.theme-light .orbital-ring { border-color: rgba(79, 107, 0, 0.15); }
+html.theme-light .orbital-ring { border-color: rgba(93, 130, 0, 0.15); }
 .orbital-ring::after {
   content: '';
   position: absolute;
@@ -286,7 +286,7 @@ html.theme-light .orbital-ring { border-color: rgba(79, 107, 0, 0.15); }
   border: 1px dashed rgba(212, 255, 58, 0.1);
   animation: orbit-spin 4s linear infinite reverse;
 }
-html.theme-light .orbital-ring-outer { border-color: rgba(79, 107, 0, 0.2); }
+html.theme-light .orbital-ring-outer { border-color: rgba(93, 130, 0, 0.2); }
 
 .preloader-status {
   display: flex;

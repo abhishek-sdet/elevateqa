@@ -95,20 +95,20 @@ html.theme-light {
   --bg-2: #ffffff;
   --bg-3: #ece7dc;
   --ink: #1c1b1f;
-  --ink-dim: #6b6771;
+  --ink-dim: #55505c;
   --ink-darker: #948f9b;
 
   /* Accent hues are re-darkened for light backgrounds — the originals are
      tuned for high contrast against near-black surfaces and fail WCAG AA
      as text/foreground color once the surface flips to a light one. */
-  --accent: #4f6b00;
-  --accent-rgb: 79, 107, 0;
+  --accent: #5d8200;
+  --accent-rgb: 93, 130, 0;
   --accent-2: #c1391d;
   --accent-3: #2f5fcf;
   --accent-4: #8a5c00;
   --accent-red: #c1391d;
-  --accent-soft: rgba(79, 107, 0, 0.1);
-  --accent-dim: rgba(79, 107, 0, 0.3);
+  --accent-soft: rgba(93, 130, 0, 0.1);
+  --accent-dim: rgba(93, 130, 0, 0.3);
 
   --line: rgba(28, 27, 31, 0.09);
   --line-strong: rgba(28, 27, 31, 0.18);
