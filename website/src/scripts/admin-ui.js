@@ -1140,13 +1140,18 @@ window.sendCustomEmail = async () => {
       const ccEmails = ccInput ? ccInput.split(',').map(e => e.trim()).filter(e => e) : [];
       const bccEmails = bccInput ? bccInput.split(',').map(e => e.trim()).filter(e => e) : [];
 
-      const CHUNK_SIZE = 20;
+      // Smaller chunks + a pause between requests, on top of send-custom-email.js
+      // pacing individual sends server-side — Office365 (and most receiving
+      // servers) treat a rapid burst of identical emails from one account as
+      // spam/abuse and start throttling or blocking the sender.
+      const CHUNK_SIZE = 5;
+      const INTER_CHUNK_DELAY_MS = 1200;
+      const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
       let totalSent = 0;
       let totalFailed = 0;
 
-
-
       for (let i = 0; i < targetEmails.length; i += CHUNK_SIZE) {
+        if (i > 0) await sleep(INTER_CHUNK_DELAY_MS);
         const chunk = targetEmails.slice(i, i + CHUNK_SIZE);
         
         // Only send CC and BCC on the first chunk so they don't receive duplicate emails

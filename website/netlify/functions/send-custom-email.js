@@ -101,33 +101,40 @@ export const handler = async (event, context) => {
                 </div>
         `;
 
-        const chunkSize = 20;
         let successCount = 0;
         let failCount = 0;
 
-        for (let i = 0; i < targetEmails.length; i += chunkSize) {
-            const chunk = targetEmails.slice(i, i + chunkSize);
-            const promises = chunk.map(recipient => {
-                const email = typeof recipient === 'object' ? recipient.email : recipient;
-                const name = typeof recipient === 'object' ? recipient.name : '';
-                
-                // Replace placeholders
-                const finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
-                
-                const mailOptions = {
-                    from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
-                    to: email,
-                    subject: subject,
-                    html: getHtml(finalMessage),
-                    attachments: mailAttachments
-                };
-                return transporter.sendMail(mailOptions);
-            });
-            const results = await Promise.allSettled(promises);
-            results.forEach(r => {
-                if (r.status === 'fulfilled') successCount++;
-                else failCount++;
-            });
+        // Send one at a time with a short pause between each, instead of
+        // firing the whole batch at once — a burst of identical emails going
+        // out simultaneously from one account is exactly what Office365 (and
+        // most receiving mail servers) flag as spam/abuse and start
+        // throttling or blocking. The client also sends smaller batches with
+        // its own pause between requests (see admin-ui.js sendCustomEmail).
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const SEND_DELAY_MS = 350;
+
+        for (const recipient of targetEmails) {
+            const email = typeof recipient === 'object' ? recipient.email : recipient;
+            const name = typeof recipient === 'object' ? recipient.name : '';
+
+            // Replace placeholders
+            const finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
+
+            const mailOptions = {
+                from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: subject,
+                html: getHtml(finalMessage),
+                attachments: mailAttachments
+            };
+            try {
+                await transporter.sendMail(mailOptions);
+                successCount++;
+            } catch (err) {
+                console.error('[CUSTOM EMAIL] Failed to send to', email, err.message);
+                failCount++;
+            }
+            await sleep(SEND_DELAY_MS);
         }
 
         // Send a single copy to CC and BCC if provided, so they aren't spammed
