@@ -141,6 +141,13 @@ window.showSection = (target) => {
   document.querySelectorAll('main section').forEach(sec => sec.style.display = 'none');
   const targetSec = document.getElementById(`sec-${activeId}`);
   if (targetSec) targetSec.style.display = 'block';
+  // All sections share one scrollable <main> (they're just toggled via
+  // display:none/block), so without this a tab switch keeps whatever scroll
+  // offset the previous tab was at — clamped into the new tab's content
+  // range, landing the admin somewhere in the middle/bottom of it instead of
+  // the top. Looks exactly like broken/cut-off content.
+  const scrollContainer = document.querySelector('#protected-content > main');
+  if (scrollContainer) scrollContainer.scrollTop = 0;
   sessionStorage.setItem('admin_active_tab', activeId);
   history.replaceState(null, '', `#${activeId}`);
   const titles = {

@@ -93,8 +93,16 @@ html.is-logged-in #protected-content { display: flex; }
 /* LOGIN OVERLAY */
 #login-overlay { display: none; }
 html.not-logged-in #login-overlay { display: flex; }
-#protected-content > main { 
-  overflow-y: auto; padding: 0 40px 200px; flex: 1; scroll-behavior: smooth; 
+#protected-content > main {
+  overflow-y: auto; padding: 0 40px 200px; flex: 1; scroll-behavior: smooth;
+  /* The floating "Sync & Publish" bar (.admin-actions) is fixed at the
+     viewport bottom, outside normal document flow, so it doesn't reserve
+     any space on its own — without this margin, scrolled content renders
+     right through the same screen region the bar occupies (~100px tall,
+     bottom:32px), so whatever happens to land there looks cut off/covered.
+     This shrinks main's own visible area to end above that region, so the
+     bar always floats in dead space instead of over real content. */
+  margin-bottom: 100px;
 }
 
 @keyframes pulse {
