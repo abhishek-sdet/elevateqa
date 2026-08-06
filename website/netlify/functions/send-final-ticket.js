@@ -63,10 +63,15 @@ export const handler = async (event, context) => {
         const closingMsg = tpl.closing || 'See you at Elevate QA 2026!';
         const tagline    = tpl.tagline || 'This QR code IS your entry ticket — no other document is required for entry. Keep this email handy.';
 
+        // Generated well above the size it's displayed at (see the <img> tag
+        // below) so it stays crisp at any zoom level — this was previously
+        // generated at 300px but *displayed* at only 120px in the email,
+        // which made the code too small/low-density for most phone cameras
+        // to focus on and read without the attendee first pinch-zooming in.
         const qrBuffer = await QRCode.toBuffer(qrData, {
             errorCorrectionLevel: 'H',
-            margin: 2,
-            width: 300,
+            margin: 4,
+            width: 500,
             color: { dark: '#000000', light: '#ffffff' }
         });
 
@@ -206,7 +211,7 @@ export const handler = async (event, context) => {
                 <!-- Right side: QR Code -->
                 <td class="ticket-info-td bg-panel" width="50%" align="center" valign="middle" style="background-color:#07070f;border:1px solid #1f1f30;border-left:none;padding:16px;border-radius:0 12px 12px 0;">
                   <div style="background:#ffffff;padding:8px;border-radius:8px;display:inline-block;">
-                    <img src="cid:qrcode@elevateqa" alt="QR Code" width="120" height="120" style="display:block;border:0;">
+                    <img src="cid:qrcode@elevateqa" alt="QR Code" width="200" height="200" style="display:block;border:0;">
                   </div>
                 </td>
               </tr>
