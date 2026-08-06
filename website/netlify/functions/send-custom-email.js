@@ -134,17 +134,11 @@ export const handler = async (event, context) => {
                 .join(' ');
         };
 
-        // TEMP DEBUG — diagnosing a reported blank-name issue; remove once
-        // confirmed fixed. Echoes exactly what this function received/computed
-        // per recipient back in the API response (never in the email itself).
-        const debugRecipientInfo = [];
-
         for (const recipient of targetEmails) {
             const email = typeof recipient === 'object' ? recipient.email : recipient;
             const rawName = typeof recipient === 'object' ? recipient.name : '';
             const name = (rawName && String(rawName).trim()) || deriveNameFromEmail(email);
             const id = typeof recipient === 'object' ? recipient.id : null;
-            debugRecipientInfo.push({ recipientType: typeof recipient, rawRecipient: recipient, resolvedEmail: email, resolvedRawName: rawName, resolvedName: name, messagePreview: String(message || '').slice(0, 60) });
 
             // Replace placeholders
             let finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
@@ -204,11 +198,10 @@ export const handler = async (event, context) => {
         }
 
         console.log(`[CUSTOM EMAIL] Blast sent. Success: ${successCount}, Failed: ${failCount}`);
-        console.log('[CUSTOM EMAIL] DEBUG recipient info:', JSON.stringify(debugRecipientInfo));
         if (successCount === 0 && failCount > 0) {
-            return { statusCode: 502, headers, body: JSON.stringify({ error: `All ${failCount} email(s) in this batch failed to send.`, successCount, failCount, debugRecipientInfo }) };
+            return { statusCode: 502, headers, body: JSON.stringify({ error: `All ${failCount} email(s) in this batch failed to send.`, successCount, failCount }) };
         }
-        return { statusCode: 200, headers, body: JSON.stringify({ success: true, successCount, failCount, message: `Blast sent. (${successCount} succeeded, ${failCount} failed)`, debugRecipientInfo }) };
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, successCount, failCount, message: `Blast sent. (${successCount} succeeded, ${failCount} failed)` }) };
 
     } catch (error) {
         console.error('[CUSTOM EMAIL Error]', error);
