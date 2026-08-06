@@ -743,6 +743,12 @@ export function populateUI(data) {
   fillTpl('et-location-body1',   loc.body1);
   fillTpl('et-location-body2',   loc.body2);
   fillTpl('et-location-closing', loc.closing);
+
+  const entry = et.entry || {};
+  fillTpl('et-entry-subject', entry.subject);
+  fillTpl('et-entry-body1',   entry.body1);
+  fillTpl('et-entry-body2',   entry.body2);
+  fillTpl('et-entry-closing', entry.closing);
 }
 
 function _renderImgPreview(id, url) {
@@ -813,6 +819,12 @@ window.saveEmailTemplates = async () => {
         body1:   getVal('et-location-body1'),
         body2:   getVal('et-location-body2'),
         closing: getVal('et-location-closing'),
+      },
+      entry: {
+        subject: getVal('et-entry-subject'),
+        body1:   getVal('et-entry-body1'),
+        body2:   getVal('et-entry-body2'),
+        closing: getVal('et-entry-closing'),
       },
     }
   };
@@ -923,7 +935,7 @@ window.loadSelectedTemplate = () => {
   const subjectEl = document.getElementById('email-subject');
   const messageEl = document.getElementById('email-message');
   
-  if (selectedKey === 'food' || selectedKey === 'location') {
+  if (selectedKey === 'food' || selectedKey === 'location' || selectedKey === 'entry') {
     const subj = getVal(`et-${selectedKey}-subject`);
     const b1 = getVal(`et-${selectedKey}-body1`);
     const b2 = getVal(`et-${selectedKey}-body2`);

@@ -15,6 +15,7 @@
             <option value="">-- Select a template to load --</option>
             <option value="food">🍔 Food Info</option>
             <option value="location">📍 Location / Travel Guide</option>
+            <option value="entry">🎟️ Entry / QR Reminder</option>
           </select>
         </div>
       </div>
@@ -104,6 +105,7 @@
       <button class="tab-btn" id="etab-btn-rejection" onclick="showEmailTemplateTab('rejection')" style="font-size: 12px; padding: 10px 16px;">❌ Rejection</button>
       <button class="tab-btn" id="etab-btn-food" onclick="showEmailTemplateTab('food')" style="font-size: 12px; padding: 10px 16px;">🍔 Food Info</button>
       <button class="tab-btn" id="etab-btn-location" onclick="showEmailTemplateTab('location')" style="font-size: 12px; padding: 10px 16px;">📍 Location</button>
+      <button class="tab-btn" id="etab-btn-entry" onclick="showEmailTemplateTab('entry')" style="font-size: 12px; padding: 10px 16px;">🎟️ Entry / QR</button>
     </div>
 
     <div class="card-body" style="padding-top: 28px;">
@@ -279,8 +281,41 @@ Registration opens at 8:00 AM IST. We recommend arriving on time for a smooth ch
         </div>
       </div>
 
+      <!-- ── ENTRY / QR REMINDER ── -->
+      <div id="etab-entry" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Manual Blast Template</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-entry-subject">Email Subject</label>
+          <input type="text" id="et-entry-subject" placeholder="ElevateQA 2026: Keep Your Entry QR Code Handy" value="ElevateQA 2026: Keep Your Entry QR Code Handy">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-entry-body1">Main Message</label>
+          <textarea id="et-entry-body1" rows="6" placeholder="Hi everyone,&#10;&#10;We're just days away from ElevateQA 2026, and we can't wait to welcome you on August 8 at Crowne Plaza, New Delhi!&#10;&#10;A quick but important reminder about entry on the day: the QR code from your registration confirmation email is your official pass into the venue.">Hi everyone,
+
+We're just days away from ElevateQA 2026, and we can't wait to welcome you on August 8 at Crowne Plaza, New Delhi!
+
+A quick but important reminder about entry on the day: the QR code from your registration confirmation email is your official pass into the venue.</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-entry-body2">Logistics / Points</label>
+          <textarea id="et-entry-body2" rows="10" placeholder="To help us keep the check-in line moving quickly, please:&#10;- Keep your registration email (with your QR code) easily accessible on your phone before you arrive.&#10;- We'd also recommend taking a screenshot as a backup, just in case of any network hiccups at the venue.&#10;- Turn your screen brightness up when you reach the desk — this helps our scanners read the code instantly.&#10;- Please avoid forwarding or re-screenshotting a compressed image, as this can sometimes affect scan quality.&#10;&#10;If you're unable to locate your QR code before the event, reach out to us at elevateqa@sdettech.com and we'll get it to you.">To help us keep the check-in line moving quickly, please:
+- Keep your registration email (with your QR code) easily accessible on your phone before you arrive.
+- We'd also recommend taking a screenshot as a backup, just in case of any network hiccups at the venue.
+- Turn your screen brightness up when you reach the desk — this helps our scanners read the code instantly.
+- Please avoid forwarding or re-screenshotting a compressed image, as this can sometimes affect scan quality.
+
+If you're unable to locate your QR code before the event, reach out to us at elevateqa@sdettech.com and we'll get it to you.</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-entry-closing">Closing Message</label>
+          <input type="text" id="et-entry-closing" placeholder="See you there!" value="See you there — safe travels, and get ready for a great day ahead!">
+        </div>
+      </div>
+
     </div>
-    
+
     <div class="card-footer" style="display: flex; justify-content: flex-end;">
       <button class="primary-btn" id="btn-save-email-templates" onclick="saveEmailTemplates()">SAVE TEMPLATES <span aria-hidden="true" style="margin-left:8px;">💾</span></button>
       <span id="email-template-status" style="margin-left: 16px; font-size: 14px; font-weight: 500; align-self: center;"></span>
