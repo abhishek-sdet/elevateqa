@@ -29,6 +29,12 @@
         <textarea id="email-message" rows="8" placeholder="Hello {{Name}},&#10;&#10;We are excited to announce..."></textarea>
       </div>
 
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label for="email-attachments">Attachments <span class="label-hint">Image or document, optional. Max 4MB total, sent with every email in this blast.</span></label>
+        <input type="file" id="email-attachments" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple onchange="window.handleEmailAttachmentsChange(this)">
+        <div id="email-attachments-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;"></div>
+      </div>
+
       <div class="form-group" style="margin-bottom: 24px; border-top: 1px dashed var(--line-light); padding-top: 24px;">
         <label>Recipient Target <span class="label-hint">Who will receive this email</span></label>
         <div style="display: flex; gap: 24px; align-items: center; margin-top: 12px;">
@@ -209,19 +215,32 @@
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-food-subject">Email Subject</label>
-          <input type="text" id="et-food-subject" placeholder="ElevateQA 2026: Plan Your Arrival for the Best Experience">
+          <input type="text" id="et-food-subject" placeholder="ElevateQA 2026: Plan Your Arrival for the Best Experience" value="ElevateQA 2026: Plan Your Arrival for the Best Experience">
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-food-body1">Main Message</label>
-          <textarea id="et-food-body1" rows="5" placeholder="Hi everyone,&#10;We're thrilled by the incredible response to ElevateQA 2026..."></textarea>
+          <textarea id="et-food-body1" rows="5" placeholder="Hi everyone,&#10;&#10;We're thrilled by the incredible response to ElevateQA 2026 — registrations have far exceeded what we expected, and we can't wait to see you all on August 8 in Crowne Plaza, New Delhi.&#10;&#10;A quick but important note on logistics:">Hi everyone,
+
+We're thrilled by the incredible response to ElevateQA 2026 — registrations have far exceeded what we expected, and we can't wait to see you all on August 8 in Crowne Plaza, New Delhi.
+
+A quick but important note on logistics:</textarea>
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-food-body2">Logistics / Points</label>
-          <textarea id="et-food-body2" rows="5" placeholder="As this is a free event, we're able to provide complimentary lunch for the first 250 attendees only..."></textarea>
+          <textarea id="et-food-body2" rows="10" placeholder="As this is a free event, we're able to provide complimentary lunch for the first 250 attendees only, on a first-come, first-served basis. While our venue can comfortably host everyone, lunch coupons are limited.&#10;&#10;Here's how to make sure you don't miss out:&#10;- Registration and check-in open at 8:00 AM sharp.&#10;- Please arrive early and collect your lunch coupon at the registration desk.&#10;- Coupons will be handed out in the order attendees check in, until all 250 are gone.&#10;&#10;Coming in on time also means you'll settle in comfortably before the sessions begin and won't miss any of the opening.&#10;&#10;We truly appreciate your enthusiasm and your understanding on this.">As this is a free event, we're able to provide complimentary lunch for the first 250 attendees only, on a first-come, first-served basis. While our venue can comfortably host everyone, lunch coupons are limited.
+
+Here's how to make sure you don't miss out:
+- Registration and check-in open at 8:00 AM sharp.
+- Please arrive early and collect your lunch coupon at the registration desk.
+- Coupons will be handed out in the order attendees check in, until all 250 are gone.
+
+Coming in on time also means you'll settle in comfortably before the sessions begin and won't miss any of the opening.
+
+We truly appreciate your enthusiasm and your understanding on this.</textarea>
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-food-closing">Closing Message</label>
-          <input type="text" id="et-food-closing" placeholder="See you bright and early!">
+          <input type="text" id="et-food-closing" placeholder="See you bright and early!" value="See you bright and early!">
         </div>
       </div>
 

@@ -841,6 +841,60 @@ window.saveEmailTemplates = async () => {
   }
 };
 
+// ── Email attachments (blast + test email) ──────────────────────────────────
+// Kept in memory as {name, base64} so the same set of files can be attached
+// to every chunk of a bulk send, not just re-read once from the <input>.
+let emailAttachments = [];
+// Netlify Functions cap the request body around 6MB, and base64 inflates
+// binary size by ~33% on top of the rest of the JSON payload — keep raw
+// attachment bytes well under that so the request itself doesn't get rejected.
+const MAX_ATTACHMENTS_BYTES = 4 * 1024 * 1024;
+
+function renderEmailAttachmentsList() {
+  const list = document.getElementById('email-attachments-list');
+  if (!list) return;
+  list.innerHTML = emailAttachments.map((a, i) => `
+    <div style="display:flex; align-items:center; gap:10px; font-size:12px; color:var(--text-dim);">
+      <span>📎 ${escapeHtml(a.name)} (${(a.size / 1024).toFixed(0)} KB)</span>
+      <button type="button" onclick="window.removeEmailAttachment(${i})" style="background:none; border:none; color:var(--accent-red, #ff5a36); cursor:pointer; font-size:12px;">Remove</button>
+    </div>
+  `).join('');
+}
+
+window.removeEmailAttachment = (index) => {
+  emailAttachments.splice(index, 1);
+  renderEmailAttachmentsList();
+};
+
+window.handleEmailAttachmentsChange = async (input) => {
+  const files = Array.from(input.files || []);
+  input.value = ''; // allow re-selecting the same file after a remove
+
+  for (const file of files) {
+    const totalBytes = emailAttachments.reduce((sum, a) => sum + a.size, 0) + file.size;
+    if (totalBytes > MAX_ATTACHMENTS_BYTES) {
+      window.showToast(`"${file.name}" would put total attachments over 4MB — skipped.`, 'error', 'Too Large');
+      continue;
+    }
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1] || '');
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    }).catch(() => null);
+    if (base64 === null) {
+      window.showToast(`Could not read "${file.name}".`, 'error');
+      continue;
+    }
+    emailAttachments.push({ name: file.name, size: file.size, base64 });
+  }
+  renderEmailAttachmentsList();
+};
+
+function getEmailAttachmentsPayload() {
+  return emailAttachments.map(a => ({ filename: a.name, content: a.base64, encoding: 'base64' }));
+}
+
 window.toggleCustomEmailInput = () => {
   const target = document.querySelector('input[name="email-target"]:checked').value;
   const customContainer = document.getElementById('custom-emails-container');
@@ -923,7 +977,8 @@ window.sendTestEmail = async () => {
         message: message,
         targetEmails: [testEmail],
         ccEmails: [],
-        bccEmails: []
+        bccEmails: [],
+        attachments: getEmailAttachmentsPayload()
       })
     });
 
@@ -1110,7 +1165,8 @@ window.sendCustomEmail = async () => {
             message,
             targetEmails: chunk,
             ccEmails: currentCc,
-            bccEmails: currentBcc
+            bccEmails: currentBcc,
+            attachments: getEmailAttachmentsPayload()
           })
         });
 
@@ -1148,6 +1204,9 @@ window.sendCustomEmail = async () => {
       if (target === 'custom') document.getElementById('custom-emails-input').value = '';
       if (document.getElementById('cc-emails-input')) document.getElementById('cc-emails-input').value = '';
       if (document.getElementById('bcc-emails-input')) document.getElementById('bcc-emails-input').value = '';
+      emailAttachments = [];
+      renderEmailAttachmentsList();
+      if (document.getElementById('email-attachments')) document.getElementById('email-attachments').value = '';
 
   } catch (err) {
     console.error('Error sending custom email:', err);

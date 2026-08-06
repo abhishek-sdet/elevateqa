@@ -60,6 +60,12 @@ export const handler = async (event, context) => {
         const extraBccList = Array.isArray(bccEmails) ? bccEmails : [];
         const ccList = Array.isArray(ccEmails) ? ccEmails : [];
 
+        // Admins type plain text with blank lines between paragraphs (the UI
+        // says "HTML is supported for bold, links, etc." but doesn't require
+        // it), and HTML collapses bare newlines/whitespace — so without this,
+        // every paragraph break the admin typed disappears in the sent email.
+        const withLineBreaks = (msgContent) => String(msgContent || '').replace(/\n/g, '<br>');
+
         const getHtml = (msgContent) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
@@ -80,7 +86,7 @@ export const handler = async (event, context) => {
                         <!-- Body Section -->
                         <div style="padding: 40px;">
                             <div style="color: #ffffff; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                ${msgContent}
+                                ${withLineBreaks(msgContent)}
                             </div>
                         </div>
                         
