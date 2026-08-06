@@ -90,13 +90,17 @@
 
   <!-- ══════════ EMAIL TEMPLATES CARD ══════════ -->
   <div class="manager-card primary-card fade-in" style="margin-top: 32px;">
-    <div class="card-header" style="display: block; margin-bottom: 8px;">
-      <div class="section-title">Email <em>Templates</em></div>
+    <div class="card-header" style="display: block; margin-bottom: 8px; cursor: pointer;" onclick="window.toggleEmailTemplatesPanel()" role="button" tabindex="0" aria-expanded="false" aria-controls="email-templates-body">
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Email <em>Templates</em></span>
+        <span id="email-templates-chevron" aria-hidden="true" style="font-size: 13px; color: var(--ink-dim); transition: transform 0.3s ease; display: inline-block;">▾</span>
+      </div>
       <p style="color: var(--text-dim); font-size: 14px; margin-top: 8px; line-height: 1.5;">
-        Customize the subject and body text of the 5 transactional emails. Changes are saved to the database and used the next time an email is sent.
+        Customize the subject and body text of the 7 email templates (5 auto-sent + 2 manual-blast). Changes are saved to the database and used the next time an email is sent. Click to expand/collapse.
       </p>
     </div>
 
+    <div id="email-templates-body" style="display: none;">
     <!-- Template Tabs -->
     <div class="internal-tabs" style="margin-bottom: 0; border-bottom: 1px solid var(--line); padding-bottom: 0; margin-top: 20px;">
       <button class="tab-btn active" id="etab-btn-registration" onclick="showEmailTemplateTab('registration')" style="font-size: 12px; padding: 10px 16px;">📝 Registration</button>
@@ -253,11 +257,11 @@ We truly appreciate your enthusiasm and your understanding on this.</textarea>
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-location-subject">Email Subject</label>
-          <input type="text" id="et-location-subject" placeholder="ElevateQA 2026: Venue & Travel Guide" value="Elevate QA Tech Summit 2026: Travel & Location Guide">
+          <input type="text" id="et-location-subject" placeholder="Elevate QA Tech Summit 2026: Travel & Location Guide" value="Elevate QA Tech Summit 2026: Travel & Location Guide">
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-location-body1">Main Message</label>
-          <textarea id="et-location-body1" rows="5" placeholder="Hi everyone,&#10;We're excited to welcome you...">Hi {{Name}},
+          <textarea id="et-location-body1" rows="5" placeholder="Hi {{Name}},&#10;&#10;We're excited to welcome you to Elevate QA Tech Summit 2026 on Saturday, 8 August 2026, at Crowne Plaza Mayur Vihar, New Delhi.&#10;&#10;To help you plan your journey, we've attached a Travel & Location Guide with directions from the nearest metro stations, IGI Airport, and Kashmere Gate, along with a Google Maps link for easy navigation.&#10;&#10;Registration opens at 8:00 AM IST. We recommend arriving on time for a smooth check-in experience before the sessions begin.">Hi {{Name}},
 
 We're excited to welcome you to Elevate QA Tech Summit 2026 on Saturday, 8 August 2026, at Crowne Plaza Mayur Vihar, New Delhi.
 
@@ -269,15 +273,15 @@ Registration opens at 8:00 AM IST. We recommend arriving on time for a smooth ch
           <label for="et-location-body2">Logistics / Points</label>
           <textarea id="et-location-body2" rows="7" placeholder="As traffic in parts of Delhi NCR...">As traffic in parts of Delhi NCR may be heavier than usual due to the ongoing Kawad Yatra, we encourage you to plan your departure with a little extra buffer time to ensure a comfortable and stress-free journey.
 
-<img src="https://elevateqa.sdettech.com/location-guide.jpg" alt="Ways to reach Crowne Plaza Mayur Vihar" style="max-width: 100%; border-radius: 8px; margin: 16px 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 0 0;"><tr><td style="background:#1a1a24;border:1px solid #2a2a35;border-radius:12px;padding:24px;"><p style="color:#d4ff3a;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin:0 0 18px 0;">Ways to Reach Crowne Plaza Mayur Vihar</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding-bottom:16px;border-bottom:1px solid #2a2a35;">🚇 <strong style="color:#ffffff;">From Nearest Metro Stations</strong><br><span style="color:#b5b5c0;font-size:13px;">Mayur Vihar Phase 1 Metro (Blue Line) — 3–5 min by auto or 15 min walk<br>New Ashok Nagar Metro (Blue Line) — 10–15 min by auto<br><em style="color:#8e8e9a;">Tip: Auto-rickshaws and cabs are readily available outside both stations.</em></span></td></tr><tr><td style="padding:16px 0;border-bottom:1px solid #2a2a35;">✈️ <strong style="color:#ffffff;">From IGI Airport</strong> <span style="color:#8e8e9a;font-size:12px;">(60–90 min, traffic-dependent)</span><br><span style="color:#b5b5c0;font-size:13px;">By Car/Taxi: IGI Airport → NH48 → DND Flyway → Mayur Vihar (Recommended)<br>By Metro: Airport Express Line → New Delhi Station → Blue Line → Mayur Vihar Phase 1</span></td></tr><tr><td style="padding-top:16px;">🚕 <strong style="color:#ffffff;">From Kashmere Gate</strong> <span style="color:#8e8e9a;font-size:12px;">(40–60 min, traffic-dependent)</span><br><span style="color:#b5b5c0;font-size:13px;">By Car/Taxi: Kashmere Gate → ITO → DND Flyway → Mayur Vihar<br>By Metro: Violet Line → Blue Line (at Karkardooma) → Mayur Vihar Phase 1</span></td></tr></table></td></tr></table>
 
-📍 Venue: Crowne Plaza Mayur Vihar, New Delhi
-🗺️ Google Maps: https://maps.app.goo.gl/ocR2t1HAKxFNF4Fz9?g_st=iw
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 0 0;"><tr><td align="center" style="background:rgba(212,255,58,0.06);border:1px solid rgba(212,255,58,0.2);border-radius:12px;padding:22px;">📍 <strong style="color:#ffffff;font-size:14px;">Crowne Plaza Mayur Vihar, New Delhi</strong><br><span style="color:#8e8e9a;font-size:12px;">13B, Mayur Vihar, Phase 1, New Delhi, Delhi 110091</span><br><br><a href="https://maps.app.goo.gl/ocR2t1HAKxFNF4Fz9?g_st=iw" target="_blank" style="display:inline-block;background:#d4ff3a;color:#0b0b10;font-size:12px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;text-decoration:none;padding:12px 26px;border-radius:100px;">Open in Google Maps →</a></td></tr></table>
+
 🌐 Website: https://elevateqa.sdettech.com</textarea>
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-location-closing">Closing Message</label>
-          <input type="text" id="et-location-closing" placeholder="Safe travels..." value="Safe travels, and we'll see you on 8 August for an exciting day of learning, innovation, and networking.">
+          <input type="text" id="et-location-closing" placeholder="Safe travels, and we'll see you on 8 August for an exciting day of learning, innovation, and networking." value="Safe travels, and we'll see you on 8 August for an exciting day of learning, innovation, and networking.">
         </div>
       </div>
 
@@ -310,7 +314,7 @@ If you're unable to locate your QR code before the event, reach out to us at ele
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-entry-closing">Closing Message</label>
-          <input type="text" id="et-entry-closing" placeholder="See you there!" value="See you there — safe travels, and get ready for a great day ahead!">
+          <input type="text" id="et-entry-closing" placeholder="See you there — safe travels, and get ready for a great day ahead!" value="See you there — safe travels, and get ready for a great day ahead!">
         </div>
       </div>
 
@@ -320,6 +324,7 @@ If you're unable to locate your QR code before the event, reach out to us at ele
       <button class="primary-btn" id="btn-save-email-templates" onclick="saveEmailTemplates()">SAVE TEMPLATES <span aria-hidden="true" style="margin-left:8px;">💾</span></button>
       <span id="email-template-status" style="margin-left: 16px; font-size: 14px; font-weight: 500; align-self: center;"></span>
     </div>
+    </div><!-- /#email-templates-body -->
     </div>
 
 </section>

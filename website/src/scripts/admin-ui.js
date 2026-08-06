@@ -760,7 +760,19 @@ export function populateUI(data) {
 
   // Email templates
   const et = sc.emailTemplates || {};
-  const fillTpl = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || el.getAttribute('placeholder') || ''; };
+  // `food`/`location`/`entry` are manual-blast templates with no row in
+  // Supabase yet (val is always undefined for them) — their real default
+  // copy lives as the field's initial HTML value, not its placeholder. Only
+  // fall back to placeholder when the field is ALSO empty, so a saved
+  // Supabase value (when one exists) still wins, but an unsaved template's
+  // authored default content survives instead of being wiped by whatever
+  // (often shorter/stale) text happens to sit in the placeholder attribute.
+  const fillTpl = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (val) { el.value = val; return; }
+    if (!el.value) el.value = el.getAttribute('placeholder') || '';
+  };
   const reg = et.registration || {};
   fillTpl('et-registration-subject', reg.subject);
   fillTpl('et-registration-body1',   reg.body1);
@@ -810,6 +822,18 @@ function _renderImgPreview(id, url) {
   const dlLink = document.getElementById(`download-${id}`);
   if (dlLink && url) { dlLink.href = url; dlLink.style.display = 'inline-block'; }
 }
+
+// ── Email Templates card (collapsed by default) ──────────────────────────────
+window.toggleEmailTemplatesPanel = () => {
+  const body = document.getElementById('email-templates-body');
+  const chevron = document.getElementById('email-templates-chevron');
+  const header = document.getElementById('email-templates-body')?.previousElementSibling;
+  if (!body) return;
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'block' : 'none';
+  if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  if (header) header.setAttribute('aria-expanded', String(isHidden));
+};
 
 // ── Email Center Logic ───────────────────────────────────────────────────────
 
