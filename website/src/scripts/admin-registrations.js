@@ -141,8 +141,14 @@ window.renderAttendees = (registrations) => {
   const fRole = document.getElementById('col-filter-role') ? document.getElementById('col-filter-role').value : '';
   const globalSearch = (document.getElementById('attendee-search')?.value || '').toLowerCase().trim();
 
-  // Tab filter is based on window.currentAttendeeTab
-  const currentTab = window.currentAttendeeTab || 'all';
+  // Tab filter is based on window.currentAttendeeTab — seeded from
+  // sessionStorage on the first render after a page load/refresh so the
+  // admin's chosen tab (Speakers/Keynotes, Final Pass Sent, etc.) survives
+  // a refresh instead of always snapping back to "All List".
+  if (window.currentAttendeeTab === undefined) {
+    window.currentAttendeeTab = sessionStorage.getItem('attendee_tab_filter') || 'all';
+  }
+  const currentTab = window.currentAttendeeTab;
 
   // Sync tab styles with currentTab
   const tabAll = document.getElementById('tab-all');
@@ -394,6 +400,7 @@ window.renderAttendees = (registrations) => {
 
 window.setTabFilter = (tabName) => {
   window.currentAttendeeTab = tabName || 'all';
+  sessionStorage.setItem('attendee_tab_filter', window.currentAttendeeTab);
   const statusSelect = document.getElementById('col-filter-status');
   if (statusSelect) statusSelect.value = '';
   const roleSelect = document.getElementById('col-filter-role');
@@ -456,6 +463,7 @@ window.resetAllFilters = () => {
     if (el) el.value = '';
   });
   window.currentAttendeeTab = 'all';
+  sessionStorage.setItem('attendee_tab_filter', 'all');
   window.filterAttendees();
 };
 
