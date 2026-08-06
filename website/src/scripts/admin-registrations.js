@@ -324,7 +324,18 @@ window.renderAttendees = (registrations) => {
     else if (isSent) badgeHtml = '<span class="badge" style="background:#4CAF50; color:#fff; border-color:#4CAF50;">Pass Sent</span>';
     else if (isSpeaker) badgeHtml = '<span class="badge" style="background:#9C27B0; color:#fff; border-color:#9C27B0;">Speaker</span>';
     else if (isRejected) badgeHtml = '<span class="badge" style="background:var(--accent-red); color:#fff; border-color:var(--accent-red);">Rejected</span>';
-    
+
+    // These three are independent of `status` above (an attendee can be
+    // TICKET_SENT *and* have gotten the food/location/entry emails), so
+    // they're shown as small supplementary pills under the main status
+    // badge rather than replacing it — otherwise sending one of these would
+    // have no visible effect on a row that already shows e.g. "Pass Sent".
+    const extraBadges = [];
+    if (p.entry_reminder_sent_at) extraBadges.push('<span class="badge" style="background:#3f51b5; color:#fff; border-color:#3f51b5; font-size:9px;" title="Entry reminder sent">🎟️ Reminder Sent</span>');
+    if (p.food_email_sent_at) extraBadges.push('<span class="badge" style="background:#f57c00; color:#fff; border-color:#f57c00; font-size:9px;" title="Food info sent">🍔 Food Sent</span>');
+    if (p.location_email_sent_at) extraBadges.push('<span class="badge" style="background:#009688; color:#fff; border-color:#009688; font-size:9px;" title="Location guide sent">📍 Location Sent</span>');
+    const extraBadgesHtml = extraBadges.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">${extraBadges.join('')}</div>` : '';
+
     const roleOptions = ['Attendee', 'Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'];
     const currentRole = p.role || 'Attendee';
     const roleBadgeHtml = `
@@ -337,7 +348,7 @@ window.renderAttendees = (registrations) => {
       <tr data-id="${p.id}">
         <td style="text-align: center;"><input type="checkbox" class="attendee-cb" value='${JSON.stringify({id: p.id, name: p.name, email: p.email, company: p.company, designation: p.designation, phone: p.phone, linkedin: p.linkedin}).replace(/&/g, "&amp;").replace(/'/g, "&#39;")}'></td>
         <td>${escapeHtml(p.name  || '—')}</td>
-        <td>${badgeHtml}</td>
+        <td>${badgeHtml}${extraBadgesHtml}</td>
         <td>${roleBadgeHtml}</td>
         <td>${escapeHtml(p.company     || '—')}</td>
         <td>${escapeHtml(p.designation || '—')}</td>
