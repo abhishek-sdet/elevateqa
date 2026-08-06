@@ -50,11 +50,18 @@ export const handler = async (event, context) => {
         const transporter = nodemailer.createTransport({
             host: 'smtp.office365.com',
             port: 587,
-            secure: false, 
+            secure: false,
             auth: {
-                user: process.env.EMAIL_USER, 
+                user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
             },
+            // Reuse one connection across the whole batch instead of a fresh
+            // TCP+TLS handshake per email — with several recipients per
+            // invocation and a per-email pacing delay already in place, the
+            // extra handshake time was pushing close to Netlify's function
+            // execution limit.
+            pool: true,
+            maxConnections: 1,
             tls: { ciphers: 'SSLv3' }
         });
 

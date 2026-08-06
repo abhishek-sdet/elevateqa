@@ -145,15 +145,22 @@ if (document.readyState === 'loading') {
 // ── Save All (Publish) ────────────────────────────────────────────────────────
 window.saveAll = async () => {
   const btn = document.getElementById('btn-publish');
+  // The conflict check below awaits a network round-trip before the button
+  // used to get disabled, so a fast double-click could start a second
+  // concurrent saveAll() run — disable immediately, before anything else, to
+  // rule that out.
+  if (btn.disabled) return;
   const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Checking for conflicts...';
 
-  // Conflict check FIRST, before touching the button/spinner state or writing
-  // anything — if another admin has changed speakers/agenda/site content etc.
-  // since this session loaded, saving now would silently delete their new
-  // rows (via syncTableDeletes reconciling against this stale DOM) and/or
-  // revert their edits (this session re-writes every field's last-loaded
-  // value, including ones it never touched). Give the admin a chance to back
-  // out and refresh instead of finding out after the fact.
+  // Conflict check — if another admin has changed speakers/agenda/site
+  // content etc. since this session loaded, saving now would silently
+  // delete their new rows (via syncTableDeletes reconciling against this
+  // stale DOM) and/or revert their edits (this session re-writes every
+  // field's last-loaded value, including ones it never touched). Give the
+  // admin a chance to back out and refresh instead of finding out after
+  // the fact.
   if (window._lastLoadedSnapshot) {
     const freshCheck = await loadAllData();
     if (freshCheck && snapshotOf(freshCheck) !== window._lastLoadedSnapshot) {
@@ -162,12 +169,15 @@ window.saveAll = async () => {
         'Data Changed Elsewhere',
         'PUBLISH ANYWAY (RISKY)'
       );
-      if (!proceed) return;
+      if (!proceed) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        return;
+      }
     }
   }
 
   btn.innerHTML = '<span class="spinner"></span> Syncing Everything...';
-  btn.disabled = true;
 
   try {
     const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : undefined; };
@@ -218,6 +228,8 @@ window.saveAll = async () => {
       footerTagline: getVal('footer-tagline'),     footerLocation: getVal('footer-location'),
       footerEdition: getVal('footer-edition'),     footerCopyright: getVal('footer-copyright'),
       footerEmail: getVal('footer-email'),
+      supportEmailAttendee: getVal('set-email-attendee'), supportEmailPresenter: getVal('set-email-presenter'),
+      supportEmailGeneral: getVal('set-email-support'),
       navManifesto: getVal('nav-manifesto-input'), navMaturity: getVal('nav-maturity-input'),
       navExperience: getVal('nav-experience-input'), navAgenda: getVal('nav-agenda-input'),
       navSpeakers: getVal('nav-speakers-input'),   navJoin: getVal('nav-join-input'),

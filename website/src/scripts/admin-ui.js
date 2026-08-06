@@ -579,6 +579,7 @@ export function populateUI(data) {
   for (let i = 1; i <= 6; i++) { setVal(`coming-item${i}-label`, sc[`comingItem${i}Label`]); setVal(`coming-item${i}-status`, sc[`comingItem${i}Status`]); }
   setVal('footer-tagline', sc.footerTagline); setVal('footer-location', sc.footerLocation);
   setVal('footer-edition', sc.footerEdition); setVal('footer-copyright', sc.footerCopyright); setVal('footer-email', sc.footerEmail);
+  setVal('set-email-attendee', sc.supportEmailAttendee); setVal('set-email-presenter', sc.supportEmailPresenter); setVal('set-email-support', sc.supportEmailGeneral);
   setVal('nav-manifesto-input', sc.navManifesto); setVal('nav-maturity-input', sc.navMaturity);
   setVal('nav-experience-input', sc.navExperience); setVal('nav-agenda-input', sc.navAgenda);
   setVal('nav-speakers-input', sc.navSpeakers); setVal('nav-join-input', sc.navJoin);
@@ -882,25 +883,33 @@ window.handleEmailAttachmentsChange = async (input) => {
   const files = Array.from(input.files || []);
   input.value = ''; // allow re-selecting the same file after a remove
 
-  for (const file of files) {
-    const totalBytes = emailAttachments.reduce((sum, a) => sum + a.size, 0) + file.size;
-    if (totalBytes > MAX_ATTACHMENTS_BYTES) {
-      window.showToast(`"${file.name}" would put total attachments over 4MB — skipped.`, 'error', 'Too Large');
-      continue;
+  // Disabled while reading so a second file-picker round while this one is
+  // still awaiting FileReader results can't check the size cap against a
+  // stale total and let the combined set slip past MAX_ATTACHMENTS_BYTES.
+  input.disabled = true;
+  try {
+    for (const file of files) {
+      const totalBytes = emailAttachments.reduce((sum, a) => sum + a.size, 0) + file.size;
+      if (totalBytes > MAX_ATTACHMENTS_BYTES) {
+        window.showToast(`"${file.name}" would put total attachments over 4MB — skipped.`, 'error', 'Too Large');
+        continue;
+      }
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1] || '');
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      }).catch(() => null);
+      if (base64 === null) {
+        window.showToast(`Could not read "${file.name}".`, 'error');
+        continue;
+      }
+      emailAttachments.push({ name: file.name, size: file.size, base64 });
+      renderEmailAttachmentsList();
     }
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1] || '');
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    }).catch(() => null);
-    if (base64 === null) {
-      window.showToast(`Could not read "${file.name}".`, 'error');
-      continue;
-    }
-    emailAttachments.push({ name: file.name, size: file.size, base64 });
+  } finally {
+    input.disabled = false;
   }
-  renderEmailAttachmentsList();
 };
 
 function getEmailAttachmentsPayload() {
@@ -1162,10 +1171,14 @@ window.sendCustomEmail = async () => {
       let totalSent = 0;
       let totalFailed = 0;
 
+      // Each chunk is caught individually so one failed/timed-out batch (e.g.
+      // a slow SMTP handshake pushing past the function's execution limit)
+      // doesn't silently abort every remaining chunk — the recipients after
+      // it would otherwise never get emailed with no indication which ones.
       for (let i = 0; i < targetEmails.length; i += CHUNK_SIZE) {
         if (i > 0) await sleep(INTER_CHUNK_DELAY_MS);
         const chunk = targetEmails.slice(i, i + CHUNK_SIZE);
-        
+
         // Only send CC and BCC on the first chunk so they don't receive duplicate emails
         const isFirstChunk = (i === 0);
         const currentCc = isFirstChunk ? ccEmails : [];
@@ -1174,32 +1187,37 @@ window.sendCustomEmail = async () => {
         statusMsg.style.color = 'var(--text-dim)';
         statusMsg.textContent = `Sending batch ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(targetEmails.length / CHUNK_SIZE)}...`;
 
-        const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-Token": sessionStorage.getItem('admin_token') || '' },
-          body: JSON.stringify({
-            subject,
-            message,
-            targetEmails: chunk,
-            ccEmails: currentCc,
-            bccEmails: currentBcc,
-            attachments: getEmailAttachmentsPayload()
-          })
-        });
-
-        let result;
         try {
-           result = await response.json();
-        } catch(e) {
-           throw new Error("Server timeout or invalid response. Batch failed.");
-        }
+          const response = await fetch(`${BACKEND_URL}/send-custom-email`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Admin-Token": sessionStorage.getItem('admin_token') || '' },
+            body: JSON.stringify({
+              subject,
+              message,
+              targetEmails: chunk,
+              ccEmails: currentCc,
+              bccEmails: currentBcc,
+              attachments: getEmailAttachmentsPayload()
+            })
+          });
 
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to send custom email batch');
-        }
+          let result;
+          try {
+             result = await response.json();
+          } catch(e) {
+             throw new Error("Server timeout or invalid response.");
+          }
 
-        totalSent += result.successCount ?? chunk.length;
-        totalFailed += result.failCount ?? 0;
+          if (!response.ok) {
+              throw new Error(result.error || 'Batch failed');
+          }
+
+          totalSent += result.successCount ?? chunk.length;
+          totalFailed += result.failCount ?? 0;
+        } catch (batchErr) {
+          console.error(`[sendCustomEmail] Batch ${Math.floor(i / CHUNK_SIZE) + 1} failed:`, batchErr);
+          totalFailed += chunk.length;
+        }
       }
 
       if (totalFailed > 0) {

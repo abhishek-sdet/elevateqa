@@ -91,7 +91,7 @@ async function verifyOTP() {
       const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
       const baseUrl = isLocalHostOrNetwork ? 'http://localhost:3000/api' : 'https://elevateqa.netlify.app/.netlify/functions';
       
-      const response = await fetch(`${baseUrl}/verify-otp`, {
+      const response = await fetch(`${baseUrl}/verify-admin-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: currentAuthEmail, otp: code })

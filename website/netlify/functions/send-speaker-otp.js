@@ -30,10 +30,11 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { email } = JSON.parse(event.body);
+        let { email } = JSON.parse(event.body);
         if (!email) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email is required' }) };
         }
+        email = email.toLowerCase();
 
         const otp = generateOTP();
         const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes

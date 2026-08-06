@@ -440,43 +440,46 @@ window.sendBulkTickets = async () => {
   prog.style.display = 'block';
 
   let sent = 0;
-  for (const attendee of selected) {
-    prog.textContent = `Processing ${sent + 1} / ${selected.length}...`;
-    try {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
-      
-      const payload = {
-        name: attendee.name,
-        email: attendee.email,
-        company: attendee.company,
-        designation: attendee.designation || '',
-        ticketId: 'EQ26-' + String(attendee.id).split('-')[0].toUpperCase(),
-        qrData: `ELEVATE-QA:${attendee.id}|${attendee.name}|${attendee.email}`
-      };
+  try {
+    for (const attendee of selected) {
+      prog.textContent = `Processing ${sent + 1} / ${selected.length}...`;
+      try {
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
 
-      const response = await fetch(`${baseUrl}/send-final-ticket`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Token": sessionStorage.getItem('admin_token') || '' },
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) throw new Error('Failed');
-      await updateRegistrationStatus(attendee.id, 'TICKET_SENT');
-      sent++;
-    } catch(e) {
-      console.error('Failed to send to', attendee.email, e);
+        const payload = {
+          name: attendee.name,
+          email: attendee.email,
+          company: attendee.company,
+          designation: attendee.designation || '',
+          ticketId: 'EQ26-' + String(attendee.id).split('-')[0].toUpperCase(),
+          qrData: `ELEVATE-QA:${attendee.id}|${attendee.name}|${attendee.email}`
+        };
+
+        const response = await fetch(`${baseUrl}/send-final-ticket`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Token": sessionStorage.getItem('admin_token') || '' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed');
+        await updateRegistrationStatus(attendee.id, 'TICKET_SENT');
+        sent++;
+      } catch(e) {
+        console.error('Failed to send to', attendee.email, e);
+      }
     }
+
+    prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
+    btn.innerHTML = '✓ Sent!';
+    window.showToast(`Sent ${sent} passes.`, 'success');
+
+    // Refresh UI to show updated badges
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
   }
-
-  prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
-  btn.innerHTML = '✓ Sent!';
-  window.showToast(`Sent ${sent} passes.`, 'success');
-  btn.disabled = false;
-  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
-
-  // Refresh UI to show updated badges
-  const data = await loadAllData();
-  if (data && data.registrations) window.renderAttendees(data.registrations);
 };
 
 window.sendBulkRejections = async () => {
@@ -494,39 +497,42 @@ window.sendBulkRejections = async () => {
   prog.style.display = 'block';
 
   let sent = 0;
-  for (const attendee of selected) {
-    prog.textContent = `Processing ${sent + 1} / ${selected.length}...`;
-    try {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
+  try {
+    for (const attendee of selected) {
+      prog.textContent = `Processing ${sent + 1} / ${selected.length}...`;
+      try {
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
 
-      const payload = {
-        name: attendee.name,
-        email: attendee.email
-      };
+        const payload = {
+          name: attendee.name,
+          email: attendee.email
+        };
 
-      const response = await fetch(`${baseUrl}/send-rejection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) throw new Error('Failed');
-      await updateRegistrationStatus(attendee.id, 'REJECTED');
-      sent++;
-    } catch(e) {
-      console.error('Failed to send rejection to', attendee.email, e);
+        const response = await fetch(`${baseUrl}/send-rejection`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed');
+        await updateRegistrationStatus(attendee.id, 'REJECTED');
+        sent++;
+      } catch(e) {
+        console.error('Failed to send rejection to', attendee.email, e);
+      }
     }
+
+    prog.textContent = `Done. Sent ${sent} rejections.`;
+    btn.innerHTML = '✓ Sent!';
+    window.showToast(`Sent ${sent} rejection emails.`, 'success');
+
+    // Refresh UI to show updated badges
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
   }
-
-  prog.textContent = `Done. Sent ${sent} rejections.`;
-  btn.innerHTML = '✓ Sent!';
-  window.showToast(`Sent ${sent} rejection emails.`, 'success');
-  btn.disabled = false;
-  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
-
-  // Refresh UI to show updated badges
-  const data = await loadAllData();
-  if (data && data.registrations) window.renderAttendees(data.registrations);
 };
 
 // "Send Entry Reminder" (Bulk Actions bar). Each recipient's own unique QR
@@ -561,37 +567,40 @@ window.sendBulkEntryReminder = async () => {
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   let sent = 0;
 
-  for (let i = 0; i < selected.length; i += CHUNK_SIZE) {
-    if (i > 0) await sleep(1200);
-    const chunk = selected.slice(i, i + CHUNK_SIZE);
-    prog.textContent = `Processing ${Math.min(i + CHUNK_SIZE, selected.length)} / ${selected.length}...`;
-    try {
-      const response = await fetch(`${baseUrl}/send-custom-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': sessionStorage.getItem('admin_token') || '' },
-        body: JSON.stringify({
-          subject,
-          message,
-          targetEmails: chunk.map(a => ({ email: a.email, name: a.name, id: a.id })),
-          ccEmails: [],
-          bccEmails: [],
-          attachments: [],
-          includeQrForRecipients: true
-        })
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || 'Failed');
-      sent += result.successCount ?? chunk.length;
-    } catch (e) {
-      console.error('[sendBulkEntryReminder] batch failed:', e);
+  try {
+    for (let i = 0; i < selected.length; i += CHUNK_SIZE) {
+      if (i > 0) await sleep(1200);
+      const chunk = selected.slice(i, i + CHUNK_SIZE);
+      prog.textContent = `Processing ${Math.min(i + CHUNK_SIZE, selected.length)} / ${selected.length}...`;
+      try {
+        const response = await fetch(`${baseUrl}/send-custom-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': sessionStorage.getItem('admin_token') || '' },
+          body: JSON.stringify({
+            subject,
+            message,
+            targetEmails: chunk.map(a => ({ email: a.email, name: a.name, id: a.id })),
+            ccEmails: [],
+            bccEmails: [],
+            attachments: [],
+            includeQrForRecipients: true
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Failed');
+        sent += result.successCount ?? chunk.length;
+      } catch (e) {
+        console.error('[sendBulkEntryReminder] batch failed:', e);
+      }
     }
-  }
 
-  prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
-  btn.innerHTML = '✓ Sent!';
-  window.showToast(`Sent ${sent} entry reminder email(s).`, 'success');
-  btn.disabled = false;
-  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+    prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
+    btn.innerHTML = '✓ Sent!';
+    window.showToast(`Sent ${sent} entry reminder email(s).`, 'success');
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+  }
 };
 
 window.openAssignRoleModal = () => {
