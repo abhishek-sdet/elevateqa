@@ -141,6 +141,7 @@ async function handleLogout() {
   sessionStorage.removeItem('admin_logged_in');
   sessionStorage.removeItem('admin_email');
   sessionStorage.removeItem('admin_token');
+  sessionStorage.removeItem('admin_role');
   window.location.reload();
 }
 

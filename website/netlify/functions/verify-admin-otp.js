@@ -25,7 +25,10 @@ async function isWhitelistedAdmin(email) {
     if (data && data.hero_meta) {
         const meta = typeof data.hero_meta === 'string' ? JSON.parse(data.hero_meta) : data.hero_meta;
         if (meta.admin_whitelist && Array.isArray(meta.admin_whitelist)) {
-            whitelist = meta.admin_whitelist;
+            // Entries are either a plain email string (legacy) or {email, role} —
+            // role only matters client-side for which tabs an admin can see, not
+            // for whether they're allowed to log in at all.
+            whitelist = meta.admin_whitelist.map(entry => typeof entry === 'string' ? entry : entry.email);
         }
     }
     whitelist = [...new Set([...whitelist, ...MASTER_ADMINS])].map(e => e.toLowerCase());

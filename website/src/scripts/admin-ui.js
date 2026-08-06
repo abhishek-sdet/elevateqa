@@ -131,10 +131,29 @@ window.showConfirm = (message, title = 'Are you sure?', btnText = 'PROCEED') => 
   });
 };
 
+// ── Role restriction (desk staff vs full access) ─────────────────────────────
+// Called (via admin-core.js) once the current admin's role is known. Hiding
+// nav items only stops accidental clicks — showSection() below is the actual
+// enforcement, since a hidden link doesn't stop direct hash navigation.
+window.applyRoleRestrictions = (role) => {
+  const isDeskStaff = role === 'attendance';
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.style.display = (isDeskStaff && item.id !== 'nav-attendance') ? 'none' : '';
+  });
+  const actionsBar = document.querySelector('.admin-actions');
+  if (actionsBar) actionsBar.style.display = isDeskStaff ? 'none' : '';
+  if (isDeskStaff) window.showSection('attendance');
+};
+
 // ── Section navigation ───────────────────────────────────────────────────────
 window.showSection = (target) => {
   const validSections = ['attendance','email','identity','agenda','speakers','speaker-apps','visuals','intelligence','settings'];
-  const activeId = validSections.includes(target) ? target : 'attendance';
+  // Enforced here (not just by hiding sidebar nav items) so a desk-staff
+  // admin can't get into another tab via a direct #hash URL, back/forward
+  // navigation, or a stale sessionStorage.admin_active_tab either.
+  const isDeskStaff = sessionStorage.getItem('admin_role') === 'attendance';
+  const requested = validSections.includes(target) ? target : 'attendance';
+  const activeId = isDeskStaff ? 'attendance' : requested;
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
   const activeNav = document.getElementById(`nav-${activeId}`);
   if (activeNav) activeNav.classList.add('active');
@@ -241,7 +260,10 @@ window.logout = async () => {
 };
 
 // ── Admin email list ─────────────────────────────────────────────────────────
-window.addAdminEmail = (email = '') => {
+// role: 'full' (everything) or 'attendance' (desk staff — Attendance tab
+// only, everything else in the sidebar is hidden for them; see
+// applyRoleRestrictions in admin-core.js).
+window.addAdminEmail = (email = '', role = 'full') => {
   const container = document.getElementById('admin-emails-list');
   if (!container) return;
   const div = document.createElement('div');
@@ -249,6 +271,12 @@ window.addAdminEmail = (email = '') => {
   div.style.marginBottom = '12px';
   div.innerHTML = `
     <div class="form-group" style="flex:1;"><input type="email" class="admin-email-entry" value="${escapeHtml(email)}" placeholder="admin@example.com"></div>
+    <div class="form-group" style="flex:0 0 200px;">
+      <select class="admin-role-select" style="width:100%; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text-main); padding: 12px;">
+        <option value="full" ${role === 'full' ? 'selected' : ''}>Full Access</option>
+        <option value="attendance" ${role === 'attendance' ? 'selected' : ''}>Desk Staff (Attendance only)</option>
+      </select>
+    </div>
     <button class="btn-del" onclick="this.parentElement.remove()" title="Remove Admin">✕</button>
   `;
   container.appendChild(div);
@@ -602,16 +630,21 @@ export function populateUI(data) {
   const speakerClosedEl = document.getElementById('set-speaker-closed');
   if (speakerClosedEl) speakerClosedEl.checked = !!sc.speakerRegClosed;
 
-  // Admin whitelist
+  // Admin whitelist — entries are either a plain email string (legacy data,
+  // always full access) or {email, role}. MASTER_ADMINS are always full
+  // access regardless of anything saved for them, so a mis-click here can
+  // never lock out the core admins.
   const adminContainer = document.getElementById('admin-emails-list');
   if (adminContainer) {
     adminContainer.innerHTML = '';
     const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com'];
     let rawWhitelist = sc.admin_whitelist || sc.adminWhitelist;
     let whitelist = (rawWhitelist && Array.isArray(rawWhitelist) && rawWhitelist.length > 0) ? rawWhitelist : [...ALLOWED_ADMINS];
-    whitelist = [...new Set([...whitelist, ...MASTER_ADMINS])];
-    setAllowedAdmins(whitelist);
-    whitelist.forEach(email => window.addAdminEmail(email));
+    const entries = whitelist.map(entry => typeof entry === 'string' ? { email: entry, role: 'full' } : entry);
+    const emails = entries.map(e => e.email);
+    MASTER_ADMINS.forEach(email => { if (!emails.includes(email)) entries.push({ email, role: 'full' }); });
+    setAllowedAdmins(entries.map(e => e.email));
+    entries.forEach(e => window.addAdminEmail(e.email, MASTER_ADMINS.includes(e.email) ? 'full' : (e.role || 'full')));
   }
 
   // Branding

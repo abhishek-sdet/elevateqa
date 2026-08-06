@@ -38,6 +38,24 @@ const snapshotOf = (data) => JSON.stringify({
   site_content: data.site_content, branding: data.branding, manifesto: data.manifesto,
 });
 
+// ── Role restriction (desk staff vs full access) ─────────────────────────────
+// MASTER_ADMINS are hard-coded full access everywhere in this app (client and
+// both OTP functions) regardless of anything saved in the editable whitelist,
+// so a mis-set role here can never lock out the core admins.
+const MASTER_ADMINS = ['abhishekjohri150@gmail.com', 'elevateqa@sdettech.com', 'abhishek.johri@sdettech.com', 'mugdha.shah@sdettech.com'];
+
+function applyRoleForCurrentAdmin(data) {
+  const myEmail = (sessionStorage.getItem('admin_email') || '').toLowerCase();
+  let role = 'full';
+  if (myEmail && !MASTER_ADMINS.includes(myEmail)) {
+    const whitelist = (data.site_content && data.site_content.adminWhitelist) || [];
+    const entry = whitelist.find(e => (typeof e === 'string' ? e : e.email)?.toLowerCase() === myEmail);
+    if (entry && typeof entry !== 'string' && entry.role) role = entry.role;
+  }
+  sessionStorage.setItem('admin_role', role);
+  if (window.applyRoleRestrictions) window.applyRoleRestrictions(role);
+}
+
 // ── Initialization ────────────────────────────────────────────────────────────
 const initAdmin = async () => {
   console.log('[ElevateQA] Admin Core Initialized (Supabase Mode)');
@@ -55,6 +73,7 @@ const initAdmin = async () => {
       window._lastLoadedData = freshData;
       window._lastLoadedSnapshot = snapshotOf(freshData);
       populateUI(freshData);
+      applyRoleForCurrentAdmin(freshData);
     }
   };
 
@@ -63,6 +82,7 @@ const initAdmin = async () => {
     window._lastLoadedData = data;
     window._lastLoadedSnapshot = snapshotOf(data);
     populateUI(data);
+    applyRoleForCurrentAdmin(data);
   }
 
   window.checkSession();
@@ -246,8 +266,13 @@ window.saveAll = async () => {
       attendeeRegClosed: document.getElementById('set-attendee-closed')?.checked || false,
       speakerRegClosed: document.getElementById('set-speaker-closed')?.checked || false,
       maturityTitle: getVal('maturity-title-input'), pillarsTitle: getVal('pillars-title-input'),
-      adminWhitelist: Array.from(document.querySelectorAll('.admin-email-entry'))
-        .map(i => i.value.trim().toLowerCase()).filter(e => e),
+      adminWhitelist: Array.from(document.querySelectorAll('#admin-emails-list .dynamic-row'))
+        .map(row => {
+          const email = row.querySelector('.admin-email-entry')?.value.trim().toLowerCase();
+          const role = row.querySelector('.admin-role-select')?.value || 'full';
+          return email ? { email, role } : null;
+        })
+        .filter(Boolean),
       emailTemplates: {
         registration: {
           subject: getVal('et-registration-subject'),
