@@ -146,7 +146,7 @@ export const handler = async (event, context) => {
                         ...mailAttachments,
                         { filename: 'entry-qr.png', content: qrBuffer, cid: 'entryqr@elevateqa' }
                     ];
-                    finalMessage += `<br><br><div style="text-align:center;"><div style="background:#ffffff;padding:12px;border-radius:12px;display:inline-block;"><img src="cid:entryqr@elevateqa" width="200" height="200" style="display:block;border:0;"></div><p style="color:#8e8e9a;font-size:12px;margin-top:10px;">Your personal entry QR code — please have this ready at check-in.</p></div>`;
+                    finalMessage += `<br><br><div style="text-align:center;"><div style="background:#ffffff;padding:12px;border-radius:12px;display:inline-block;"><img src="cid:entryqr@elevateqa" width="200" height="200" style="display:block;border:0;"></div><p style="color:#8e8e9a;font-size:12px;margin-top:10px;">QR code is required at the registration desk.</p></div>`;
                 } catch (err) {
                     console.error('[CUSTOM EMAIL] QR generation failed for', email, err.message);
                 }
