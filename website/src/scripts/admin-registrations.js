@@ -529,6 +529,70 @@ window.sendBulkRejections = async () => {
   if (data && data.registrations) window.renderAttendees(data.registrations);
 };
 
+// "Send Entry Reminder" (Bulk Actions bar). Deliberately does NOT attach a
+// QR code — each attendee's QR is unique to their registration, so a single
+// attached file would hand everyone the SAME (wrong) code. This just points
+// people back to the QR already in their earlier "Final Passes" email, using
+// whatever copy is saved in the Entry/QR email template.
+window.sendBulkEntryReminder = async () => {
+  const selected = window.getSelectedAttendees();
+  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+
+  const confirmed = await window.showConfirm(`Send the entry/QR reminder email to ${selected.length} attendees?`, 'Send Entry Reminder', 'PROCEED');
+  if (!confirmed) return;
+
+  const tpl = (window._lastLoadedData && window._lastLoadedData.site_content && window._lastLoadedData.site_content.emailTemplates && window._lastLoadedData.site_content.emailTemplates.entry) || {};
+  const subject = tpl.subject || 'ElevateQA 2026: Keep Your Entry QR Code Handy';
+  const body1 = tpl.body1 || "Hi {{Name}},\n\nWe're just days away from ElevateQA 2026, and we can't wait to welcome you on August 8 at Crowne Plaza, New Delhi!\n\nA quick but important reminder about entry on the day: the QR code from your registration confirmation email is your official pass into the venue.";
+  const body2 = tpl.body2 || "To help us keep the check-in line moving quickly, please:\n- Keep your registration email (with your QR code) easily accessible on your phone before you arrive.\n- We'd also recommend taking a screenshot as a backup, just in case of any network hiccups at the venue.\n- Turn your screen brightness up when you reach the desk — this helps our scanners read the code instantly.\n- Please avoid forwarding or re-screenshotting a compressed image, as this can sometimes affect scan quality.\n\nIf you're unable to locate your QR code before the event, reach out to us at elevateqa@sdettech.com and we'll get it to you.";
+  const closing = tpl.closing || 'See you there — safe travels, and get ready for a great day ahead!';
+  const message = [body1, body2, closing].filter(Boolean).join('\n\n');
+
+  const btn = document.getElementById('btn-send-bulk-entry-reminder');
+  const prog = document.getElementById('bulk-progress');
+  const defaultLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
+  prog.style.display = 'block';
+
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
+  const CHUNK_SIZE = 5;
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  let sent = 0;
+
+  for (let i = 0; i < selected.length; i += CHUNK_SIZE) {
+    if (i > 0) await sleep(1200);
+    const chunk = selected.slice(i, i + CHUNK_SIZE);
+    prog.textContent = `Processing ${Math.min(i + CHUNK_SIZE, selected.length)} / ${selected.length}...`;
+    try {
+      const response = await fetch(`${baseUrl}/send-custom-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': sessionStorage.getItem('admin_token') || '' },
+        body: JSON.stringify({
+          subject,
+          message,
+          targetEmails: chunk.map(a => ({ email: a.email, name: a.name })),
+          ccEmails: [],
+          bccEmails: [],
+          attachments: []
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Failed');
+      sent += result.successCount ?? chunk.length;
+    } catch (e) {
+      console.error('[sendBulkEntryReminder] batch failed:', e);
+    }
+  }
+
+  prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
+  btn.innerHTML = '✓ Sent!';
+  window.showToast(`Sent ${sent} entry reminder email(s).`, 'success');
+  btn.disabled = false;
+  setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
+};
+
 window.openAssignRoleModal = () => {
   const selected = window.getSelectedAttendees();
   if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
