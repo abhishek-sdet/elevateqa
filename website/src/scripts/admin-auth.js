@@ -29,7 +29,14 @@ async function sendAdminOTP(e) {
         whitelist = meta.admin_whitelist;
       }
     }
-    whitelist = [...new Set([...whitelist, ...MASTER_ADMINS])].map(e => e.toLowerCase());
+    // Entries can be a plain email string (legacy, always full access) or a
+    // {email, role} object (added by the Desk Staff role feature) — normalize
+    // to plain lowercase strings before dedup, since a role object would
+    // otherwise crash the .toLowerCase() call below and block login entirely.
+    whitelist = [...new Set([
+      ...whitelist.map(e => (typeof e === 'string' ? e : (e && e.email) || '')),
+      ...MASTER_ADMINS
+    ])].filter(Boolean).map(e => e.toLowerCase());
 
     if (!whitelist.includes(email)) {
       if (msg) { msg.textContent = 'Unauthorized. Your email is not in the Admin list.'; msg.classList.add('error'); msg.style.color = '#ff5a36'; }

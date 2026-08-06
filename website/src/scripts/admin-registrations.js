@@ -121,7 +121,16 @@ window.renderAttendees = (registrations) => {
     window.rawAttendees = registrations;
   }
   const raw = window.rawAttendees || [];
-  
+
+  // The realtime subscription and a 3s failsafe poll (admin-core.js) both
+  // call this automatically in the background, often while an admin is
+  // mid-selection for a bulk send — capture what's checked right now so it
+  // can be re-applied after the table rebuild below, instead of a
+  // background refresh silently clearing an in-progress selection.
+  const previouslySelectedIds = new Set(
+    (window.getSelectedAttendees ? window.getSelectedAttendees() : []).map(a => String(a.id))
+  );
+
   // Get all column filters
   const fName = document.getElementById('col-filter-name') ? document.getElementById('col-filter-name').value.toLowerCase().trim() : '';
   const fOrg = document.getElementById('col-filter-org') ? document.getElementById('col-filter-org').value.toLowerCase().trim() : '';
@@ -349,6 +358,20 @@ window.renderAttendees = (registrations) => {
       </tr>
     `;
   }).join('');
+
+  if (previouslySelectedIds.size > 0) {
+    tbody.querySelectorAll('.attendee-cb').forEach(cb => {
+      try {
+        const val = JSON.parse(cb.value.replace(/&#39;/g, "'"));
+        if (previouslySelectedIds.has(String(val.id))) cb.checked = true;
+      } catch (_) { /* malformed value attribute — leave unchecked */ }
+    });
+    const selectAll = document.getElementById('selectAllAttendees');
+    if (selectAll) {
+      const allCbs = tbody.querySelectorAll('.attendee-cb');
+      selectAll.checked = allCbs.length > 0 && Array.from(allCbs).every(cb => cb.checked);
+    }
+  }
 };
 
 window.setTabFilter = (tabName) => {
