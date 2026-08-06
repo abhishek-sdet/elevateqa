@@ -10,6 +10,9 @@
   --radius-luxe: 32px;
   --shadow-luxe: 0 30px 100px rgba(0,0,0,0.6);
 }
+html.theme-light {
+  --shadow-luxe: 0 30px 100px rgba(28,27,31,0.18);
+}
 
 * {
   margin: 0; padding: 0; box-sizing: border-box;
@@ -20,7 +23,7 @@
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--ink-deep); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-darker); }
 
 /* QR Code Table Styling */
 .qr-col img {

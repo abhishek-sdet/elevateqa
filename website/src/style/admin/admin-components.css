@@ -1,11 +1,12 @@
 /* ADMIN UI COMPONENTS: CARDS, TABLES, FORMS, BADGES, BUTTONS */
 
 /* CARDS & CONTAINERS */
-.manager-card { 
-  background: var(--bg-2); border: 1px solid var(--line); 
-  padding: 24px; border-radius: 20px; margin-bottom: 150px !important; 
+.manager-card {
+  background: var(--bg-2); border: 1px solid var(--line);
+  padding: 24px; border-radius: 20px; margin-bottom: 150px !important;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; overflow: hidden;
 }
+html.theme-light .manager-card { box-shadow: 0 10px 30px rgba(28,27,31,0.08); }
 .manager-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
@@ -20,6 +21,7 @@
 
 /* DATA TABLES */
 .table-wrap { background: var(--bg); border: 1px solid var(--line); border-radius: 24px; overflow: hidden; overflow-x: auto; box-shadow: inset 0 0 30px rgba(0,0,0,0.2); }
+html.theme-light .table-wrap { box-shadow: inset 0 0 20px rgba(28,27,31,0.05); }
 table { width: 100%; border-collapse: collapse; }
 th { 
   background: var(--bg-3); padding: 12px 16px; color: var(--ink-dim); 
@@ -94,12 +96,13 @@ tr:last-child td { border-bottom: none; }
 }
 .btn-save-all:hover { transform: scale(1.05); box-shadow: 0 15px 40px var(--accent-dim); }
 
-.btn-reset { 
-  background: rgba(255, 255, 255, 0.03); color: var(--ink-dim); 
-  border: 1px solid var(--line); padding: 12px 20px; border-radius: 100px; 
-  font-family: var(--mono); font-size: 9px; text-transform: uppercase; 
+.btn-reset {
+  background: rgba(255, 255, 255, 0.03); color: var(--ink-dim);
+  border: 1px solid var(--line); padding: 12px 20px; border-radius: 100px;
+  font-family: var(--mono); font-size: 9px; text-transform: uppercase;
   letter-spacing: 0.1em; cursor: pointer; transition: 0.3s;
 }
+html.theme-light .btn-reset { background: rgba(28,27,31,0.04); }
 .btn-reset:hover { border-color: var(--accent-red); color: var(--accent-red); background: rgba(255,90,54,0.05); }
 
 /* DYNAMIC ITEMS */
@@ -170,6 +173,7 @@ tr:last-child td { border-bottom: none; }
   width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
 }
+html.theme-light .color-preview { border-color: rgba(28,27,31,0.15); }
 .color-swatch-wrap input[type="text"] { border: none !important; background: none !important; padding: 0 8px !important; box-shadow: none !important; }
 
 /* INTERNAL SUB-NAV TABS */
@@ -185,6 +189,7 @@ tr:last-child td { border-bottom: none; }
   cursor: pointer; transition: 0.3s; font-weight: 600;
 }
 .tab-btn:hover { color: var(--ink); background: rgba(255,255,255,0.03); }
+html.theme-light .tab-btn:hover { background: rgba(28,27,31,0.05); }
 .tab-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
 /* ADVANCED GRIDS */
@@ -240,6 +245,11 @@ tr:last-child td { border-bottom: none; }
   max-width: 480px;
   animation: toast-slide-in 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
   pointer-events: auto;
+}
+html.theme-light .toast {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(28, 27, 31, 0.12);
+  box-shadow: 0 20px 40px rgba(28, 27, 31, 0.15);
 }
 
 .toast.removing {
@@ -399,6 +409,9 @@ tr:last-child td { border-bottom: none; }
   background-position: right 16px center;
   background-size: 14px;
   padding-right: 40px;
+}
+html.theme-light .a-tag-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(28,27,31,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 .a-tag-select:focus {
   border-color: var(--accent);

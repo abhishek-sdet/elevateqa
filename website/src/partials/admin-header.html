@@ -5,6 +5,10 @@
       </div>
       <div class="header-right">
         <a href="index.html" target="_blank" class="btn-mini" style="padding: 10px 20px;">VIEW LIVE SITE ↗</a>
+        <button id="theme-toggle" class="btn-mini" onclick="window.toggleAdminTheme()" aria-label="Toggle light/dark theme" title="Toggle light/dark theme" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+          <span id="theme-toggle-icon" aria-hidden="true">🌙</span>
+        </button>
+        <script>document.getElementById('theme-toggle-icon').textContent = document.documentElement.classList.contains('theme-light') ? '☀️' : '🌙';</script>
         <div class="status-indicator">
           <div class="pulse"></div>
           SYSTEM LIVE

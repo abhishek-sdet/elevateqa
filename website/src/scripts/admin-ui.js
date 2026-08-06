@@ -240,6 +240,17 @@ window.showIdentitySubSection = (subId) => {
   }
 };
 
+// ── Theme toggle (light/dark) ─────────────────────────────────────────────────
+window.toggleAdminTheme = () => {
+  const root = document.documentElement;
+  const isLight = root.classList.toggle('theme-light');
+  localStorage.setItem('elevate_admin_theme', isLight ? 'light' : 'dark');
+  const icon = document.getElementById('theme-toggle-icon');
+  if (icon) icon.textContent = isLight ? '☀️' : '🌙';
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) themeColorMeta.setAttribute('content', isLight ? '#f5f2ec' : '#0b0b10');
+};
+
 // ── Sidebar / logout ─────────────────────────────────────────────────────────
 window.toggleSidebar = () => {
   const isActive = document.body.classList.toggle('sidebar-active');

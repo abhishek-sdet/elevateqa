@@ -31,8 +31,20 @@
   <!-- AUTH GUARDIAN (Prevents Login Flash) -->
   <script>
     (function() {
-      const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
       const root = document.documentElement;
+
+      // THEME GUARDIAN (Prevents Light/Dark Flash) — applied before first
+      // paint so the page never flashes dark before switching to a saved
+      // light preference.
+      if (localStorage.getItem('elevate_admin_theme') === 'light') {
+        root.classList.add('theme-light');
+      }
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', root.classList.contains('theme-light') ? '#f5f2ec' : '#0b0b10');
+      }
+
+      const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
       if (isLoggedIn) {
         root.classList.add('is-logged-in');
         root.classList.remove('not-logged-in');

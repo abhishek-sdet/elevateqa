@@ -65,10 +65,13 @@ body {
 .btn-logout:hover { background: var(--accent-red); color: white; border-color: var(--accent-red); box-shadow: 0 10px 30px rgba(255,90,54,0.2); }
 
 /* MAIN DASHBOARD AREA */
-.main-content { 
-  flex: 1; display: flex; flex-direction: column; height: 100vh; 
+.main-content {
+  flex: 1; display: flex; flex-direction: column; height: 100vh;
   min-width: 0;
   background: radial-gradient(circle at 100% 0%, #0d0d14 0%, #050508 100%);
+}
+html.theme-light .main-content {
+  background: radial-gradient(circle at 100% 0%, #ffffff 0%, #f0ede4 100%);
 }
 .top-header { 
   padding: 32px 80px 24px; display: flex; justify-content: space-between; align-items: flex-end;
@@ -83,6 +86,7 @@ body {
   font-size: 10px; text-transform: uppercase; color: var(--accent); letter-spacing: 0.2em; 
   background: var(--accent-soft); padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(212,255,58,0.1);
 }
+html.theme-light .status-indicator { border-color: rgba(79,107,0,0.18); }
 .pulse { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent); animation: pulse 2.5s infinite; }
 
 /* CONTENT WRAPPER */
@@ -216,6 +220,9 @@ body.sidebar-active .menu-toggle span:nth-child(3) { transform: translateY(-7px)
   inset: 0;
   background: #050508;
   z-index: 9999;
+}
+html.theme-light .admin-preloader { background: #f5f2ec; }
+.admin-preloader {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,6 +268,7 @@ body.sidebar-active .menu-toggle span:nth-child(3) { transform: translateY(-7px)
   border-radius: 50%;
   border: 1px solid rgba(212, 255, 58, 0.05);
 }
+html.theme-light .orbital-ring { border-color: rgba(79, 107, 0, 0.15); }
 .orbital-ring::after {
   content: '';
   position: absolute;
@@ -278,6 +286,7 @@ body.sidebar-active .menu-toggle span:nth-child(3) { transform: translateY(-7px)
   border: 1px dashed rgba(212, 255, 58, 0.1);
   animation: orbit-spin 4s linear infinite reverse;
 }
+html.theme-light .orbital-ring-outer { border-color: rgba(79, 107, 0, 0.2); }
 
 .preloader-status {
   display: flex;
@@ -301,6 +310,7 @@ body.sidebar-active .menu-toggle span:nth-child(3) { transform: translateY(-7px)
   position: relative;
   overflow: hidden;
 }
+html.theme-light .status-bar-bg { background: rgba(28,27,31,0.1); }
 .status-bar-fill {
   position: absolute;
   top: 0; left: 0; height: 100%;

@@ -1,25 +1,27 @@
 /* ADMIN AUTHENTICATION OVERLAY STYLES */
 
-#login-overlay { 
-  position: fixed; 
-  inset: 0; 
+#login-overlay {
+  position: fixed;
+  inset: 0;
   background: radial-gradient(circle at center, #0f0f18 0%, #050508 100%);
-  z-index: 10000; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  backdrop-filter: blur(40px); 
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(40px);
 }
+html.theme-light #login-overlay { background: radial-gradient(circle at center, #ffffff 0%, #f0ede4 100%); }
 .login-card { 
   background: var(--bg-2); 
   width: 100%; 
   max-width: 480px; 
   padding: 80px 56px; 
   border: 1px solid var(--line-strong); 
-  border-radius: 48px; 
-  text-align: center; 
+  border-radius: 48px;
+  text-align: center;
   box-shadow: 0 60px 150px rgba(0,0,0,0.9);
 }
+html.theme-light .login-card { box-shadow: 0 60px 150px rgba(28,27,31,0.18); }
 .login-card .logo { 
   margin-bottom: 48px;
 }
@@ -52,7 +54,7 @@
   color: var(--accent); transition: 0.3s;
 }
 .otp-input:focus { border-color: var(--accent); outline: none; background: var(--bg-3); box-shadow: 0 0 20px var(--accent-dim); }
-.otp-input[aria-invalid="true"] { border-color: #ff5a36 !important; }
+.otp-input[aria-invalid="true"] { border-color: var(--accent-red) !important; }
 
 .auth-msg {
   font-family: var(--mono);
@@ -63,7 +65,7 @@
   margin-bottom: 16px;
   color: var(--ink-dim);
 }
-.auth-msg.error { color: #ff5a36; }
+.auth-msg.error { color: var(--accent-red); }
 .auth-msg.success { color: var(--accent); }
 
 @media (max-width: 600px) {
