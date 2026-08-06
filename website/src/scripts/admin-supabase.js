@@ -536,6 +536,23 @@ export async function updateRegistrationRole(id, role) {
   }
 }
 
+// Generic single-column setter for independent per-attendee "did we email
+// them this?" flags (food_email_sent_at, location_email_sent_at,
+// entry_reminder_sent_at) — these are separate timestamp columns rather than
+// values of the single `status` field above, since an attendee can be
+// TICKET_SENT *and* have received the food/location/entry emails
+// independently; overloading `status` would let one overwrite the others.
+export async function updateRegistrationField(id, field, value) {
+  try {
+    const { data, error } = await supabase.from('registrations').update({ [field]: value }).eq('id', id).select('id');
+    if (error) throw error;
+    return !!(data && data.length > 0);
+  } catch (err) {
+    console.error(`Error updating ${field}:`, err);
+    return false;
+  }
+}
+
 export async function deleteItem(table, id) {
   const { data, error } = await supabase
     .from(table)

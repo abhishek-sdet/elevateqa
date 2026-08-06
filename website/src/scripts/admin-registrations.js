@@ -5,7 +5,7 @@
  *           resetAttendeeStatus, revokeAttendeePresent
  * Extracted from admin-core.js for maintainability.
  */
-import { deleteItem, loadAllData, updateRegistrationStatus, restoreData, addAttendee, purgeAllRegistrations } from './admin-supabase.js';
+import { deleteItem, loadAllData, updateRegistrationStatus, updateRegistrationField, restoreData, addAttendee, purgeAllRegistrations } from './admin-supabase.js';
 import { escapeHtml, jsAttrSafe, safeHttpUrl } from './admin-utils.js';
 
 // ── ADD ATTENDEE MANUALLY ────────────────────────────────────────────────────
@@ -222,7 +222,10 @@ window.renderAttendees = (registrations) => {
   if (countBadge) {
     const totalPassSent = raw.filter(p => p.status && (p.status.toLowerCase() === 'ticket_sent' || p.status.toLowerCase() === 'pass sent')).length;
     const totalRejected = raw.filter(p => p.status && p.status.toLowerCase() === 'rejected').length;
-    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected`;
+    const totalFoodSent = raw.filter(p => p.food_email_sent_at).length;
+    const totalLocationSent = raw.filter(p => p.location_email_sent_at).length;
+    const totalEntryReminderSent = raw.filter(p => p.entry_reminder_sent_at).length;
+    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected • ${totalFoodSent} Food Sent • ${totalLocationSent} Location Sent • ${totalEntryReminderSent} Entry Reminder Sent`;
 
     if (raw.length === filtered.length) {
       countBadge.textContent = `${raw.length} total${extras}`;
@@ -535,26 +538,37 @@ window.sendBulkRejections = async () => {
   }
 };
 
-// "Send Entry Reminder" (Bulk Actions bar). Each recipient's own unique QR
-// is regenerated server-side from their registration id (send-custom-email.js,
-// includeQrForRecipients) and embedded per-email — never a single shared
-// attachment, since that would hand everyone the SAME (wrong) code. Uses
-// whatever copy is saved in the Entry/QR email template.
-window.sendBulkEntryReminder = async () => {
+// Shared engine for the three template-based bulk sends below (Food /
+// Location / Entry Reminder). Each recipient gets their OWN request to
+// send-custom-email.js instead of being batched — the batch endpoint only
+// ever returns an aggregate successCount/failCount, so when a batch of 5
+// partially failed there was no way to know WHICH recipient(s) failed,
+// meaning nothing could be safely marked "sent". One request per attendee
+// gives a real per-recipient result, mirroring the already-reliable pattern
+// sendBulkTickets/sendBulkRejections use above with their own single-send
+// functions — so a partial failure here only skips the write for the
+// specific attendee(s) whose send actually failed, exactly like those do.
+async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, includeQr }) {
   const selected = window.getSelectedAttendees();
   if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
 
-  const confirmed = await window.showConfirm(`Send the entry/QR reminder email to ${selected.length} attendees?`, 'Send Entry Reminder', 'PROCEED');
+  const confirmed = await window.showConfirm(`Send the ${label} email to ${selected.length} attendees?`, `Send ${label}`, 'PROCEED');
   if (!confirmed) return;
 
-  const tpl = (window._lastLoadedData && window._lastLoadedData.site_content && window._lastLoadedData.site_content.emailTemplates && window._lastLoadedData.site_content.emailTemplates.entry) || {};
-  const subject = tpl.subject || 'ElevateQA 2026: Keep Your Entry QR Code Handy';
-  const body1 = tpl.body1 || "Hi {{Name}},\n\nWe're just days away from ElevateQA 2026, and we can't wait to welcome you on August 8 at Crowne Plaza, New Delhi!\n\nA quick but important reminder about entry on the day: the QR code from your registration confirmation email is your official pass into the venue.";
-  const body2 = tpl.body2 || "To help us keep the check-in line moving quickly, please:\n- Keep your registration email (with your QR code) easily accessible on your phone before you arrive.\n- We'd also recommend taking a screenshot as a backup, just in case of any network hiccups at the venue.\n- Turn your screen brightness up when you reach the desk — this helps our scanners read the code instantly.\n- Please avoid forwarding or re-screenshotting a compressed image, as this can sometimes affect scan quality.\n\nIf you're unable to locate your QR code before the event, reach out to us at elevateqa@sdettech.com and we'll get it to you.";
-  const closing = tpl.closing || 'See you there — safe travels, and get ready for a great day ahead!';
-  const message = [body1, body2, closing].filter(Boolean).join('\n\n');
+  // Read straight from the Email Templates fields (Email Center tab) — those
+  // are always present in the DOM regardless of which tab is active, and are
+  // kept correctly populated (real saved value, or the authored default) by
+  // populateUI()'s fillTpl. Same source of truth loadSelectedTemplate() uses.
+  const getVal = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    return (el.value || '').trim() || el.getAttribute('placeholder') || '';
+  };
+  const subject = getVal(`et-${templateKey}-subject`);
+  const message = [getVal(`et-${templateKey}-body1`), getVal(`et-${templateKey}-body2`), getVal(`et-${templateKey}-closing`)].filter(Boolean).join('\n\n');
+  if (!subject || !message) return window.showToast(`The ${label} template is empty — check Email Center first.`, 'error');
 
-  const btn = document.getElementById('btn-send-bulk-entry-reminder');
+  const btn = document.getElementById(btnId);
   const prog = document.getElementById('bulk-progress');
   const defaultLabel = btn.innerHTML;
   btn.disabled = true;
@@ -563,15 +577,13 @@ window.sendBulkEntryReminder = async () => {
 
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const baseUrl = isLocalhost ? '/.netlify/functions' : 'https://elevateqa.netlify.app/.netlify/functions';
-  const CHUNK_SIZE = 5;
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const failed = [];
   let sent = 0;
 
   try {
-    for (let i = 0; i < selected.length; i += CHUNK_SIZE) {
-      if (i > 0) await sleep(1200);
-      const chunk = selected.slice(i, i + CHUNK_SIZE);
-      prog.textContent = `Processing ${Math.min(i + CHUNK_SIZE, selected.length)} / ${selected.length}...`;
+    for (const attendee of selected) {
+      prog.textContent = `Processing ${sent + failed.length + 1} / ${selected.length}...`;
       try {
         const response = await fetch(`${baseUrl}/send-custom-email`, {
           method: 'POST',
@@ -579,29 +591,62 @@ window.sendBulkEntryReminder = async () => {
           body: JSON.stringify({
             subject,
             message,
-            targetEmails: chunk.map(a => ({ email: a.email, name: a.name, id: a.id })),
+            targetEmails: [{ email: attendee.email, name: attendee.name, id: attendee.id }],
             ccEmails: [],
             bccEmails: [],
             attachments: [],
-            includeQrForRecipients: true
+            includeQrForRecipients: !!includeQr
           })
         });
         const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(result.error || 'Failed');
-        sent += result.successCount ?? chunk.length;
+        if (!response.ok || (result.successCount ?? 0) === 0) throw new Error(result.error || 'Failed');
+        await updateRegistrationField(attendee.id, statusField, new Date().toISOString());
+        sent++;
       } catch (e) {
-        console.error('[sendBulkEntryReminder] batch failed:', e);
+        console.error(`[${label}] Failed to send to`, attendee.email, e);
+        failed.push(attendee.email);
       }
+      await sleep(350);
     }
 
     prog.textContent = `Done. Sent ${sent} of ${selected.length}`;
     btn.innerHTML = '✓ Sent!';
-    window.showToast(`Sent ${sent} entry reminder email(s).`, 'success');
+    if (failed.length > 0) {
+      window.showToast(`Sent ${sent} of ${selected.length}. Failed: ${failed.join(', ')}`, sent > 0 ? 'success' : 'error', `${label} — Partial`);
+    } else {
+      window.showToast(`Sent ${label} to all ${sent} selected attendee(s).`, 'success', `${label} Sent`);
+    }
+
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
   } finally {
     btn.disabled = false;
     setTimeout(() => { prog.style.display = 'none'; btn.innerHTML = defaultLabel; }, 3000);
   }
-};
+}
+
+// "Send Entry Reminder" (Bulk Actions bar). Each recipient's own unique QR
+// is regenerated server-side from their registration id (send-custom-email.js,
+// includeQrForRecipients) and embedded per-email — never a single shared
+// attachment, since that would hand everyone the SAME (wrong) code.
+window.sendBulkEntryReminder = () => sendBulkTemplateEmail({
+  templateKey: 'entry', statusField: 'entry_reminder_sent_at', label: 'Entry Reminder',
+  btnId: 'btn-send-bulk-entry-reminder', includeQr: true
+});
+
+// "Send Food Info" (Bulk Actions bar) — food/logistics email from the
+// Email Center's Food Info template.
+window.sendBulkFoodInfo = () => sendBulkTemplateEmail({
+  templateKey: 'food', statusField: 'food_email_sent_at', label: 'Food Info',
+  btnId: 'btn-send-bulk-food'
+});
+
+// "Send Location Guide" (Bulk Actions bar) — travel/venue email from the
+// Email Center's Location template.
+window.sendBulkLocationGuide = () => sendBulkTemplateEmail({
+  templateKey: 'location', statusField: 'location_email_sent_at', label: 'Location Guide',
+  btnId: 'btn-send-bulk-location'
+});
 
 window.openAssignRoleModal = () => {
   const selected = window.getSelectedAttendees();
