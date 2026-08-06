@@ -121,9 +121,23 @@ export const handler = async (event, context) => {
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         const SEND_DELAY_MS = 350;
 
+        // Falls back to a Title-Cased guess from the email's local part (e.g.
+        // "priya.sharma@x.com" -> "Priya Sharma") when no name reaches this
+        // function — same derivation already used for ad-hoc "Custom Email(s)"
+        // recipients in the admin composer — so a {{Name}}/[Name] placeholder
+        // never renders as a bare "Hi ," in the sent email.
+        const deriveNameFromEmail = (email) => {
+            const localPart = String(email || '').split('@')[0];
+            if (!localPart) return '';
+            return localPart.split(/[._-]/).filter(Boolean)
+                .map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+                .join(' ');
+        };
+
         for (const recipient of targetEmails) {
             const email = typeof recipient === 'object' ? recipient.email : recipient;
-            const name = typeof recipient === 'object' ? recipient.name : '';
+            const rawName = typeof recipient === 'object' ? recipient.name : '';
+            const name = (rawName && String(rawName).trim()) || deriveNameFromEmail(email);
             const id = typeof recipient === 'object' ? recipient.id : null;
 
             // Replace placeholders

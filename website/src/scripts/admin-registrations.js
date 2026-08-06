@@ -330,10 +330,17 @@ window.renderAttendees = (registrations) => {
     // they're shown as small supplementary pills under the main status
     // badge rather than replacing it — otherwise sending one of these would
     // have no visible effect on a row that already shows e.g. "Pass Sent".
-    const extraBadges = [];
-    if (p.entry_reminder_sent_at) extraBadges.push('<span class="badge" style="background:#3f51b5; color:#fff; border-color:#3f51b5; font-size:9px;" title="Entry reminder sent">🎟️ Reminder Sent</span>');
-    if (p.food_email_sent_at) extraBadges.push('<span class="badge" style="background:#f57c00; color:#fff; border-color:#f57c00; font-size:9px;" title="Food info sent">🍔 Food Sent</span>');
-    if (p.location_email_sent_at) extraBadges.push('<span class="badge" style="background:#009688; color:#fff; border-color:#009688; font-size:9px;" title="Location guide sent">📍 Location Sent</span>');
+    // Each pill carries its own ✕ to null the timestamp back out — lets an
+    // admin re-trigger a bulk send for just that attendee while testing,
+    // without touching their unrelated `status` (Pass Sent/Present/etc).
+    const sentBadge = (flag, field, label, color) => flag
+      ? `<span class="badge" style="background:${color}; color:#fff; border-color:${color}; font-size:9px; display:inline-flex; align-items:center; gap:5px;" title="${label} sent">${label} Sent <span onclick="event.stopPropagation(); window.revokeEmailSent('${p.id}', '${field}', '${label}')" title="Revoke (for re-testing)" style="cursor:pointer; font-weight:bold; opacity:0.85;">✕</span></span>`
+      : '';
+    const extraBadges = [
+      sentBadge(p.entry_reminder_sent_at, 'entry_reminder_sent_at', '🎟️ Reminder', '#3f51b5'),
+      sentBadge(p.food_email_sent_at, 'food_email_sent_at', '🍔 Food', '#f57c00'),
+      sentBadge(p.location_email_sent_at, 'location_email_sent_at', '📍 Location', '#009688')
+    ].filter(Boolean);
     const extraBadgesHtml = extraBadges.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">${extraBadges.join('')}</div>` : '';
 
     const roleOptions = ['Attendee', 'Keynote', 'Speaker', 'Panelist', 'Organiser', 'Chief Guest'];
@@ -835,6 +842,23 @@ window.resetAttendeeStatus = async (id) => {
     if (data) window.renderAttendees(data.registrations);
   } else {
     window.showToast('Failed to reset status', 'error');
+  }
+};
+
+// Clears one of the independent "did we email them this?" timestamps
+// (food_email_sent_at / location_email_sent_at / entry_reminder_sent_at) so
+// that specific bulk send can be re-triggered for this one attendee, e.g.
+// while testing — leaves `status` (Pass Sent/Present/Rejected/etc) untouched.
+window.revokeEmailSent = async (id, field, label) => {
+  const confirmed = await window.showConfirm(`Clear the "${label} Sent" marker for this attendee so it can be re-sent?`, `Revoke ${label} Sent`, 'REVOKE');
+  if (!confirmed) return;
+  const success = await updateRegistrationField(id, field, null);
+  if (success) {
+    window.showToast(`"${label} Sent" cleared.`, 'success');
+    const data = await loadAllData();
+    if (data && data.registrations) window.renderAttendees(data.registrations);
+  } else {
+    window.showToast(`Failed to clear "${label} Sent".`, 'error');
   }
 };
 
