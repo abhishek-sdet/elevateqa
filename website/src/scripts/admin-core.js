@@ -48,7 +48,13 @@ function applyRoleForCurrentAdmin(data) {
   const myEmail = (sessionStorage.getItem('admin_email') || '').toLowerCase();
   let role = 'full';
   if (myEmail && !MASTER_ADMINS.includes(myEmail)) {
-    const whitelist = (data.site_content && data.site_content.adminWhitelist) || [];
+    // site_content.admin_whitelist (snake_case) is the real data — it comes
+    // from the hero_meta JSONB blob, which is what's actually persisted and
+    // what login (admin-auth.js / verify-admin-otp.js) reads. adminWhitelist
+    // (camelCase) maps to a raw `admin_whitelist` table column that doesn't
+    // exist, so it's always [] — checking only that silently defaulted every
+    // non-master admin to 'full' regardless of their assigned role.
+    const whitelist = (data.site_content && (data.site_content.admin_whitelist || data.site_content.adminWhitelist)) || [];
     const entry = whitelist.find(e => (typeof e === 'string' ? e : e.email)?.toLowerCase() === myEmail);
     if (entry && typeof entry !== 'string' && entry.role) role = entry.role;
   }
