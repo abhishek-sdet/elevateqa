@@ -92,92 +92,21 @@ export const handler = async (event, context) => {
         // a standalone downloadable .html attachment (getCertificateStandaloneDoc
         // below) — one design, no risk of the two ever drifting apart.
         const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => {
-            const titleWords = String(certTitle || 'CERTIFICATE OF PARTICIPATION').trim().split(/\s+/);
-            const titleMain = titleWords[0] || 'CERTIFICATE';
-            const titleSub = titleWords.slice(1).join(' ');
-            // A short ornamental rule with a centered diamond — used both under
-            // the heading and under the name — built from inline-block spans
-            // (not flex/table) so it survives Outlook's limited CSS support.
-            const ornamentRule = (width) => `
-                <span style="display:inline-block; width:${width}px; height:1px; background:#8fae1a; vertical-align:middle;"></span>
-                <span style="display:inline-block; margin:0 10px; color:#d4ff3a; font-size:10px; vertical-align:middle;">&#9670;</span>
-                <span style="display:inline-block; width:${width}px; height:1px; background:#8fae1a; vertical-align:middle;"></span>
-            `;
-            // A stylised laurel branch — six leaves shrinking toward the tip —
-            // mirrored via CSS transform for the opposite side, so only one
-            // shape has to be hand-tuned. Purely decorative: if an email
-            // client strips inline SVG the heading still reads fine without it.
-            const laurelBranch = `<svg width="52" height="82" viewBox="0 0 52 82" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 80 C 20 58, 28 40, 44 6" stroke="#5f7d1a" stroke-width="2" fill="none" stroke-linecap="round"/>
-                <ellipse cx="22" cy="70" rx="7.5" ry="3.4" transform="rotate(-25 22 70)" fill="#d4ff3a"/>
-                <ellipse cx="20" cy="56" rx="7.5" ry="3.4" transform="rotate(-8 20 56)" fill="#8fae1a"/>
-                <ellipse cx="25" cy="43" rx="7" ry="3.2" transform="rotate(-32 25 43)" fill="#d4ff3a"/>
-                <ellipse cx="32" cy="30" rx="6.5" ry="3" transform="rotate(-15 32 30)" fill="#8fae1a"/>
-                <ellipse cx="38" cy="18" rx="6" ry="2.8" transform="rotate(-36 38 18)" fill="#d4ff3a"/>
-                <ellipse cx="43" cy="8" rx="5" ry="2.4" transform="rotate(-18 43 8)" fill="#8fae1a"/>
-            </svg>`;
+            // Updated Certificate design using background image
             return `
-            <div style="background:#8fae1a; background: linear-gradient(135deg, #eaff80, #a8d600, #4d6b0f, #a8d600, #eaff80); padding: 3px; border-radius: 10px; box-shadow: 0 25px 70px rgba(212,255,58,0.14), 0 8px 24px rgba(0,0,0,0.6);">
-                <div style="background:#0b0b0f; border-radius: 8px; padding: 2px; box-shadow: inset 0 0 0 1px rgba(212,255,58,0.35);">
-                    <div style="border: 1px solid rgba(212,255,58,0.22); border-radius: 6px; padding: 50px 44px 44px 44px; text-align: center; position: relative; overflow: hidden; background: radial-gradient(ellipse at center, #14141b 0%, #0b0b0f 78%);">
+            <div style="background-color:#0b0b10; padding:20px; text-align:center;">
+                <div style="position: relative; display: inline-block; text-align: center; max-width: 800px; width: 100%;">
+                    <!-- TODO: Yahan apni Certificate Image ka actual URL daalna hoga! -->
+                    <img src="YOUR_CERTIFICATE_IMAGE_URL.jpg" style="width: 100%; height: auto; display: block;" alt="Certificate" />
 
-                        <div style="position:absolute; inset: 0; background-image: repeating-linear-gradient(45deg, rgba(212,255,58,0.025) 0px, rgba(212,255,58,0.025) 1px, transparent 1px, transparent 13px); pointer-events:none;"></div>
-
-                        <div style="position:absolute; top:14px; left:14px; width:16px; height:16px; border-top:2px solid #8fae1a; border-left:2px solid #8fae1a;"></div>
-                        <div style="position:absolute; top:14px; right:14px; width:16px; height:16px; border-top:2px solid #8fae1a; border-right:2px solid #8fae1a;"></div>
-                        <div style="position:absolute; bottom:14px; left:14px; width:16px; height:16px; border-bottom:2px solid #8fae1a; border-left:2px solid #8fae1a;"></div>
-                        <div style="position:absolute; bottom:14px; right:14px; width:16px; height:16px; border-bottom:2px solid #8fae1a; border-right:2px solid #8fae1a;"></div>
-
-                        <div style="position:relative;">
-                            <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA" height="64" style="display:block; margin:0 auto 20px auto; border:0;" />
-
-                            <div style="display:inline-block; padding:5px 18px; border:1px solid rgba(212,255,58,0.3); border-radius:100px; margin:0 0 30px 0;">
-                                <p style="color:#d4ff3a; font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:0;">2026 Edition &middot; Crowne Plaza, New Delhi</p>
-                            </div>
-
-                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-                                <tr>
-                                    <td style="padding:0 12px; vertical-align:middle;">${laurelBranch}</td>
-                                    <td style="vertical-align:middle;">
-                                        <p style="color:#f5f7ee; font-size:34px; font-weight:700; letter-spacing:3px; text-transform:uppercase; font-family: Georgia, 'Times New Roman', serif; margin:0; white-space:nowrap;">${escapeHtml(titleMain)}</p>
-                                    </td>
-                                    <td style="padding:0 12px; vertical-align:middle; transform:scaleX(-1);">${laurelBranch}</td>
-                                </tr>
-                            </table>
-                            ${titleSub ? `<p style="color: #d4ff3a; font-size: 13px; font-weight: 700; letter-spacing: 6px; text-transform: uppercase; margin: 6px 0 28px 0;">${escapeHtml(titleSub)}</p>` : ''}
-
-                            <div style="margin: 0 0 26px 0;">${ornamentRule(50)}</div>
-
-                            <p style="color: #9a9aa4; font-size: 14px; font-style: italic; margin: 0 0 16px 0;">This is to certify that</p>
-                            <p style="color: #ffffff; font-size: 36px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 16px 0;">
-                                ${escapeHtml(name)}
-                            </p>
-                            <div style="margin: 0 0 32px 0;">${ornamentRule(30)}</div>
-
-                            <p style="color: #b0b0ba; font-size: 14px; line-height: 1.75; max-width: 440px; margin: 0 auto 46px auto;">
-                                ${withLineBreaks(escapeHtml(participation))}
-                            </p>
-
-                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td width="50%" style="text-align: center;">
-                                        <p style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; color: #f5f7ee; margin: 0 0 8px 0;">${escapeHtml(signOff || 'Team Elevate QA')}</p>
-                                        <div style="width: 150px; height: 1px; background: rgba(212,255,58,0.4); margin: 0 auto 8px auto;"></div>
-                                        <p style="color: #d4ff3a; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Organizing Committee</p>
-                                    </td>
-                                    <td width="50%" style="text-align: center;">
-                                        <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #f5f7ee; margin: 0 0 8px 0;">8 Aug 2026</p>
-                                        <div style="width: 150px; height: 1px; background: rgba(212,255,58,0.4); margin: 0 auto 8px auto;"></div>
-                                        <p style="color: #d4ff3a; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Crowne Plaza, New Delhi</p>
-                                    </td>
-                                </tr>
-                            </table>
-                            ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin: 34px 0 0 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
-                        </div>
+                    <!-- Name Overlay -->
+                    <div style="position: absolute; top: 52%; left: 0; right: 0; text-align: center; font-size: 32px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; margin: 0 auto; width: 100%;">
+                        ${escapeHtml(name)}
                     </div>
                 </div>
+                ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin-top: 15px;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
             </div>
-        `;
+            `;
         };
 
         // A self-contained HTML document wrapping the same card — this is what
