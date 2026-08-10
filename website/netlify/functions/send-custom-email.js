@@ -81,46 +81,78 @@ export const handler = async (event, context) => {
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        // The certificate card itself — a gold-framed, seal-and-ribbon design
-        // meant to read as an actual certificate rather than a newsletter
-        // update. Factored out so the exact same markup can be (a) embedded
-        // inline below the thank-you letter, and (b) shipped as a standalone
-        // downloadable .html attachment (getCertificateStandaloneDoc below) —
-        // one design, no risk of the two ever drifting apart.
-        const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => `
-            <div style="padding: 3px; border-radius: 18px; background: linear-gradient(135deg, #d4ff3a, #7a9c1a, #eaff80, #d4ff3a);">
-                <div style="background: #0d0d12; border-radius: 16px; padding: 56px 40px; text-align: center; position: relative;">
-                    <div style="width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 32% 30%, #f2ffb0, #a8d600); margin: 0 auto 24px auto; line-height: 64px; font-size: 28px; box-shadow: 0 10px 28px rgba(212, 255, 58, 0.35);">🏆</div>
-                    <p style="color: #7d7d8a; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 12px 0;">Elevate QA Tech Summit 2026</p>
-                    <p style="color: #d4ff3a; font-size: 27px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 32px 0;">
-                        &#10022;&nbsp; ${escapeHtml(certTitle || 'CERTIFICATE OF PARTICIPATION')} &nbsp;&#10022;
-                    </p>
-                    <p style="color: #8e8e9a; font-size: 14px; margin: 0 0 14px 0;">This is to certify that</p>
-                    <p style="color: #ffffff; font-size: 36px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 10px 0;">
-                        ${escapeHtml(name)}
-                    </p>
-                    <div style="width: 210px; height: 1px; background: #d4ff3a; opacity: 0.4; margin: 0 auto 30px auto;"></div>
-                    <p style="color: #b5b5c0; font-size: 14px; line-height: 1.75; max-width: 440px; margin: 0 auto 44px auto;">
-                        ${withLineBreaks(escapeHtml(participation))}
-                    </p>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td width="50%" style="text-align: center;">
-                                <div style="width: 140px; height: 1px; background: #33333d; margin: 0 auto 10px auto;"></div>
-                                <p style="color: #d4ff3a; font-size: 12px; font-weight: 700; margin: 0;">${escapeHtml(signOff || 'Team Elevate QA')}</p>
-                                <p style="color: #5c5c68; font-size: 10px; letter-spacing: 0.5px; margin: 4px 0 0 0;">ORGANIZING COMMITTEE</p>
-                            </td>
-                            <td width="50%" style="text-align: center;">
-                                <div style="width: 140px; height: 1px; background: #33333d; margin: 0 auto 10px auto;"></div>
-                                <p style="color: #d4ff3a; font-size: 12px; font-weight: 700; margin: 0;">8 AUGUST 2026</p>
-                                <p style="color: #5c5c68; font-size: 10px; letter-spacing: 0.5px; margin: 4px 0 0 0;">CROWNE PLAZA, NEW DELHI</p>
-                            </td>
-                        </tr>
-                    </table>
-                    ${certId ? `<p style="color: #454550; font-size: 10px; letter-spacing: 1px; margin: 34px 0 0 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
+        // The certificate card itself — a black-and-gold "official document"
+        // design (double-line frame, corner ornaments, monogram medallion,
+        // two-tier heading) rather than a flat single-border card with a raw
+        // emoji seal, which read as a colorful sticker instead of a seal and
+        // clashed with the rest of the design. Deliberately its own gold
+        // palette, separate from the brand-lime letter card above it — real
+        // certificates read as formal documents regardless of a brand's
+        // marketing color. Factored out so the exact same markup can be (a)
+        // embedded inline below the thank-you letter, and (b) shipped as a
+        // standalone downloadable .html attachment (getCertificateStandaloneDoc
+        // below) — one design, no risk of the two ever drifting apart.
+        const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => {
+            const titleWords = String(certTitle || 'CERTIFICATE OF PARTICIPATION').trim().split(/\s+/);
+            const titleMain = titleWords[0] || 'CERTIFICATE';
+            const titleSub = titleWords.slice(1).join(' ');
+            // A short ornamental rule with a centered diamond — used both under
+            // the heading and under the name — built from inline-block spans
+            // (not flex/table) so it survives Outlook's limited CSS support.
+            const ornamentRule = (width) => `
+                <span style="display:inline-block; width:${width}px; height:1px; background:#c9a227; vertical-align:middle;"></span>
+                <span style="display:inline-block; margin:0 10px; color:#c9a227; font-size:10px; vertical-align:middle;">&#9670;</span>
+                <span style="display:inline-block; width:${width}px; height:1px; background:#c9a227; vertical-align:middle;"></span>
+            `;
+            return `
+            <div style="background:#c9a227; background: linear-gradient(135deg, #f6e2a8, #c9a227, #8b6e1f, #c9a227, #f6e2a8); padding: 3px; border-radius: 10px;">
+                <div style="background:#0b0b0f; border-radius: 8px; padding: 2px; box-shadow: inset 0 0 0 1px rgba(201,162,39,0.35);">
+                    <div style="border: 1px solid rgba(201,162,39,0.25); border-radius: 6px; padding: 56px 44px; text-align: center; position: relative; background: radial-gradient(ellipse at center, #14141b 0%, #0b0b0f 78%);">
+
+                        <div style="position:absolute; top:14px; left:14px; width:16px; height:16px; border-top:2px solid #c9a227; border-left:2px solid #c9a227;"></div>
+                        <div style="position:absolute; top:14px; right:14px; width:16px; height:16px; border-top:2px solid #c9a227; border-right:2px solid #c9a227;"></div>
+                        <div style="position:absolute; bottom:14px; left:14px; width:16px; height:16px; border-bottom:2px solid #c9a227; border-left:2px solid #c9a227;"></div>
+                        <div style="position:absolute; bottom:14px; right:14px; width:16px; height:16px; border-bottom:2px solid #c9a227; border-right:2px solid #c9a227;"></div>
+
+                        <div style="width:72px; height:72px; line-height:72px; border-radius:50%; border:2px solid #c9a227; box-shadow: 0 0 0 5px #0b0b0f, 0 0 0 7px rgba(201,162,39,0.5); margin:0 auto 26px auto; font-family: Georgia, 'Times New Roman', serif; font-size:24px; font-weight:700; color:#d4af37; letter-spacing:1px;">EQ</div>
+
+                        <p style="color: #8a8a95; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 22px 0;">Elevate QA Tech Summit 2026</p>
+
+                        <p style="color: #ece6d4; font-size: 32px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 6px 0;">${escapeHtml(titleMain)}</p>
+                        ${titleSub ? `<p style="color: #d4af37; font-size: 13px; font-weight: 700; letter-spacing: 6px; text-transform: uppercase; margin: 0 0 26px 0;">${escapeHtml(titleSub)}</p>` : ''}
+
+                        <div style="margin: 0 0 26px 0;">${ornamentRule(50)}</div>
+
+                        <p style="color: #8e8e9a; font-size: 14px; font-style: italic; margin: 0 0 16px 0;">This is to certify that</p>
+                        <p style="color: #f3ecd9; font-size: 36px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 16px 0;">
+                            ${escapeHtml(name)}
+                        </p>
+                        <div style="margin: 0 0 32px 0;">${ornamentRule(30)}</div>
+
+                        <p style="color: #a9a9b4; font-size: 14px; line-height: 1.75; max-width: 440px; margin: 0 auto 46px auto;">
+                            ${withLineBreaks(escapeHtml(participation))}
+                        </p>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="50%" style="text-align: center;">
+                                    <p style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; color: #ece6d4; margin: 0 0 8px 0;">${escapeHtml(signOff || 'Team Elevate QA')}</p>
+                                    <div style="width: 150px; height: 1px; background: rgba(201,162,39,0.5); margin: 0 auto 8px auto;"></div>
+                                    <p style="color: #c9a227; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Organizing Committee</p>
+                                </td>
+                                <td width="50%" style="text-align: center;">
+                                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #ece6d4; margin: 0 0 8px 0;">8 Aug 2026</p>
+                                    <div style="width: 150px; height: 1px; background: rgba(201,162,39,0.5); margin: 0 auto 8px auto;"></div>
+                                    <p style="color: #c9a227; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Crowne Plaza, New Delhi</p>
+                                </td>
+                            </tr>
+                        </table>
+                        ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin: 34px 0 0 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
+                    </div>
                 </div>
             </div>
         `;
+        };
 
         // A self-contained HTML document wrapping the same card — this is what
         // gets attached to the email so the attendee can download/save/print
