@@ -101,32 +101,43 @@ export const handler = async (event, context) => {
             // tests), but Gmail and Outlook both strip `position` and
             // `transform` from inline styles when sanitizing HTML email, so
             // the overlay silently vanished in actual inboxes even though
-            // every local/headless-browser check looked correct. Using a
-            // table cell's background image + a spacer row to push the name
-            // down to the right offset is the standard "bulletproof
-            // background image" email pattern — normal document flow only,
-            // nothing that a sanitizer strips.
+            // every local/headless-browser check looked correct.
             //
-            // Gap sits at y≈495-615 of the 1054px-tall source image (measured
-            // directly against the file). At a fixed 640px display width
-            // (scale 640/1492 = 0.429), that's y≈212-264px — so a 223px
-            // spacer centers a ~30px name line in that gap.
+            // Also deliberately NOT a fixed-width table+background (tried
+            // that next) — a fixed width="640" can't shrink on a narrow
+            // inbox/mobile viewport, so the whole certificate just overflowed
+            // and got clipped on both edges instead of scaling down.
+            //
+            // This version uses a real <img> (scales fluidly via width:100%
+            // in every client, including Outlook — unlike CSS backgrounds)
+            // plus a NEGATIVE margin-top expressed as a PERCENTAGE on the
+            // name div right after it. Per the CSS spec, a percentage
+            // margin-top/bottom is resolved against the containing block's
+            // WIDTH, not its height — so as the image's rendered width
+            // shrinks on a small screen, its rendered height shrinks with it
+            // (same aspect ratio), and this percentage margin shrinks in
+            // lockstep too, keeping the name pinned to the same relative spot
+            // on the certificate at any screen size. margin (unlike
+            // position/transform) is never stripped by email sanitizers.
+            //
+            // The gap sits at y≈495-615 of the 1054×1054px source image
+            // (measured directly against the file) — vertical center 52.66%
+            // of the image's HEIGHT. Converted to %-of-WIDTH via the image's
+            // own aspect ratio (1054/1492 = 0.7064): distance from the
+            // image's bottom edge up to that center = (0.7064 - 0.5266*0.7064)
+            // ≈ 33.4% of width, hence margin-top:-33.4%. A compensating
+            // spacer with +28% margin-top follows so the certificate ID
+            // caption below still lands under the actual image instead of
+            // inheriting that same upward pull.
             return `
             <div style="background-color:#0b0b10; padding:20px; text-align:center;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="width:640px; margin:0 auto;">
-                    <tr>
-                        <td width="640" height="452" valign="top" background="https://elevateqa.sdettech.com/certificate.png" bgcolor="#0b0b10" style="background-image:url('https://elevateqa.sdettech.com/certificate.png'); background-repeat:no-repeat; background-position:top center; background-size:640px 452px; width:640px; height:452px; vertical-align:top;">
-                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                                <tr><td height="223" style="height:223px; line-height:223px; font-size:1px;">&nbsp;</td></tr>
-                                <tr>
-                                    <td align="center" style="font-size:26px; line-height:30px; font-weight:bold; font-family:'Georgia','Times New Roman',serif; color:#E7C979;">
-                                        ${escapeHtml(name)}
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
+                <div style="max-width:640px; margin:0 auto;">
+                    <img src="https://elevateqa.sdettech.com/certificate.png" width="640" style="width:100%; max-width:640px; height:auto; display:block;" alt="Certificate of Participation" />
+                    <div style="margin-top:-33.4%; text-align:center; font-size:26px; line-height:1.3; font-weight:bold; font-family:'Georgia','Times New Roman',serif; color:#E7C979;">
+                        ${escapeHtml(name)}
+                    </div>
+                    <div style="margin-top:28%; line-height:0; font-size:0;">&nbsp;</div>
+                </div>
                 ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin-top: 15px;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
             </div>
             `;
