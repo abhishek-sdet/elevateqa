@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
-import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
@@ -12,69 +11,7 @@ const escapeHtml = (str) => String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-// Netlify's Linux function runtime ships with NO fonts installed at all —
-// without this, librsvg (which sharp uses to rasterize the <text> overlay
-// in generateCertificatePng below) silently draws an empty "missing glyph"
-// box per character instead of the recipient's name, since it has no font
-// to render ANY text with. Point fontconfig at a bundled TTF instead of
-// relying on the OS having one.
-//
-// The font is embedded as base64 (cert-font-data.mjs) rather than shipped as
-// a separate file via netlify.toml's included_files — that was the first
-// attempt, and it silently failed in production (still tofu boxes) despite
-// working in a local Docker test, because Netlify's real function bundler
-// lays out included_files at a different path than a plain local file copy
-// does, and the __dirname-relative lookup for the .ttf missed it. Embedding
-// the font as a JS string removes any file path for the bundler to get
-// wrong — esbuild inlines a same-directory import exactly like any other
-// code, guaranteed to land in the same compiled bundle as the code that
-// uses it, with nothing left for a bundler layout quirk to break.
-//
-// fontconfig only reads its config once per process, so this has to happen
-// before the first composite() call — and needs a writable directory, which
-// in a Lambda-style runtime is only /tmp.
-//
-// cert-font-data.mjs/cert-image-data.mjs are real ES modules, and Netlify's
-// function bundler compiles this file to CommonJS but leaves same-directory
-// .mjs imports un-inlined, emitting a require() call for them — which Node
-// rejects with ERR_REQUIRE_ESM since require() can't load an ES module
-// synchronously. A static top-level `import` hit this on every invocation
-// (including OPTIONS preflights), crashing the function before it could
-// even send CORS headers. Dynamic import() is exactly what Node's own error
-// points at: it works from CommonJS and can load a real ESM module, just
-// asynchronously — so the loads move inside these lazily-memoized helpers.
-const CERT_FONT_FAMILY = 'PT Serif';
-let fontSetupPromise = null;
-function ensureFontSetup() {
-    if (!fontSetupPromise) {
-        fontSetupPromise = (async () => {
-            try {
-                const { CERT_FONT_BASE64 } = await import('./cert-font-data.mjs');
-                const fontDir = '/tmp/elevateqa-fonts';
-                if (!fs.existsSync(fontDir)) fs.mkdirSync(fontDir, { recursive: true });
-                const runtimeFontPath = path.join(fontDir, 'PTSerif-Bold.ttf');
-                if (!fs.existsSync(runtimeFontPath)) fs.writeFileSync(runtimeFontPath, Buffer.from(CERT_FONT_BASE64, 'base64'));
-                const fontsConf = `<?xml version="1.0"?>
-<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-<fontconfig>
-    <dir>${fontDir}</dir>
-    <cachedir>/tmp/elevateqa-fontconfig-cache</cachedir>
-</fontconfig>`;
-                fs.writeFileSync(path.join(fontDir, 'fonts.conf'), fontsConf);
-                process.env.FONTCONFIG_PATH = fontDir;
-            } catch (err) {
-                console.error('[CUSTOM EMAIL] Failed to set up bundled font for certificate rendering:', err.message);
-            }
-        })();
-    }
-    return fontSetupPromise;
-}
-
-// Decoded once per warm invocation and reused — no network fetch involved
-// (see cert-image-data.mjs for why: fetching the live URL at runtime was an
-// untested dependency on network reachability and global fetch availability,
-// and is the leading suspect for certificate sends 502'ing in production
-// while every other template type kept working).
+// Decoded once per warm invocation and reused
 let certificateBaseImageBuffer = null;
 async function getCertificateBaseImage() {
     if (!certificateBaseImageBuffer) {
@@ -82,41 +19,6 @@ async function getCertificateBaseImage() {
         certificateBaseImageBuffer = Buffer.from(CERT_IMAGE_BASE64, 'base64');
     }
     return certificateBaseImageBuffer;
-}
-
-// Bakes the recipient's name directly into the certificate as real pixels —
-// deliberately NOT an HTML/CSS overlay. Three separate attempts at
-// positioning the name via CSS (position+transform, then a fixed-width
-// table, then a fluid percentage-margin) each rendered perfectly in local
-// browser testing but broke differently across real inboxes (missing
-// entirely, overflowing on narrow screens, shifted down on wide Gmail
-// desktop) because email clients apply CSS to images inconsistently.
-// Compositing server-side removes that whole class of bug: every client
-// just displays one finished, flat image via a plain <img> — nothing to
-// mis-position.
-async function generateCertificatePng(name) {
-    await ensureFontSetup();
-    const baseBuffer = await getCertificateBaseImage();
-    const W = 1492, H = 1054;
-    // Blank gap sits at y≈495-615 of this 1054px-tall image (measured
-    // directly against the file) — vertical center ≈555. Font shrinks for
-    // long names (with a floor) so it never overflows the certificate's
-    // gold border.
-    const safeName = String(name || '').trim() || 'Attendee';
-    let fontSize = 70;
-    const estWidth = safeName.length * fontSize * 0.55;
-    const maxTextWidth = 1200;
-    if (estWidth > maxTextWidth) {
-        fontSize = Math.max(32, Math.floor(maxTextWidth / (safeName.length * 0.55)));
-    }
-    const baselineY = 555 + Math.round(fontSize * 0.35);
-    const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
-        <text x="${W / 2}" y="${baselineY}" text-anchor="middle" font-family="${CERT_FONT_FAMILY}" font-weight="bold" font-size="${fontSize}" fill="#E7C979">${escapeHtml(safeName)}</text>
-    </svg>`;
-    return sharp(baseBuffer)
-        .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-        .png()
-        .toBuffer();
 }
 
 // See verify-otp.js's mintAdminToken — this endpoint sends arbitrary
@@ -195,7 +97,7 @@ export const handler = async (event, context) => {
         // per-recipient by generateCertificatePng, referenced here purely via
         // cid — no CSS positioning of any kind, so no client-specific
         // rendering quirks are possible).
-        const getCertificateEmailHtml = (letterMessage, certId) => `
+        const getCertificateEmailHtml = (letterMessage, certId, name) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                     <div style="max-width: 640px; margin: 0 auto;">
 
@@ -215,7 +117,12 @@ export const handler = async (event, context) => {
                         </div>
 
                         <div style="margin-bottom: 12px; text-align: center;">
-                            <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
+                            <div style="position: relative; display: inline-block; text-align: center; max-width: 640px; width: 100%;">
+                                <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
+                                <div style="position: absolute; top: 52%; left: 0; right: 0; text-align: center; font-size: 28px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; margin: 0 auto; width: 100%;">
+                                    ${escapeHtml(name)}
+                                </div>
+                            </div>
                         </div>
                         ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
 
@@ -336,14 +243,10 @@ export const handler = async (event, context) => {
             const certId = (templateType === 'certificate' && id) ? `EQ26-CERT-${String(id).split('-')[0].toUpperCase()}` : '';
             if (templateType === 'certificate') {
                 try {
-                    const certPng = await generateCertificatePng(name);
+                    const certPng = await getCertificateBaseImage();
                     const safeName = String(name || 'Certificate').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Certificate';
                     recipientAttachments = [
                         ...mailAttachments,
-                        // Same PNG twice on purpose: one referenced by cid so it
-                        // renders inline in the email body, one as a normal named
-                        // attachment so it also shows up as a separate downloadable
-                        // file — most clients surface both independently.
                         { filename: 'certificate.png', content: certPng, cid: 'certificate@elevateqa' },
                         { filename: `ElevateQA-2026-Certificate-${safeName}.png`, content: certPng }
                     ];
@@ -360,7 +263,7 @@ export const handler = async (event, context) => {
                 to: email,
                 subject: subject,
                 html: templateType === 'certificate'
-                    ? getCertificateEmailHtml(finalMessage, certId)
+                    ? getCertificateEmailHtml(finalMessage, certId, name)
                     : getHtml(finalMessage),
                 attachments: recipientAttachments
             };
@@ -383,9 +286,9 @@ export const handler = async (event, context) => {
             let ccHtml = getHtml(ccMessage);
             if (templateType === 'certificate') {
                 try {
-                    const certPng = await generateCertificatePng('Team');
+                    const certPng = await getCertificateBaseImage();
                     ccAttachments = [...mailAttachments, { filename: 'certificate.png', content: certPng, cid: 'certificate@elevateqa' }];
-                    ccHtml = getCertificateEmailHtml(ccMessage, '');
+                    ccHtml = getCertificateEmailHtml(ccMessage, '', 'Team');
                 } catch (err) {
                     console.error('[CUSTOM EMAIL] Certificate generation failed for CC/BCC copy', err.message);
                 }
