@@ -110,6 +110,7 @@
       <button class="tab-btn" id="etab-btn-food" onclick="showEmailTemplateTab('food')" style="font-size: 12px; padding: 10px 16px;">🍔 Food Info</button>
       <button class="tab-btn" id="etab-btn-location" onclick="showEmailTemplateTab('location')" style="font-size: 12px; padding: 10px 16px;">📍 Location</button>
       <button class="tab-btn" id="etab-btn-entry" onclick="showEmailTemplateTab('entry')" style="font-size: 12px; padding: 10px 16px;">🎟️ Entry / QR</button>
+      <button class="tab-btn" id="etab-btn-certificate" onclick="showEmailTemplateTab('certificate')" style="font-size: 12px; padding: 10px 16px;">🏆 Certificate</button>
     </div>
 
     <div class="card-body" style="padding-top: 28px;">
@@ -321,6 +322,29 @@ If you can't find your QR code, email us at elevateqa@sdettech.com before the ev
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-entry-closing">Closing Message</label>
           <input type="text" id="et-entry-closing" placeholder="We look forward to welcoming you on 8 August!" value="We look forward to welcoming you on 8 August!">
+        </div>
+      </div>
+
+      <!-- ── PARTICIPATION CERTIFICATE ── -->
+      <div id="etab-certificate" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Manual Blast · Sent Individually Per Attendee</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-certificate-subject">Email Subject</label>
+          <input type="text" id="et-certificate-subject" placeholder="🏆 Your Certificate of Participation — Elevate QA 2026" value="🏆 Your Certificate of Participation — Elevate QA 2026">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-certificate-title">Certificate Title <span class="label-hint">Large heading printed on the certificate</span></label>
+          <input type="text" id="et-certificate-title" placeholder="CERTIFICATE OF PARTICIPATION" value="CERTIFICATE OF PARTICIPATION">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-certificate-body1">Participation Line <span class="label-hint">Each attendee's name is inserted automatically above this line — write only what follows it</span></label>
+          <textarea id="et-certificate-body1" rows="3" placeholder="has successfully participated in the Elevate QA Tech Summit 2026, held on 8th August 2026 at Crowne Plaza, Mayur Vihar, New Delhi.">has successfully participated in the Elevate QA Tech Summit 2026, held on 8th August 2026 at Crowne Plaza, Mayur Vihar, New Delhi.</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-certificate-closing">Signature Line <span class="label-hint">Printed at the bottom of the certificate</span></label>
+          <input type="text" id="et-certificate-closing" placeholder="Organizing Committee, Elevate QA 2026" value="Organizing Committee, Elevate QA 2026">
         </div>
       </div>
 

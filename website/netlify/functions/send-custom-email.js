@@ -40,7 +40,7 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients } = JSON.parse(event.body);
+        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients, templateType, certificateTitle, closingTitle } = JSON.parse(event.body);
         const mailAttachments = Array.isArray(attachments) ? attachments : [];
 
         if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
@@ -73,6 +73,44 @@ export const handler = async (event, context) => {
         // it), and HTML collapses bare newlines/whitespace — so without this,
         // every paragraph break the admin typed disappears in the sent email.
         const withLineBreaks = (msgContent) => String(msgContent || '').replace(/\n/g, '<br>');
+
+        // Names/free text come from admin-authored fields and attendee records,
+        // not trusted HTML — escape before dropping them into the certificate
+        // markup so a stray "<" in someone's name can't break the layout.
+        const escapeHtml = (str) => String(str || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+        // The certificate is deliberately its own design (gold-framed, serif
+        // name, centered) rather than reusing getHtml's "EVENT UPDATE" card —
+        // it needs to visually read as a certificate, not a newsletter update.
+        const getCertificateHtml = (name, participationLine, certTitle, signOff) => `
+                <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <div style="max-width: 640px; margin: 0 auto; background-color: #121217; border: 2px solid #d4ff3a; border-radius: 6px; padding: 6px;">
+                        <div style="border: 1px solid rgba(212, 255, 58, 0.35); border-radius: 3px; padding: 50px 40px; text-align: center;">
+                            <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="56" style="display:block;margin:0 auto 28px auto;border:0;pointer-events:none;" />
+                            <p style="color: #d4ff3a; margin: 0 0 10px 0; font-size: 12px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
+                                ${escapeHtml(certTitle || 'CERTIFICATE OF PARTICIPATION')}
+                            </p>
+                            <div style="width: 70px; height: 2px; background: #d4ff3a; margin: 0 auto 36px auto;"></div>
+                            <p style="color: #8e8e9a; font-size: 14px; margin: 0 0 14px 0;">This is to certify that</p>
+                            <p style="color: #ffffff; font-size: 32px; font-family: Georgia, 'Times New Roman', serif; font-weight: 700; margin: 0 0 22px 0; letter-spacing: 0.3px;">
+                                ${escapeHtml(name)}
+                            </p>
+                            <p style="color: #b5b5c0; font-size: 14px; line-height: 1.7; max-width: 460px; margin: 0 auto 40px auto;">
+                                ${withLineBreaks(escapeHtml(participationLine))}
+                            </p>
+                            <div style="width: 160px; height: 1px; background: #2a2a35; margin: 0 auto 14px auto;"></div>
+                            <p style="color: #d4ff3a; font-size: 13px; font-weight: 600; margin: 0;">
+                                ${escapeHtml(signOff || 'Team Elevate QA')}
+                            </p>
+                        </div>
+                    </div>
+                    <p style="color: #555565; font-size: 12px; text-align: center; margin: 24px 0 0 0;">
+                        &copy; 2026 SDET Technologies.
+                    </p>
+                </div>
+        `;
 
         const getHtml = (msgContent) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
@@ -170,7 +208,9 @@ export const handler = async (event, context) => {
                 from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                 to: email,
                 subject: subject,
-                html: getHtml(finalMessage),
+                html: templateType === 'certificate'
+                    ? getCertificateHtml(name, finalMessage, certificateTitle, closingTitle)
+                    : getHtml(finalMessage),
                 attachments: recipientAttachments
             };
             try {
@@ -192,7 +232,9 @@ export const handler = async (event, context) => {
                 cc: ccList,
                 bcc: extraBccList,
                 subject: `[CC/BCC Copy] ${subject}`,
-                html: getHtml(ccMessage),
+                html: templateType === 'certificate'
+                    ? getCertificateHtml('Team', ccMessage, certificateTitle, closingTitle)
+                    : getHtml(ccMessage),
                 attachments: mailAttachments
             });
         }

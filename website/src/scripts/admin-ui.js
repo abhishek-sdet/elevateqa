@@ -813,6 +813,12 @@ export function populateUI(data) {
   fillTpl('et-entry-body1',   entry.body1);
   fillTpl('et-entry-body2',   entry.body2);
   fillTpl('et-entry-closing', entry.closing);
+
+  const cert = et.certificate || {};
+  fillTpl('et-certificate-subject', cert.subject);
+  fillTpl('et-certificate-title',   cert.title);
+  fillTpl('et-certificate-body1',   cert.body1);
+  fillTpl('et-certificate-closing', cert.closing);
 }
 
 function _renderImgPreview(id, url) {
@@ -822,6 +828,18 @@ function _renderImgPreview(id, url) {
   const dlLink = document.getElementById(`download-${id}`);
   if (dlLink && url) { dlLink.href = url; dlLink.style.display = 'inline-block'; }
 }
+
+// ── Bulk Actions bar (collapsed by default) ───────────────────────────────────
+window.toggleBulkActionsPanel = () => {
+  const body = document.getElementById('bulk-actions');
+  const chevron = document.getElementById('bulk-actions-chevron');
+  const header = document.getElementById('bulk-actions-header');
+  if (!body) return;
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'flex' : 'none';
+  if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  if (header) header.setAttribute('aria-expanded', String(isHidden));
+};
 
 // ── Email Templates card (collapsed by default) ──────────────────────────────
 window.toggleEmailTemplatesPanel = () => {
@@ -901,6 +919,12 @@ window.saveEmailTemplates = async () => {
         body1:   getVal('et-entry-body1'),
         body2:   getVal('et-entry-body2'),
         closing: getVal('et-entry-closing'),
+      },
+      certificate: {
+        subject: getVal('et-certificate-subject'),
+        title:   getVal('et-certificate-title'),
+        body1:   getVal('et-certificate-body1'),
+        closing: getVal('et-certificate-closing'),
       },
     }
   };

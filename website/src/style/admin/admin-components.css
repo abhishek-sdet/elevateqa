@@ -77,6 +77,19 @@ tr:last-child td { border-bottom: none; }
 }
 .btn-mini:hover { border-color: var(--accent); color: var(--accent); background: var(--bg); }
 
+/* BULK ACTIONS BAR — compact so more template buttons fit without crowding */
+.bulk-action-btn {
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink); background: var(--bg-3);
+  border: 1px solid var(--line-strong); padding: 6px 12px;
+  border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 600;
+  white-space: nowrap;
+}
+.bulk-action-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--bg); }
+.bulk-action-btn-primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.bulk-action-btn-primary:hover { color: var(--bg); opacity: 0.85; }
+.bulk-action-btn-danger:hover { border-color: var(--accent-red); color: var(--accent-red); background: rgba(255,90,54,0.05); }
+
 /* FLOATING ACTIONS BAR */
 .admin-actions { 
   position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);

@@ -14,15 +14,21 @@
                 <span class="badge" id="badge-count-speaker" style="background:#9C27B0; color:#fff; white-space: normal; text-align: center; border-color:#9C27B0;" aria-live="polite">0 Speaker Badge</span>
               </div>
             </div>
-            <!-- Bulk Action Bar -->
-            <div id="bulk-actions" style="margin-bottom: 16px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-strong); border-radius: 8px; display: flex; gap: 12px; align-items: center;">
-              <span style="font-size: 13px; color: var(--ink-dim);">Bulk Actions:</span>
-              <button class="btn-save-all" onclick="sendBulkTickets()" id="btn-send-bulk-tickets" style="font-size: 13px; padding: 6px 12px; background: var(--accent); color: #000;">Send Final Passes (QR)</button>
-              <button class="btn-reset" onclick="sendBulkRejections()" id="btn-send-bulk-rejections" style="font-size: 13px; padding: 6px 12px;">Send House Full</button>
-              <button class="btn-mini" onclick="sendBulkEntryReminder()" id="btn-send-bulk-entry-reminder" style="font-size: 13px; padding: 6px 12px;">🎟️ Send Entry Reminder</button>
-              <button class="btn-mini" onclick="sendBulkFoodInfo()" id="btn-send-bulk-food" style="font-size: 13px; padding: 6px 12px;">🍔 Send Food Info</button>
-              <button class="btn-mini" onclick="sendBulkLocationGuide()" id="btn-send-bulk-location" style="font-size: 13px; padding: 6px 12px;">📍 Send Location Guide</button>
-              <div id="bulk-progress" style="display: none; font-size: 12px; font-weight: 600; color: var(--accent); margin-left: auto;">Processing 0 / 0...</div>
+            <!-- Bulk Action Bar (collapsible) -->
+            <div style="margin-bottom: 16px; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden;">
+              <div id="bulk-actions-header" style="padding: 10px 12px; background: rgba(255, 255, 255, 0.03); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.toggleBulkActionsPanel()" role="button" tabindex="0" aria-expanded="false" aria-controls="bulk-actions">
+                <span style="font-size: 13px; color: var(--ink-dim); font-weight: 600;">Bulk Actions</span>
+                <span id="bulk-actions-chevron" aria-hidden="true" style="font-size: 12px; color: var(--ink-dim); transition: transform 0.3s ease; display: inline-block;">▾</span>
+              </div>
+              <div id="bulk-actions" style="display: none; padding: 12px; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button class="bulk-action-btn bulk-action-btn-primary" onclick="sendBulkTickets()" id="btn-send-bulk-tickets">Final Passes (QR)</button>
+                <button class="bulk-action-btn bulk-action-btn-danger" onclick="sendBulkRejections()" id="btn-send-bulk-rejections">House Full</button>
+                <button class="bulk-action-btn" onclick="sendBulkEntryReminder()" id="btn-send-bulk-entry-reminder">🎟️ Entry Reminder</button>
+                <button class="bulk-action-btn" onclick="sendBulkFoodInfo()" id="btn-send-bulk-food">🍔 Food Info</button>
+                <button class="bulk-action-btn" onclick="sendBulkLocationGuide()" id="btn-send-bulk-location">📍 Location Guide</button>
+                <button class="bulk-action-btn" onclick="sendBulkCertificates()" id="btn-send-bulk-certificate">🏆 Certificate</button>
+                <div id="bulk-progress" style="display: none; font-size: 12px; font-weight: 600; color: var(--accent); margin-left: auto;">Processing 0 / 0...</div>
+              </div>
             </div>
             <!-- Tabs -->
             <div style="margin-bottom: 16px; display: flex; gap: 8px; border-bottom: 1px solid var(--line-strong); padding-bottom: 16px; margin-top: 8px;">

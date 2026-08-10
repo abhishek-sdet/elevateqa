@@ -597,7 +597,7 @@ window.sendBulkRejections = async () => {
 // sendBulkTickets/sendBulkRejections use above with their own single-send
 // functions — so a partial failure here only skips the write for the
 // specific attendee(s) whose send actually failed, exactly like those do.
-async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, includeQr }) {
+async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, includeQr, templateType }) {
   const selected = window.getSelectedAttendees();
   if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
 
@@ -614,7 +614,18 @@ async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, i
     return (el.value || '').trim() || el.getAttribute('placeholder') || '';
   };
   const subject = getVal(`et-${templateKey}-subject`);
-  const message = [getVal(`et-${templateKey}-body1`), getVal(`et-${templateKey}-body2`), getVal(`et-${templateKey}-closing`)].filter(Boolean).join('\n\n');
+  // The certificate template renders each recipient's name into its own
+  // large slot on the certificate design (send-custom-email.js's
+  // getCertificateHtml), not inline in a paragraph — so its "message" is
+  // just the participation line, with title/closing sent as extra fields
+  // instead of being concatenated the way the plain-text templates are.
+  const message = templateType === 'certificate'
+    ? getVal(`et-${templateKey}-body1`)
+    : [getVal(`et-${templateKey}-body1`), getVal(`et-${templateKey}-body2`), getVal(`et-${templateKey}-closing`)].filter(Boolean).join('\n\n');
+  const certificateFields = templateType === 'certificate' ? {
+    certificateTitle: getVal(`et-${templateKey}-title`),
+    closingTitle: getVal(`et-${templateKey}-closing`)
+  } : {};
   if (!subject || !message) return window.showToast(`The ${label} template is empty — check Email Center first.`, 'error');
 
   const btn = document.getElementById(btnId);
@@ -644,7 +655,9 @@ async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, i
             ccEmails: [],
             bccEmails: [],
             attachments: [],
-            includeQrForRecipients: !!includeQr
+            includeQrForRecipients: !!includeQr,
+            templateType,
+            ...certificateFields
           })
         });
         const result = await response.json().catch(() => ({}));
@@ -695,6 +708,15 @@ window.sendBulkFoodInfo = () => sendBulkTemplateEmail({
 window.sendBulkLocationGuide = () => sendBulkTemplateEmail({
   templateKey: 'location', statusField: 'location_email_sent_at', label: 'Location Guide',
   btnId: 'btn-send-bulk-location'
+});
+
+// "Send Certificate" (Bulk Actions bar) — participation certificate from the
+// Email Center's Certificate template. Each attendee's name is rendered into
+// its own slot on the certificate design server-side (send-custom-email.js),
+// so no manual name entry is needed per recipient.
+window.sendBulkCertificates = () => sendBulkTemplateEmail({
+  templateKey: 'certificate', statusField: 'certificate_sent_at', label: 'Participation Certificate',
+  btnId: 'btn-send-bulk-certificate', templateType: 'certificate'
 });
 
 window.openAssignRoleModal = () => {
