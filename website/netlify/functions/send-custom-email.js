@@ -15,7 +15,7 @@ const escapeHtml = (str) => String(str || '')
 let certificateBaseImageBuffer = null;
 async function getCertificateBaseImage() {
     if (!certificateBaseImageBuffer) {
-        const { CERT_IMAGE_BASE64 } = await import('./cert-image-data.mjs');
+        const { CERT_IMAGE_BASE64 } = await import('./cert-image-data.js');
         certificateBaseImageBuffer = Buffer.from(CERT_IMAGE_BASE64, 'base64');
     }
     return certificateBaseImageBuffer;
@@ -197,6 +197,8 @@ export const handler = async (event, context) => {
                 .join(' ');
         };
 
+        let lastError = null; // Store the exact error message for debugging
+
         for (const recipient of targetEmails) {
             const email = typeof recipient === 'object' ? recipient.email : recipient;
             const rawName = typeof recipient === 'object' ? recipient.name : '';
@@ -252,6 +254,7 @@ export const handler = async (event, context) => {
                     ];
                 } catch (err) {
                     console.error('[CUSTOM EMAIL] Certificate generation failed for', email, err.message);
+                    lastError = `Cert Error: ${err.message}`;
                     failCount++;
                     await sleep(SEND_DELAY_MS);
                     continue;
@@ -272,6 +275,7 @@ export const handler = async (event, context) => {
                 successCount++;
             } catch (err) {
                 console.error('[CUSTOM EMAIL] Failed to send to', email, err.message);
+                lastError = `SMTP Error: ${err.message}`;
                 failCount++;
             }
             await sleep(SEND_DELAY_MS);
@@ -306,7 +310,7 @@ export const handler = async (event, context) => {
 
         console.log(`[CUSTOM EMAIL] Blast sent. Success: ${successCount}, Failed: ${failCount}`);
         if (successCount === 0 && failCount > 0) {
-            return { statusCode: 502, headers, body: JSON.stringify({ error: `All ${failCount} email(s) in this batch failed to send.`, successCount, failCount }) };
+            return { statusCode: 502, headers, body: JSON.stringify({ error: `All ${failCount} email(s) in this batch failed to send.`, details: lastError, successCount, failCount }) };
         }
         return { statusCode: 200, headers, body: JSON.stringify({ success: true, successCount, failCount, message: `Blast sent. (${successCount} succeeded, ${failCount} failed)` }) };
 
