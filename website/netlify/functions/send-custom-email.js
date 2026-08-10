@@ -161,7 +161,7 @@ export const handler = async (event, context) => {
                             <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
                         </div>
                         
-                        ${certId ? \`<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: \${escapeHtml(certId)}</p>\` : ''}
+                        ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
                         
                         <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
                             📎 Your certificate is also attached to this email as a downloadable image — save it for your records.
