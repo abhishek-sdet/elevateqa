@@ -97,7 +97,7 @@ export const handler = async (event, context) => {
             <div style="background-color:#0b0b10; padding:20px; text-align:center;">
                 <div style="position: relative; display: inline-block; text-align: center; max-width: 800px; width: 100%;">
                     <!-- TODO: Yahan apni Certificate Image ka actual URL daalna hoga! -->
-                    <img src="YOUR_CERTIFICATE_IMAGE_URL.jpg" style="width: 100%; height: auto; display: block;" alt="Certificate" />
+                    <img src="https://elevateqa.sdettech.com/certificate.jpg" style="width: 100%; height: auto; display: block;" alt="Certificate" />
 
                     <!-- Name Overlay -->
                     <div style="position: absolute; top: 52%; left: 0; right: 0; text-align: center; font-size: 32px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; margin: 0 auto; width: 100%;">
