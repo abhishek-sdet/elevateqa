@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { CERT_FONT_BASE64 } from './cert-font-data.mjs';
 
 // Names/free text come from admin-authored fields and attendee records, not
 // trusted HTML/XML — escape before dropping them into any markup so a stray
@@ -17,19 +17,29 @@ const escapeHtml = (str) => String(str || '')
 // without this, librsvg (which sharp uses to rasterize the <text> overlay
 // in generateCertificatePng below) silently draws an empty "missing glyph"
 // box per character instead of the recipient's name, since it has no font
-// to render ANY text with. Point fontconfig at a bundled TTF (see
-// netlify.toml's included_files) instead of relying on the OS having one.
+// to render ANY text with. Point fontconfig at a bundled TTF instead of
+// relying on the OS having one.
+//
+// The font is embedded as base64 (cert-font-data.mjs) rather than shipped as
+// a separate file via netlify.toml's included_files — that was the first
+// attempt, and it silently failed in production (still tofu boxes) despite
+// working in a local Docker test, because Netlify's real function bundler
+// lays out included_files at a different path than a plain local file copy
+// does, and the __dirname-relative lookup for the .ttf missed it. Embedding
+// the font as a JS string removes any file path for the bundler to get
+// wrong — esbuild inlines a same-directory import exactly like any other
+// code, guaranteed to land in the same compiled bundle as the code that
+// uses it, with nothing left for a bundler layout quirk to break.
+//
 // fontconfig only reads its config once per process, so this has to happen
 // at module load — before the first composite() call — and needs a
 // writable directory, which in a Lambda-style runtime is only /tmp.
 const CERT_FONT_FAMILY = 'PT Serif';
 try {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const bundledFontPath = path.join(__dirname, 'fonts', 'PTSerif-Bold.ttf');
     const fontDir = '/tmp/elevateqa-fonts';
     if (!fs.existsSync(fontDir)) fs.mkdirSync(fontDir, { recursive: true });
     const runtimeFontPath = path.join(fontDir, 'PTSerif-Bold.ttf');
-    if (!fs.existsSync(runtimeFontPath)) fs.copyFileSync(bundledFontPath, runtimeFontPath);
+    if (!fs.existsSync(runtimeFontPath)) fs.writeFileSync(runtimeFontPath, Buffer.from(CERT_FONT_BASE64, 'base64'));
     const fontsConf = `<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
