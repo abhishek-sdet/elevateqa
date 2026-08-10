@@ -117,12 +117,16 @@ export const handler = async (event, context) => {
                         </div>
 
                         <div style="margin-bottom: 12px; text-align: center;">
-                            <div style="position: relative; display: inline-block; text-align: center; max-width: 640px; width: 100%;">
-                                <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
-                                <div style="position: absolute; top: 52%; left: 0; right: 0; text-align: center; font-size: 28px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; margin: 0 auto; width: 100%;">
-                                    ${escapeHtml(name)}
-                                </div>
-                            </div>
+                            <table width="640" height="452" border="0" cellpadding="0" cellspacing="0" align="center" background="cid:certificate@elevateqa" style="background-image: url('cid:certificate@elevateqa'); background-size: cover; background-repeat: no-repeat; margin: 0 auto; max-width: 640px; width: 100%;">
+                                <tr>
+                                    <td height="220" style="height: 220px; border: none;"></td>
+                                </tr>
+                                <tr>
+                                    <td align="center" valign="top" style="text-align: center; font-size: 28px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; height: 232px; border: none; padding-top: 15px;">
+                                        ${escapeHtml(name)}
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                         ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
 
