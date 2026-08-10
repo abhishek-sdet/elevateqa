@@ -240,7 +240,8 @@ window.renderAttendees = (registrations) => {
     const totalFoodSent = raw.filter(p => p.food_email_sent_at).length;
     const totalLocationSent = raw.filter(p => p.location_email_sent_at).length;
     const totalEntryReminderSent = raw.filter(p => p.entry_reminder_sent_at).length;
-    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected • ${totalFoodSent} Food Sent • ${totalLocationSent} Location Sent • ${totalEntryReminderSent} Entry Reminder Sent`;
+    const totalCertificateSent = raw.filter(p => p.certificate_sent_at).length;
+    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected • ${totalFoodSent} Food Sent • ${totalLocationSent} Location Sent • ${totalEntryReminderSent} Entry Reminder Sent • ${totalCertificateSent} Certificate Sent`;
 
     if (raw.length === filtered.length) {
       countBadge.textContent = `${raw.length} total${extras}`;
@@ -345,7 +346,8 @@ window.renderAttendees = (registrations) => {
     const extraBadges = [
       sentBadge(p.entry_reminder_sent_at, 'entry_reminder_sent_at', '🎟️ Reminder', '#3f51b5'),
       sentBadge(p.food_email_sent_at, 'food_email_sent_at', '🍔 Food', '#f57c00'),
-      sentBadge(p.location_email_sent_at, 'location_email_sent_at', '📍 Location', '#009688')
+      sentBadge(p.location_email_sent_at, 'location_email_sent_at', '📍 Location', '#009688'),
+      sentBadge(p.certificate_sent_at, 'certificate_sent_at', '🏆 Certificate', '#8e24aa')
     ].filter(Boolean);
     const extraBadgesHtml = extraBadges.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">${extraBadges.join('')}</div>` : '';
 
@@ -479,7 +481,7 @@ window.getSelectedAttendees = () => {
 
 window.sendBulkTickets = async () => {
   const selected = window.getSelectedAttendees();
-  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  if (selected.length === 0) return window.showToast('Check the box next to at least one attendee below, then try again.', 'error', 'No Attendees Selected');
   
   const confirmed = await window.showConfirm(`Are you sure you want to send final passes to ${selected.length} attendees?`, 'Send Final Passes', 'PROCEED');
   if (!confirmed) return;
@@ -536,7 +538,7 @@ window.sendBulkTickets = async () => {
 
 window.sendBulkRejections = async () => {
   const selected = window.getSelectedAttendees();
-  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  if (selected.length === 0) return window.showToast('Check the box next to at least one attendee below, then try again.', 'error', 'No Attendees Selected');
   
   const confirmed = await window.showConfirm(`Are you sure you want to send house full emails to ${selected.length} attendees?`, 'Send Rejections', 'PROCEED');
   if (!confirmed) return;
@@ -599,7 +601,7 @@ window.sendBulkRejections = async () => {
 // specific attendee(s) whose send actually failed, exactly like those do.
 async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, includeQr, templateType }) {
   const selected = window.getSelectedAttendees();
-  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  if (selected.length === 0) return window.showToast('Check the box next to at least one attendee below, then try again.', 'error', 'No Attendees Selected');
 
   const confirmed = await window.showConfirm(`Send the ${label} email to ${selected.length} attendees?`, `Send ${label}`, 'PROCEED');
   if (!confirmed) return;
@@ -614,16 +616,17 @@ async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, i
     return (el.value || '').trim() || el.getAttribute('placeholder') || '';
   };
   const subject = getVal(`et-${templateKey}-subject`);
-  // The certificate template renders each recipient's name into its own
-  // large slot on the certificate design (send-custom-email.js's
-  // getCertificateHtml), not inline in a paragraph — so its "message" is
-  // just the participation line, with title/closing sent as extra fields
-  // instead of being concatenated the way the plain-text templates are.
+  // The certificate template's "message" is the letter shown above the
+  // certificate (send-custom-email.js's getCertificateEmailHtml) — the
+  // certificate design's own title/participation-line/signature are sent
+  // as extra fields instead, since they render into their own slots on the
+  // certificate rather than being concatenated like the plain-text templates.
   const message = templateType === 'certificate'
-    ? getVal(`et-${templateKey}-body1`)
+    ? getVal(`et-${templateKey}-message`)
     : [getVal(`et-${templateKey}-body1`), getVal(`et-${templateKey}-body2`), getVal(`et-${templateKey}-closing`)].filter(Boolean).join('\n\n');
   const certificateFields = templateType === 'certificate' ? {
     certificateTitle: getVal(`et-${templateKey}-title`),
+    participationLine: getVal(`et-${templateKey}-body1`),
     closingTitle: getVal(`et-${templateKey}-closing`)
   } : {};
   if (!subject || !message) return window.showToast(`The ${label} template is empty — check Email Center first.`, 'error');
@@ -721,7 +724,7 @@ window.sendBulkCertificates = () => sendBulkTemplateEmail({
 
 window.openAssignRoleModal = () => {
   const selected = window.getSelectedAttendees();
-  if (selected.length === 0) return window.showToast('Select at least one attendee.', 'error');
+  if (selected.length === 0) return window.showToast('Check the box next to at least one attendee below, then try again.', 'error', 'No Attendees Selected');
   document.getElementById('assign-role-select').value = 'Attendee';
   document.getElementById('assign-role-modal').style.display = 'flex';
 };
@@ -803,7 +806,7 @@ window.markBadgeGiven = async (id) => {
 window.openBulkEmailModal = () => {
   const selected = window.getSelectedAttendees();
   if (selected.length === 0) {
-    return window.showToast('Select at least one attendee to send an email.', 'error');
+    return window.showToast('Check the box next to at least one attendee below, then try again.', 'error', 'No Attendees Selected');
   }
   document.getElementById('bulk-email-subject').value = '';
   document.getElementById('bulk-email-message').value = '';

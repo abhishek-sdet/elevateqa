@@ -330,16 +330,38 @@ If you can't find your QR code, email us at elevateqa@sdettech.com before the ev
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
           <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Manual Blast · Sent Individually Per Attendee</span>
         </div>
+        <p style="color: var(--text-dim); font-size: 13px; margin: -8px 0 20px 0; line-height: 1.5;">
+          The certificate is shown inline below the letter AND attached to the email as a standalone downloadable HTML file, so attendees can save/print it separately from the message.
+        </p>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-certificate-subject">Email Subject</label>
-          <input type="text" id="et-certificate-subject" placeholder="🏆 Your Certificate of Participation — Elevate QA 2026" value="🏆 Your Certificate of Participation — Elevate QA 2026">
+          <input type="text" id="et-certificate-subject" placeholder="Thank You for Being a Part of ElevateQA 2026" value="Thank You for Being a Part of ElevateQA 2026">
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
-          <label for="et-certificate-title">Certificate Title <span class="label-hint">Large heading printed on the certificate</span></label>
+          <label for="et-certificate-message">Letter Message <span class="label-hint">Shown above the certificate. [First Name] / [Name] is replaced with each attendee's own name automatically</span></label>
+          <textarea id="et-certificate-message" rows="18" placeholder="Hi [First Name],&#10;&#10;Thank you for being a part of ElevateQA Tech Summit 2026.">Hi [First Name],
+
+Thank you for being a part of ElevateQA Tech Summit 2026.
+
+From bold conversations to practical insights and meaningful connections, your presence helped make the day a truly memorable one. Together, we explored what it takes to move toward AI-Led Quality Engineering — but not without seeing the Proof of Value first.
+
+We're grateful for the energy, participation, and perspectives you brought to the room. Thank you for your presence.
+
+We have exciting things planned under the ElevateQA banner, and we look forward to your participation every single time.
+
+Please follow <strong style="color:#ffffff;">SDET Tech</strong> and <a href="https://www.linkedin.com/company/elevate-qa/" target="_blank" rel="noopener" style="color:#d4ff3a;text-decoration:underline;font-weight:600;">ElevateQA</a> on LinkedIn to stay updated on the latest events and activities.
+
+Until we meet next time, keep learning and keep inspiring!
+
+Warm regards,
+Team ElevateQA</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-certificate-title">Certificate Title <span class="label-hint">Large heading printed on the certificate itself</span></label>
           <input type="text" id="et-certificate-title" placeholder="CERTIFICATE OF PARTICIPATION" value="CERTIFICATE OF PARTICIPATION">
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
-          <label for="et-certificate-body1">Participation Line <span class="label-hint">Each attendee's name is inserted automatically above this line — write only what follows it</span></label>
+          <label for="et-certificate-body1">Participation Line <span class="label-hint">Printed on the certificate, directly under the attendee's name (inserted automatically)</span></label>
           <textarea id="et-certificate-body1" rows="3" placeholder="has successfully participated in the Elevate QA Tech Summit 2026, held on 8th August 2026 at Crowne Plaza, Mayur Vihar, New Delhi.">has successfully participated in the Elevate QA Tech Summit 2026, held on 8th August 2026 at Crowne Plaza, Mayur Vihar, New Delhi.</textarea>
         </div>
         <div class="form-group" style="margin-bottom: 20px;">

@@ -40,7 +40,7 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients, templateType, certificateTitle, closingTitle } = JSON.parse(event.body);
+        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients, templateType, certificateTitle, closingTitle, participationLine } = JSON.parse(event.body);
         const mailAttachments = Array.isArray(attachments) ? attachments : [];
 
         if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
@@ -81,34 +81,94 @@ export const handler = async (event, context) => {
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        // The certificate is deliberately its own design (gold-framed, serif
-        // name, centered) rather than reusing getHtml's "EVENT UPDATE" card —
-        // it needs to visually read as a certificate, not a newsletter update.
-        const getCertificateHtml = (name, participationLine, certTitle, signOff) => `
-                <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-                    <div style="max-width: 640px; margin: 0 auto; background-color: #121217; border: 2px solid #d4ff3a; border-radius: 6px; padding: 6px;">
-                        <div style="border: 1px solid rgba(212, 255, 58, 0.35); border-radius: 3px; padding: 50px 40px; text-align: center;">
-                            <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="56" style="display:block;margin:0 auto 28px auto;border:0;pointer-events:none;" />
-                            <p style="color: #d4ff3a; margin: 0 0 10px 0; font-size: 12px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
-                                ${escapeHtml(certTitle || 'CERTIFICATE OF PARTICIPATION')}
-                            </p>
-                            <div style="width: 70px; height: 2px; background: #d4ff3a; margin: 0 auto 36px auto;"></div>
-                            <p style="color: #8e8e9a; font-size: 14px; margin: 0 0 14px 0;">This is to certify that</p>
-                            <p style="color: #ffffff; font-size: 32px; font-family: Georgia, 'Times New Roman', serif; font-weight: 700; margin: 0 0 22px 0; letter-spacing: 0.3px;">
-                                ${escapeHtml(name)}
-                            </p>
-                            <p style="color: #b5b5c0; font-size: 14px; line-height: 1.7; max-width: 460px; margin: 0 auto 40px auto;">
-                                ${withLineBreaks(escapeHtml(participationLine))}
-                            </p>
-                            <div style="width: 160px; height: 1px; background: #2a2a35; margin: 0 auto 14px auto;"></div>
-                            <p style="color: #d4ff3a; font-size: 13px; font-weight: 600; margin: 0;">
-                                ${escapeHtml(signOff || 'Team Elevate QA')}
-                            </p>
-                        </div>
-                    </div>
-                    <p style="color: #555565; font-size: 12px; text-align: center; margin: 24px 0 0 0;">
-                        &copy; 2026 SDET Technologies.
+        // The certificate card itself — a gold-framed, seal-and-ribbon design
+        // meant to read as an actual certificate rather than a newsletter
+        // update. Factored out so the exact same markup can be (a) embedded
+        // inline below the thank-you letter, and (b) shipped as a standalone
+        // downloadable .html attachment (getCertificateStandaloneDoc below) —
+        // one design, no risk of the two ever drifting apart.
+        const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => `
+            <div style="padding: 3px; border-radius: 18px; background: linear-gradient(135deg, #d4ff3a, #7a9c1a, #eaff80, #d4ff3a);">
+                <div style="background: #0d0d12; border-radius: 16px; padding: 56px 40px; text-align: center; position: relative;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 32% 30%, #f2ffb0, #a8d600); margin: 0 auto 24px auto; line-height: 64px; font-size: 28px; box-shadow: 0 10px 28px rgba(212, 255, 58, 0.35);">🏆</div>
+                    <p style="color: #7d7d8a; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 12px 0;">Elevate QA Tech Summit 2026</p>
+                    <p style="color: #d4ff3a; font-size: 27px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 32px 0;">
+                        &#10022;&nbsp; ${escapeHtml(certTitle || 'CERTIFICATE OF PARTICIPATION')} &nbsp;&#10022;
                     </p>
+                    <p style="color: #8e8e9a; font-size: 14px; margin: 0 0 14px 0;">This is to certify that</p>
+                    <p style="color: #ffffff; font-size: 36px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 10px 0;">
+                        ${escapeHtml(name)}
+                    </p>
+                    <div style="width: 210px; height: 1px; background: #d4ff3a; opacity: 0.4; margin: 0 auto 30px auto;"></div>
+                    <p style="color: #b5b5c0; font-size: 14px; line-height: 1.75; max-width: 440px; margin: 0 auto 44px auto;">
+                        ${withLineBreaks(escapeHtml(participation))}
+                    </p>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td width="50%" style="text-align: center;">
+                                <div style="width: 140px; height: 1px; background: #33333d; margin: 0 auto 10px auto;"></div>
+                                <p style="color: #d4ff3a; font-size: 12px; font-weight: 700; margin: 0;">${escapeHtml(signOff || 'Team Elevate QA')}</p>
+                                <p style="color: #5c5c68; font-size: 10px; letter-spacing: 0.5px; margin: 4px 0 0 0;">ORGANIZING COMMITTEE</p>
+                            </td>
+                            <td width="50%" style="text-align: center;">
+                                <div style="width: 140px; height: 1px; background: #33333d; margin: 0 auto 10px auto;"></div>
+                                <p style="color: #d4ff3a; font-size: 12px; font-weight: 700; margin: 0;">8 AUGUST 2026</p>
+                                <p style="color: #5c5c68; font-size: 10px; letter-spacing: 0.5px; margin: 4px 0 0 0;">CROWNE PLAZA, NEW DELHI</p>
+                            </td>
+                        </tr>
+                    </table>
+                    ${certId ? `<p style="color: #454550; font-size: 10px; letter-spacing: 1px; margin: 34px 0 0 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
+                </div>
+            </div>
+        `;
+
+        // A self-contained HTML document wrapping the same card — this is what
+        // gets attached to the email so the attendee can download/save/print
+        // the certificate independently of the message around it.
+        const getCertificateStandaloneDoc = (name, certTitle, participation, signOff, certId) => `<!doctype html>
+<html><head><meta charset="utf-8"><title>Certificate of Participation — ${escapeHtml(name)}</title></head>
+<body style="margin:0;background:#0b0b10;">
+<div style="background-color:#0b0b10;padding:40px 20px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+    <div style="max-width:640px;margin:0 auto;">
+        ${getCertificateCardHtml(name, certTitle, participation, signOff, certId)}
+    </div>
+</div>
+</body></html>`;
+
+        // Letter (thank-you message) + certificate card in one email — the
+        // certificate is deliberately its own gold-framed block below the
+        // letter rather than folded into getHtml's plain "EVENT UPDATE" card.
+        const getCertificateEmailHtml = (name, letterMessage, certTitle, participation, signOff, certId) => `
+                <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <div style="max-width: 640px; margin: 0 auto;">
+
+                        <div style="background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); margin-bottom: 28px;">
+                            <div style="background: linear-gradient(180deg, #101017 0%, #050508 100%); text-align: center; border-bottom: 1px solid #1a1a24;">
+                                <div style="height: 4px; background: linear-gradient(90deg, #a8ff1a, #d4ff3a, #eaff80); box-shadow: 0 2px 15px rgba(212, 255, 58, 0.4);"></div>
+                                <div style="padding: 40px 30px 32px 30px;">
+                                    <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="90" style="display:block;margin:0 auto 20px auto;border:0;pointer-events:none;" />
+                                    <div style="display: inline-block; padding: 6px 16px; background-color: rgba(212, 255, 58, 0.05); border: 1px solid rgba(212, 255, 58, 0.15); border-radius: 50px;">
+                                        <p style="color: #d4ff3a; margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">🏆 CERTIFICATE ENCLOSED</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 40px;">
+                                <div style="color: #ffffff; font-size: 16px; line-height: 1.7;">${withLineBreaks(letterMessage)}</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            ${getCertificateCardHtml(name, certTitle, participation, signOff, certId)}
+                        </div>
+
+                        <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
+                            📎 Your certificate is also attached to this email as a downloadable file — save it for your records.
+                        </p>
+                        <p style="color: #555565; font-size: 12px; text-align: center; margin: 0;">
+                            You are receiving this email because you are registered for Elevate QA 2026.<br><br>
+                            &copy; 2026 SDET Technologies.
+                        </p>
+                    </div>
                 </div>
         `;
 
@@ -178,8 +238,16 @@ export const handler = async (event, context) => {
             const name = (rawName && String(rawName).trim()) || deriveNameFromEmail(email);
             const id = typeof recipient === 'object' ? recipient.id : null;
 
-            // Replace placeholders
-            let finalMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, name || '');
+            // Replace [First Name]/{{first name}} with just the first token of
+            // the name, and [Name]/{{name}} with the full name. The plain
+            // "name" pattern requires only whitespace between the brackets and
+            // "name", so it never matches "[First Name]" — order between the
+            // two replaces doesn't matter for correctness, but running the
+            // "first name" one first keeps intent obvious.
+            const firstName = String(name || '').trim().split(/\s+/)[0] || '';
+            let finalMessage = message
+                .replace(/\{\{\s*first\s*name\s*\}\}|\[\s*first\s*name\s*\]/gi, firstName)
+                .replace(/\{\{\s*name\s*\}\}|\[\s*name\s*\]/gi, name || '');
 
             // Each attendee's QR encodes their own registration id — never
             // reuse one recipient's QR image for another, so this is
@@ -204,12 +272,25 @@ export const handler = async (event, context) => {
                 }
             }
 
+            // Certificate ID gives the download a bit of "official document"
+            // weight and, being derived from the registration id, doubles as
+            // a way to trace a downloaded certificate back to its recipient.
+            const certId = (templateType === 'certificate' && id) ? `EQ26-CERT-${String(id).split('-')[0].toUpperCase()}` : '';
+            if (templateType === 'certificate') {
+                const certDoc = getCertificateStandaloneDoc(name, certificateTitle, participationLine, closingTitle, certId);
+                const safeName = String(name || 'Certificate').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Certificate';
+                recipientAttachments = [
+                    ...mailAttachments,
+                    { filename: `ElevateQA-2026-Certificate-${safeName}.html`, content: Buffer.from(certDoc, 'utf-8'), contentType: 'text/html' }
+                ];
+            }
+
             const mailOptions = {
                 from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                 to: email,
                 subject: subject,
                 html: templateType === 'certificate'
-                    ? getCertificateHtml(name, finalMessage, certificateTitle, closingTitle)
+                    ? getCertificateEmailHtml(name, finalMessage, certificateTitle, participationLine, closingTitle, certId)
                     : getHtml(finalMessage),
                 attachments: recipientAttachments
             };
@@ -225,7 +306,9 @@ export const handler = async (event, context) => {
 
         // Send a single copy to CC and BCC if provided, so they aren't spammed
         if (ccList.length > 0 || extraBccList.length > 0) {
-            const ccMessage = message.replace(/\{\{\s*(?:first\s*)?name\s*\}\}|\[\s*(?:first\s*)?name\s*\]/gi, 'Team');
+            const ccMessage = message
+                .replace(/\{\{\s*first\s*name\s*\}\}|\[\s*first\s*name\s*\]/gi, 'Team')
+                .replace(/\{\{\s*name\s*\}\}|\[\s*name\s*\]/gi, 'Team');
             await transporter.sendMail({
                 from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                 to: process.env.EMAIL_USER, // Send to self
@@ -233,7 +316,7 @@ export const handler = async (event, context) => {
                 bcc: extraBccList,
                 subject: `[CC/BCC Copy] ${subject}`,
                 html: templateType === 'certificate'
-                    ? getCertificateHtml('Team', ccMessage, certificateTitle, closingTitle)
+                    ? getCertificateEmailHtml('Team', ccMessage, certificateTitle, participationLine, closingTitle, '')
                     : getHtml(ccMessage),
                 attachments: mailAttachments
             });

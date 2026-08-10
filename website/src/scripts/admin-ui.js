@@ -816,6 +816,7 @@ export function populateUI(data) {
 
   const cert = et.certificate || {};
   fillTpl('et-certificate-subject', cert.subject);
+  fillTpl('et-certificate-message', cert.message);
   fillTpl('et-certificate-title',   cert.title);
   fillTpl('et-certificate-body1',   cert.body1);
   fillTpl('et-certificate-closing', cert.closing);
@@ -922,6 +923,7 @@ window.saveEmailTemplates = async () => {
       },
       certificate: {
         subject: getVal('et-certificate-subject'),
+        message: getVal('et-certificate-message'),
         title:   getVal('et-certificate-title'),
         body1:   getVal('et-certificate-body1'),
         closing: getVal('et-certificate-closing'),
