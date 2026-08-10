@@ -92,15 +92,21 @@ export const handler = async (event, context) => {
         // a standalone downloadable .html attachment (getCertificateStandaloneDoc
         // below) — one design, no risk of the two ever drifting apart.
         const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => {
-            // Updated Certificate design using background image
+            // Static design (certificate.png, hosted from website/public/ — same
+            // place logo.png lives) with just the recipient's name overlaid in
+            // the blank line under "THIS CERTIFICATE IS PROUDLY PRESENTED TO".
+            // That blank gap sits at y≈495-615 of the 1054px-tall source image
+            // (measured directly against the file), i.e. vertically centered
+            // at ~52.5% — width is fixed at 640px (matches this email's own
+            // max-width) rather than 100%, so that calibration holds regardless
+            // of how a given email client would otherwise stretch the image.
             return `
             <div style="background-color:#0b0b10; padding:20px; text-align:center;">
-                <div style="position: relative; display: inline-block; text-align: center; max-width: 800px; width: 100%;">
-                    <!-- TODO: Yahan apni Certificate Image ka actual URL daalna hoga! -->
-                    <img src="https://elevateqa.sdettech.com/certificate.jpg" style="width: 100%; height: auto; display: block;" alt="Certificate" />
+                <div style="position: relative; display: inline-block; text-align: center;">
+                    <img src="https://elevateqa.sdettech.com/certificate.png" width="640" style="width: 640px; max-width: 100%; height: auto; display: block;" alt="Certificate of Participation" />
 
                     <!-- Name Overlay -->
-                    <div style="position: absolute; top: 52%; left: 0; right: 0; text-align: center; font-size: 32px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; margin: 0 auto; width: 100%;">
+                    <div style="position: absolute; top: 52.5%; left: 0; right: 0; transform: translateY(-50%); text-align: center; font-size: 28px; font-weight: bold; font-family: 'Georgia', 'Times New Roman', serif; color: #E7C979;">
                         ${escapeHtml(name)}
                     </div>
                 </div>
