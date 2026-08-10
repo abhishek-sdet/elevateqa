@@ -81,16 +81,15 @@ export const handler = async (event, context) => {
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        // The certificate card itself — a black-and-gold "official document"
-        // design (double-line frame, corner ornaments, monogram medallion,
-        // two-tier heading) rather than a flat single-border card with a raw
-        // emoji seal, which read as a colorful sticker instead of a seal and
-        // clashed with the rest of the design. Deliberately its own gold
-        // palette, separate from the brand-lime letter card above it — real
-        // certificates read as formal documents regardless of a brand's
-        // marketing color. Factored out so the exact same markup can be (a)
-        // embedded inline below the thank-you letter, and (b) shipped as a
-        // standalone downloadable .html attachment (getCertificateStandaloneDoc
+        // The certificate card — brand-green foil frame (never gold: this is
+        // Elevate QA's signature #d4ff3a, not a generic "certificate" color),
+        // the actual Elevate QA wordmark as the letterhead (a real <img>, not
+        // a text monogram standing in for it), and laurel branches flanking
+        // "CERTIFICATE" — the one motif that reads as "certificate" on sight.
+        // A faint diagonal hairline texture + outer glow keep it from reading
+        // as a flat HTML box. Factored out so the exact same markup can be
+        // (a) embedded inline below the thank-you letter, and (b) shipped as
+        // a standalone downloadable .html attachment (getCertificateStandaloneDoc
         // below) — one design, no risk of the two ever drifting apart.
         const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => {
             const titleWords = String(certTitle || 'CERTIFICATE OF PARTICIPATION').trim().split(/\s+/);
@@ -100,54 +99,81 @@ export const handler = async (event, context) => {
             // the heading and under the name — built from inline-block spans
             // (not flex/table) so it survives Outlook's limited CSS support.
             const ornamentRule = (width) => `
-                <span style="display:inline-block; width:${width}px; height:1px; background:#c9a227; vertical-align:middle;"></span>
-                <span style="display:inline-block; margin:0 10px; color:#c9a227; font-size:10px; vertical-align:middle;">&#9670;</span>
-                <span style="display:inline-block; width:${width}px; height:1px; background:#c9a227; vertical-align:middle;"></span>
+                <span style="display:inline-block; width:${width}px; height:1px; background:#8fae1a; vertical-align:middle;"></span>
+                <span style="display:inline-block; margin:0 10px; color:#d4ff3a; font-size:10px; vertical-align:middle;">&#9670;</span>
+                <span style="display:inline-block; width:${width}px; height:1px; background:#8fae1a; vertical-align:middle;"></span>
             `;
+            // A stylised laurel branch — six leaves shrinking toward the tip —
+            // mirrored via CSS transform for the opposite side, so only one
+            // shape has to be hand-tuned. Purely decorative: if an email
+            // client strips inline SVG the heading still reads fine without it.
+            const laurelBranch = `<svg width="52" height="82" viewBox="0 0 52 82" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 80 C 20 58, 28 40, 44 6" stroke="#5f7d1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <ellipse cx="22" cy="70" rx="7.5" ry="3.4" transform="rotate(-25 22 70)" fill="#d4ff3a"/>
+                <ellipse cx="20" cy="56" rx="7.5" ry="3.4" transform="rotate(-8 20 56)" fill="#8fae1a"/>
+                <ellipse cx="25" cy="43" rx="7" ry="3.2" transform="rotate(-32 25 43)" fill="#d4ff3a"/>
+                <ellipse cx="32" cy="30" rx="6.5" ry="3" transform="rotate(-15 32 30)" fill="#8fae1a"/>
+                <ellipse cx="38" cy="18" rx="6" ry="2.8" transform="rotate(-36 38 18)" fill="#d4ff3a"/>
+                <ellipse cx="43" cy="8" rx="5" ry="2.4" transform="rotate(-18 43 8)" fill="#8fae1a"/>
+            </svg>`;
             return `
-            <div style="background:#c9a227; background: linear-gradient(135deg, #f6e2a8, #c9a227, #8b6e1f, #c9a227, #f6e2a8); padding: 3px; border-radius: 10px;">
-                <div style="background:#0b0b0f; border-radius: 8px; padding: 2px; box-shadow: inset 0 0 0 1px rgba(201,162,39,0.35);">
-                    <div style="border: 1px solid rgba(201,162,39,0.25); border-radius: 6px; padding: 56px 44px; text-align: center; position: relative; background: radial-gradient(ellipse at center, #14141b 0%, #0b0b0f 78%);">
+            <div style="background:#8fae1a; background: linear-gradient(135deg, #eaff80, #a8d600, #4d6b0f, #a8d600, #eaff80); padding: 3px; border-radius: 10px; box-shadow: 0 25px 70px rgba(212,255,58,0.14), 0 8px 24px rgba(0,0,0,0.6);">
+                <div style="background:#0b0b0f; border-radius: 8px; padding: 2px; box-shadow: inset 0 0 0 1px rgba(212,255,58,0.35);">
+                    <div style="border: 1px solid rgba(212,255,58,0.22); border-radius: 6px; padding: 50px 44px 44px 44px; text-align: center; position: relative; overflow: hidden; background: radial-gradient(ellipse at center, #14141b 0%, #0b0b0f 78%);">
 
-                        <div style="position:absolute; top:14px; left:14px; width:16px; height:16px; border-top:2px solid #c9a227; border-left:2px solid #c9a227;"></div>
-                        <div style="position:absolute; top:14px; right:14px; width:16px; height:16px; border-top:2px solid #c9a227; border-right:2px solid #c9a227;"></div>
-                        <div style="position:absolute; bottom:14px; left:14px; width:16px; height:16px; border-bottom:2px solid #c9a227; border-left:2px solid #c9a227;"></div>
-                        <div style="position:absolute; bottom:14px; right:14px; width:16px; height:16px; border-bottom:2px solid #c9a227; border-right:2px solid #c9a227;"></div>
+                        <div style="position:absolute; inset: 0; background-image: repeating-linear-gradient(45deg, rgba(212,255,58,0.025) 0px, rgba(212,255,58,0.025) 1px, transparent 1px, transparent 13px); pointer-events:none;"></div>
 
-                        <div style="width:72px; height:72px; line-height:72px; border-radius:50%; border:2px solid #c9a227; box-shadow: 0 0 0 5px #0b0b0f, 0 0 0 7px rgba(201,162,39,0.5); margin:0 auto 26px auto; font-family: Georgia, 'Times New Roman', serif; font-size:24px; font-weight:700; color:#d4af37; letter-spacing:1px;">EQ</div>
+                        <div style="position:absolute; top:14px; left:14px; width:16px; height:16px; border-top:2px solid #8fae1a; border-left:2px solid #8fae1a;"></div>
+                        <div style="position:absolute; top:14px; right:14px; width:16px; height:16px; border-top:2px solid #8fae1a; border-right:2px solid #8fae1a;"></div>
+                        <div style="position:absolute; bottom:14px; left:14px; width:16px; height:16px; border-bottom:2px solid #8fae1a; border-left:2px solid #8fae1a;"></div>
+                        <div style="position:absolute; bottom:14px; right:14px; width:16px; height:16px; border-bottom:2px solid #8fae1a; border-right:2px solid #8fae1a;"></div>
 
-                        <p style="color: #8a8a95; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 22px 0;">Elevate QA Tech Summit 2026</p>
+                        <div style="position:relative;">
+                            <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA" height="64" style="display:block; margin:0 auto 20px auto; border:0;" />
 
-                        <p style="color: #ece6d4; font-size: 32px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 6px 0;">${escapeHtml(titleMain)}</p>
-                        ${titleSub ? `<p style="color: #d4af37; font-size: 13px; font-weight: 700; letter-spacing: 6px; text-transform: uppercase; margin: 0 0 26px 0;">${escapeHtml(titleSub)}</p>` : ''}
+                            <div style="display:inline-block; padding:5px 18px; border:1px solid rgba(212,255,58,0.3); border-radius:100px; margin:0 0 30px 0;">
+                                <p style="color:#d4ff3a; font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:0;">2026 Edition &middot; Crowne Plaza, New Delhi</p>
+                            </div>
 
-                        <div style="margin: 0 0 26px 0;">${ornamentRule(50)}</div>
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                                <tr>
+                                    <td style="padding:0 12px; vertical-align:middle;">${laurelBranch}</td>
+                                    <td style="vertical-align:middle;">
+                                        <p style="color:#f5f7ee; font-size:34px; font-weight:700; letter-spacing:3px; text-transform:uppercase; font-family: Georgia, 'Times New Roman', serif; margin:0; white-space:nowrap;">${escapeHtml(titleMain)}</p>
+                                    </td>
+                                    <td style="padding:0 12px; vertical-align:middle; transform:scaleX(-1);">${laurelBranch}</td>
+                                </tr>
+                            </table>
+                            ${titleSub ? `<p style="color: #d4ff3a; font-size: 13px; font-weight: 700; letter-spacing: 6px; text-transform: uppercase; margin: 6px 0 28px 0;">${escapeHtml(titleSub)}</p>` : ''}
 
-                        <p style="color: #8e8e9a; font-size: 14px; font-style: italic; margin: 0 0 16px 0;">This is to certify that</p>
-                        <p style="color: #f3ecd9; font-size: 36px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 16px 0;">
-                            ${escapeHtml(name)}
-                        </p>
-                        <div style="margin: 0 0 32px 0;">${ornamentRule(30)}</div>
+                            <div style="margin: 0 0 26px 0;">${ornamentRule(50)}</div>
 
-                        <p style="color: #a9a9b4; font-size: 14px; line-height: 1.75; max-width: 440px; margin: 0 auto 46px auto;">
-                            ${withLineBreaks(escapeHtml(participation))}
-                        </p>
+                            <p style="color: #9a9aa4; font-size: 14px; font-style: italic; margin: 0 0 16px 0;">This is to certify that</p>
+                            <p style="color: #ffffff; font-size: 36px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; margin: 0 0 16px 0;">
+                                ${escapeHtml(name)}
+                            </p>
+                            <div style="margin: 0 0 32px 0;">${ornamentRule(30)}</div>
 
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="50%" style="text-align: center;">
-                                    <p style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; color: #ece6d4; margin: 0 0 8px 0;">${escapeHtml(signOff || 'Team Elevate QA')}</p>
-                                    <div style="width: 150px; height: 1px; background: rgba(201,162,39,0.5); margin: 0 auto 8px auto;"></div>
-                                    <p style="color: #c9a227; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Organizing Committee</p>
-                                </td>
-                                <td width="50%" style="text-align: center;">
-                                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #ece6d4; margin: 0 0 8px 0;">8 Aug 2026</p>
-                                    <div style="width: 150px; height: 1px; background: rgba(201,162,39,0.5); margin: 0 auto 8px auto;"></div>
-                                    <p style="color: #c9a227; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Crowne Plaza, New Delhi</p>
-                                </td>
-                            </tr>
-                        </table>
-                        ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin: 34px 0 0 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
+                            <p style="color: #b0b0ba; font-size: 14px; line-height: 1.75; max-width: 440px; margin: 0 auto 46px auto;">
+                                ${withLineBreaks(escapeHtml(participation))}
+                            </p>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="50%" style="text-align: center;">
+                                        <p style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; color: #f5f7ee; margin: 0 0 8px 0;">${escapeHtml(signOff || 'Team Elevate QA')}</p>
+                                        <div style="width: 150px; height: 1px; background: rgba(212,255,58,0.4); margin: 0 auto 8px auto;"></div>
+                                        <p style="color: #d4ff3a; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Organizing Committee</p>
+                                    </td>
+                                    <td width="50%" style="text-align: center;">
+                                        <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #f5f7ee; margin: 0 0 8px 0;">8 Aug 2026</p>
+                                        <div style="width: 150px; height: 1px; background: rgba(212,255,58,0.4); margin: 0 auto 8px auto;"></div>
+                                        <p style="color: #d4ff3a; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Crowne Plaza, New Delhi</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin: 34px 0 0 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
