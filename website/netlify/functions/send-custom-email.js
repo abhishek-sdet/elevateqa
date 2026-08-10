@@ -2,6 +2,9 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Names/free text come from admin-authored fields and attendee records, not
 // trusted HTML/XML — escape before dropping them into any markup so a stray
@@ -9,6 +12,35 @@ import sharp from 'sharp';
 const escapeHtml = (str) => String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+// Netlify's Linux function runtime ships with NO fonts installed at all —
+// without this, librsvg (which sharp uses to rasterize the <text> overlay
+// in generateCertificatePng below) silently draws an empty "missing glyph"
+// box per character instead of the recipient's name, since it has no font
+// to render ANY text with. Point fontconfig at a bundled TTF (see
+// netlify.toml's included_files) instead of relying on the OS having one.
+// fontconfig only reads its config once per process, so this has to happen
+// at module load — before the first composite() call — and needs a
+// writable directory, which in a Lambda-style runtime is only /tmp.
+const CERT_FONT_FAMILY = 'PT Serif';
+try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const bundledFontPath = path.join(__dirname, 'fonts', 'PTSerif-Bold.ttf');
+    const fontDir = '/tmp/elevateqa-fonts';
+    if (!fs.existsSync(fontDir)) fs.mkdirSync(fontDir, { recursive: true });
+    const runtimeFontPath = path.join(fontDir, 'PTSerif-Bold.ttf');
+    if (!fs.existsSync(runtimeFontPath)) fs.copyFileSync(bundledFontPath, runtimeFontPath);
+    const fontsConf = `<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+    <dir>${fontDir}</dir>
+    <cachedir>/tmp/elevateqa-fontconfig-cache</cachedir>
+</fontconfig>`;
+    fs.writeFileSync(path.join(fontDir, 'fonts.conf'), fontsConf);
+    process.env.FONTCONFIG_PATH = fontDir;
+} catch (err) {
+    console.error('[CUSTOM EMAIL] Failed to set up bundled font for certificate rendering:', err.message);
+}
 
 // Cached across warm invocations of this function so a batch of recipients
 // doesn't re-fetch the same base image over and over.
@@ -52,7 +84,7 @@ async function generateCertificatePng(name) {
     }
     const baselineY = 555 + Math.round(fontSize * 0.35);
     const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
-        <text x="${W / 2}" y="${baselineY}" text-anchor="middle" font-family="Georgia, 'Times New Roman', 'Liberation Serif', serif" font-weight="bold" font-size="${fontSize}" fill="#E7C979">${escapeHtml(safeName)}</text>
+        <text x="${W / 2}" y="${baselineY}" text-anchor="middle" font-family="${CERT_FONT_FAMILY}" font-weight="bold" font-size="${fontSize}" fill="#E7C979">${escapeHtml(safeName)}</text>
     </svg>`;
     return sharp(baseBuffer)
         .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])

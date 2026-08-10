@@ -2,6 +2,13 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[functions]
+  # send-custom-email.js bundles a font (fonts/PTSerif-Bold.ttf) to render the
+  # certificate name — Netlify's Linux function runtime has NO fonts
+  # installed at all, so without an explicit font file, sharp's SVG text
+  # renders as empty "missing glyph" boxes instead of the recipient's name.
+  included_files = ["netlify/functions/fonts/**"]
+
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
