@@ -138,38 +138,41 @@ export const handler = async (event, context) => {
         const withLineBreaks = (msgContent) => String(msgContent || '').replace(/\n/g, '<br>');
 
         const getCertificateEmailHtml = (letterMessage, certId) => `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-</head>
-<body style="margin: 0; padding: 0; background-color: #0b0b10; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-    <div style="background-color: #0b0b10; padding: 40px 20px;">
-        <div style="max-width: 640px; margin: 0 auto;">
-            <!-- Message Block -->
-            <div style="margin-bottom: 40px; text-align: left;">
-                <div style="color: #ffffff; font-size: 16px; line-height: 1.7;">${withLineBreaks(letterMessage)}</div>
-            </div>
+                <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <div style="max-width: 640px; margin: 0 auto;">
 
-            <!-- Certificate Block using generated PNG -->
-            <div style="margin-bottom: 12px; text-align: center;">
-                <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
-            </div>
-            
-            ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
-            
-            <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
-                📎 Your certificate is also attached to this email as a downloadable image — save it for your records.
-            </p>
-            <p style="color: #555565; font-size: 12px; text-align: center; margin: 0;">
-                You are receiving this email because you are registered for Elevate QA 2026.<br><br>
-                &copy; 2026 SDET Technologies.
-            </p>
-        </div>
-    </div>
-</body>
-</html>
-`;
+                        <div style="background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); margin-bottom: 28px;">
+                            <div style="background: linear-gradient(180deg, #101017 0%, #050508 100%); text-align: center; border-bottom: 1px solid #1a1a24;">
+                                <div style="height: 4px; background: linear-gradient(90deg, #a8ff1a, #d4ff3a, #eaff80); box-shadow: 0 2px 15px rgba(212, 255, 58, 0.4);"></div>
+                                <div style="padding: 40px 30px 32px 30px;">
+                                    <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="90" style="display:block;margin:0 auto 20px auto;border:0;pointer-events:none;" />
+                                    <div style="display: inline-block; padding: 6px 16px; background-color: rgba(212, 255, 58, 0.05); border: 1px solid rgba(212, 255, 58, 0.15); border-radius: 50px;">
+                                        <p style="color: #d4ff3a; margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">🏆 CERTIFICATE ENCLOSED</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 40px;">
+                                <div style="color: #ffffff; font-size: 16px; line-height: 1.7;">${withLineBreaks(letterMessage)}</div>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Block using generated PNG -->
+                        <div style="margin-bottom: 12px; text-align: center;">
+                            <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
+                        </div>
+                        
+                        ${certId ? \`<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: \${escapeHtml(certId)}</p>\` : ''}
+                        
+                        <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
+                            📎 Your certificate is also attached to this email as a downloadable image — save it for your records.
+                        </p>
+                        <p style="color: #555565; font-size: 12px; text-align: center; margin: 0;">
+                            You are receiving this email because you are registered for Elevate QA 2026.<br><br>
+                            &copy; 2026 SDET Technologies.
+                        </p>
+                    </div>
+                </div>
+        `;
 
         const getHtml = (msgContent) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
