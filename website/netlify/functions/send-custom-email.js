@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
+import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
@@ -11,6 +12,33 @@ const escapeHtml = (str) => String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+const CERT_FONT_FAMILY = 'PT Serif';
+let fontSetupPromise = null;
+function ensureFontSetup() {
+    if (!fontSetupPromise) {
+        fontSetupPromise = (async () => {
+            try {
+                const { CERT_FONT_BASE64 } = await import('./cert-font-data.js');
+                const fontDir = '/tmp/elevateqa-fonts';
+                if (!fs.existsSync(fontDir)) fs.mkdirSync(fontDir, { recursive: true });
+                const runtimeFontPath = path.join(fontDir, 'PTSerif-Bold.ttf');
+                if (!fs.existsSync(runtimeFontPath)) fs.writeFileSync(runtimeFontPath, Buffer.from(CERT_FONT_BASE64, 'base64'));
+                const fontsConf = `<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+    <dir>${fontDir}</dir>
+    <cachedir>/tmp/elevateqa-fontconfig-cache</cachedir>
+</fontconfig>`;
+                fs.writeFileSync(path.join(fontDir, 'fonts.conf'), fontsConf);
+                process.env.FONTCONFIG_PATH = fontDir;
+            } catch (err) {
+                console.error('[CUSTOM EMAIL] Failed to set up bundled font for certificate rendering:', err.message);
+            }
+        })();
+    }
+    return fontSetupPromise;
+}
+
 // Decoded once per warm invocation and reused
 let certificateBaseImageBuffer = null;
 async function getCertificateBaseImage() {
@@ -19,6 +47,31 @@ async function getCertificateBaseImage() {
         certificateBaseImageBuffer = Buffer.from(CERT_IMAGE_BASE64, 'base64');
     }
     return certificateBaseImageBuffer;
+}
+
+async function generateCertificatePng(name) {
+    await ensureFontSetup();
+    const baseBuffer = await getCertificateBaseImage();
+    const W = 1492, H = 1054;
+    // Blank gap sits at y≈495-615 of this 1054px-tall image (measured
+    // directly against the file) — vertical center ≈555. Font shrinks for
+    // long names (with a floor) so it never overflows the certificate's
+    // gold border.
+    const safeName = String(name || '').trim() || 'Attendee';
+    let fontSize = 70;
+    const estWidth = safeName.length * fontSize * 0.55;
+    const maxTextWidth = 1200;
+    if (estWidth > maxTextWidth) {
+        fontSize = Math.max(32, Math.floor(maxTextWidth / (safeName.length * 0.55)));
+    }
+    const baselineY = 555 + Math.round(fontSize * 0.35);
+    const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+        <text x="${W / 2}" y="${baselineY}" text-anchor="middle" font-family="${CERT_FONT_FAMILY}" font-weight="bold" font-size="${fontSize}" fill="#E7C979">${escapeHtml(safeName)}</text>
+    </svg>`;
+    return sharp(baseBuffer)
+        .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+        .png()
+        .toBuffer();
 }
 
 // See verify-otp.js's mintAdminToken — this endpoint sends arbitrary
@@ -74,11 +127,6 @@ export const handler = async (event, context) => {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
             },
-            // Reuse one connection across the whole batch instead of a fresh
-            // TCP+TLS handshake per email — with several recipients per
-            // invocation and a per-email pacing delay already in place, the
-            // extra handshake time was pushing close to Netlify's function
-            // execution limit.
             pool: true,
             maxConnections: 1,
             tls: { ciphers: 'SSLv3' }
@@ -87,59 +135,41 @@ export const handler = async (event, context) => {
         const extraBccList = Array.isArray(bccEmails) ? bccEmails : [];
         const ccList = Array.isArray(ccEmails) ? ccEmails : [];
 
-        // Admins type plain text with blank lines between paragraphs (the UI
-        // says "HTML is supported for bold, links, etc." but doesn't require
-        // it), and HTML collapses bare newlines/whitespace — so without this,
-        // every paragraph break the admin typed disappears in the sent email.
         const withLineBreaks = (msgContent) => String(msgContent || '').replace(/\n/g, '<br>');
 
-        // Letter (thank-you message) + the certificate image (already baked
-        // per-recipient by generateCertificatePng, referenced here purely via
-        // cid — no CSS positioning of any kind, so no client-specific
-        // rendering quirks are possible).
-        const getCertificateEmailHtml = (letterMessage, certId, name) => `
-                <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-                    <div style="max-width: 640px; margin: 0 auto;">
+        const getCertificateEmailHtml = (letterMessage, certId) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0b10; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    <div style="background-color: #0b0b10; padding: 40px 20px;">
+        <div style="max-width: 640px; margin: 0 auto;">
+            <!-- Message Block -->
+            <div style="margin-bottom: 40px; text-align: left;">
+                <div style="color: #ffffff; font-size: 16px; line-height: 1.7;">${withLineBreaks(letterMessage)}</div>
+            </div>
 
-                        <div style="background-color: #121217; border-radius: 12px; border: 1px solid #2a2a35; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); margin-bottom: 28px;">
-                            <div style="background: linear-gradient(180deg, #101017 0%, #050508 100%); text-align: center; border-bottom: 1px solid #1a1a24;">
-                                <div style="height: 4px; background: linear-gradient(90deg, #a8ff1a, #d4ff3a, #eaff80); box-shadow: 0 2px 15px rgba(212, 255, 58, 0.4);"></div>
-                                <div style="padding: 40px 30px 32px 30px;">
-                                    <img src="https://elevateqa.sdettech.com/logo.png" alt="Elevate QA Logo" height="90" style="display:block;margin:0 auto 20px auto;border:0;pointer-events:none;" />
-                                    <div style="display: inline-block; padding: 6px 16px; background-color: rgba(212, 255, 58, 0.05); border: 1px solid rgba(212, 255, 58, 0.15); border-radius: 50px;">
-                                        <p style="color: #d4ff3a; margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">🏆 CERTIFICATE ENCLOSED</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="padding: 40px;">
-                                <div style="color: #ffffff; font-size: 16px; line-height: 1.7;">${withLineBreaks(letterMessage)}</div>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 12px; text-align: center;">
-                            <table width="640" height="452" border="0" cellpadding="0" cellspacing="0" align="center" background="cid:certificate@elevateqa" style="background-image: url('cid:certificate@elevateqa'); background-size: cover; background-repeat: no-repeat; margin: 0 auto; max-width: 640px; width: 100%;">
-                                <tr>
-                                    <td height="220" style="height: 220px; border: none;"></td>
-                                </tr>
-                                <tr>
-                                    <td align="center" valign="top" style="text-align: center; font-size: 28px; font-weight: bold; font-family: 'Georgia', serif; color: #E7C979; height: 232px; border: none; padding-top: 15px;">
-                                        ${escapeHtml(name)}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
-
-                        <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
-                            📎 Your certificate is also attached to this email as a downloadable image — save it for your records.
-                        </p>
-                        <p style="color: #555565; font-size: 12px; text-align: center; margin: 0;">
-                            You are receiving this email because you are registered for Elevate QA 2026.<br><br>
-                            &copy; 2026 SDET Technologies.
-                        </p>
-                    </div>
-                </div>
-        `;
+            <!-- Certificate Block using generated PNG -->
+            <div style="margin-bottom: 12px; text-align: center;">
+                <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
+            </div>
+            
+            ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
+            
+            <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
+                📎 Your certificate is also attached to this email as a downloadable image — save it for your records.
+            </p>
+            <p style="color: #555565; font-size: 12px; text-align: center; margin: 0;">
+                You are receiving this email because you are registered for Elevate QA 2026.<br><br>
+                &copy; 2026 SDET Technologies.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+`;
 
         const getHtml = (msgContent) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
@@ -249,7 +279,7 @@ export const handler = async (event, context) => {
             const certId = (templateType === 'certificate' && id) ? `EQ26-CERT-${String(id).split('-')[0].toUpperCase()}` : '';
             if (templateType === 'certificate') {
                 try {
-                    const certPng = await getCertificateBaseImage();
+                    const certPng = await generateCertificatePng(name);
                     const safeName = String(name || 'Certificate').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Certificate';
                     recipientAttachments = [
                         ...mailAttachments,
@@ -270,7 +300,7 @@ export const handler = async (event, context) => {
                 to: email,
                 subject: subject,
                 html: templateType === 'certificate'
-                    ? getCertificateEmailHtml(finalMessage, certId, name)
+                    ? getCertificateEmailHtml(finalMessage, certId)
                     : getHtml(finalMessage),
                 attachments: recipientAttachments
             };
@@ -294,9 +324,9 @@ export const handler = async (event, context) => {
             let ccHtml = getHtml(ccMessage);
             if (templateType === 'certificate') {
                 try {
-                    const certPng = await getCertificateBaseImage();
+                    const certPng = await generateCertificatePng('Team');
                     ccAttachments = [...mailAttachments, { filename: 'certificate.png', content: certPng, cid: 'certificate@elevateqa' }];
-                    ccHtml = getCertificateEmailHtml(ccMessage, '', 'Team');
+                    ccHtml = getCertificateEmailHtml(ccMessage, '');
                 } catch (err) {
                     console.error('[CUSTOM EMAIL] Certificate generation failed for CC/BCC copy', err.message);
                 }
