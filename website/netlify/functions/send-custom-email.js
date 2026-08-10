@@ -4,8 +4,6 @@ import QRCode from 'qrcode';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
-import { CERT_FONT_BASE64 } from './cert-font-data.mjs';
-import { CERT_IMAGE_BASE64 } from './cert-image-data.mjs';
 
 // Names/free text come from admin-authored fields and attendee records, not
 // trusted HTML/XML — escape before dropping them into any markup so a stray
@@ -33,24 +31,43 @@ const escapeHtml = (str) => String(str || '')
 // uses it, with nothing left for a bundler layout quirk to break.
 //
 // fontconfig only reads its config once per process, so this has to happen
-// at module load — before the first composite() call — and needs a
-// writable directory, which in a Lambda-style runtime is only /tmp.
+// before the first composite() call — and needs a writable directory, which
+// in a Lambda-style runtime is only /tmp.
+//
+// cert-font-data.mjs/cert-image-data.mjs are real ES modules, and Netlify's
+// function bundler compiles this file to CommonJS but leaves same-directory
+// .mjs imports un-inlined, emitting a require() call for them — which Node
+// rejects with ERR_REQUIRE_ESM since require() can't load an ES module
+// synchronously. A static top-level `import` hit this on every invocation
+// (including OPTIONS preflights), crashing the function before it could
+// even send CORS headers. Dynamic import() is exactly what Node's own error
+// points at: it works from CommonJS and can load a real ESM module, just
+// asynchronously — so the loads move inside these lazily-memoized helpers.
 const CERT_FONT_FAMILY = 'PT Serif';
-try {
-    const fontDir = '/tmp/elevateqa-fonts';
-    if (!fs.existsSync(fontDir)) fs.mkdirSync(fontDir, { recursive: true });
-    const runtimeFontPath = path.join(fontDir, 'PTSerif-Bold.ttf');
-    if (!fs.existsSync(runtimeFontPath)) fs.writeFileSync(runtimeFontPath, Buffer.from(CERT_FONT_BASE64, 'base64'));
-    const fontsConf = `<?xml version="1.0"?>
+let fontSetupPromise = null;
+function ensureFontSetup() {
+    if (!fontSetupPromise) {
+        fontSetupPromise = (async () => {
+            try {
+                const { CERT_FONT_BASE64 } = await import('./cert-font-data.mjs');
+                const fontDir = '/tmp/elevateqa-fonts';
+                if (!fs.existsSync(fontDir)) fs.mkdirSync(fontDir, { recursive: true });
+                const runtimeFontPath = path.join(fontDir, 'PTSerif-Bold.ttf');
+                if (!fs.existsSync(runtimeFontPath)) fs.writeFileSync(runtimeFontPath, Buffer.from(CERT_FONT_BASE64, 'base64'));
+                const fontsConf = `<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
     <dir>${fontDir}</dir>
     <cachedir>/tmp/elevateqa-fontconfig-cache</cachedir>
 </fontconfig>`;
-    fs.writeFileSync(path.join(fontDir, 'fonts.conf'), fontsConf);
-    process.env.FONTCONFIG_PATH = fontDir;
-} catch (err) {
-    console.error('[CUSTOM EMAIL] Failed to set up bundled font for certificate rendering:', err.message);
+                fs.writeFileSync(path.join(fontDir, 'fonts.conf'), fontsConf);
+                process.env.FONTCONFIG_PATH = fontDir;
+            } catch (err) {
+                console.error('[CUSTOM EMAIL] Failed to set up bundled font for certificate rendering:', err.message);
+            }
+        })();
+    }
+    return fontSetupPromise;
 }
 
 // Decoded once per warm invocation and reused — no network fetch involved
@@ -59,8 +76,9 @@ try {
 // and is the leading suspect for certificate sends 502'ing in production
 // while every other template type kept working).
 let certificateBaseImageBuffer = null;
-function getCertificateBaseImage() {
+async function getCertificateBaseImage() {
     if (!certificateBaseImageBuffer) {
+        const { CERT_IMAGE_BASE64 } = await import('./cert-image-data.mjs');
         certificateBaseImageBuffer = Buffer.from(CERT_IMAGE_BASE64, 'base64');
     }
     return certificateBaseImageBuffer;
@@ -77,6 +95,7 @@ function getCertificateBaseImage() {
 // just displays one finished, flat image via a plain <img> — nothing to
 // mis-position.
 async function generateCertificatePng(name) {
+    await ensureFontSetup();
     const baseBuffer = await getCertificateBaseImage();
     const W = 1492, H = 1054;
     // Blank gap sits at y≈495-615 of this 1054px-tall image (measured
