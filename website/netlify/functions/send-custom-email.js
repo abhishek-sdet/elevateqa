@@ -93,23 +93,40 @@ export const handler = async (event, context) => {
         // below) — one design, no risk of the two ever drifting apart.
         const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => {
             // Static design (certificate.png, hosted from website/public/ — same
-            // place logo.png lives) with just the recipient's name overlaid in
-            // the blank line under "THIS CERTIFICATE IS PROUDLY PRESENTED TO".
-            // That blank gap sits at y≈495-615 of the 1054px-tall source image
-            // (measured directly against the file), i.e. vertically centered
-            // at ~52.5% — width is fixed at 640px (matches this email's own
-            // max-width) rather than 100%, so that calibration holds regardless
-            // of how a given email client would otherwise stretch the image.
+            // place logo.png lives) with the recipient's name overlaid in the
+            // blank line under "THIS CERTIFICATE IS PROUDLY PRESENTED TO".
+            //
+            // Deliberately NOT position:absolute + transform — that renders
+            // perfectly in a real browser (which is all a local preview ever
+            // tests), but Gmail and Outlook both strip `position` and
+            // `transform` from inline styles when sanitizing HTML email, so
+            // the overlay silently vanished in actual inboxes even though
+            // every local/headless-browser check looked correct. Using a
+            // table cell's background image + a spacer row to push the name
+            // down to the right offset is the standard "bulletproof
+            // background image" email pattern — normal document flow only,
+            // nothing that a sanitizer strips.
+            //
+            // Gap sits at y≈495-615 of the 1054px-tall source image (measured
+            // directly against the file). At a fixed 640px display width
+            // (scale 640/1492 = 0.429), that's y≈212-264px — so a 223px
+            // spacer centers a ~30px name line in that gap.
             return `
             <div style="background-color:#0b0b10; padding:20px; text-align:center;">
-                <div style="position: relative; display: inline-block; text-align: center;">
-                    <img src="https://elevateqa.sdettech.com/certificate.png" width="640" style="width: 640px; max-width: 100%; height: auto; display: block;" alt="Certificate of Participation" />
-
-                    <!-- Name Overlay -->
-                    <div style="position: absolute; top: 52.5%; left: 0; right: 0; transform: translateY(-50%); text-align: center; font-size: 28px; font-weight: bold; font-family: 'Georgia', 'Times New Roman', serif; color: #E7C979;">
-                        ${escapeHtml(name)}
-                    </div>
-                </div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="width:640px; margin:0 auto;">
+                    <tr>
+                        <td width="640" height="452" valign="top" background="https://elevateqa.sdettech.com/certificate.png" bgcolor="#0b0b10" style="background-image:url('https://elevateqa.sdettech.com/certificate.png'); background-repeat:no-repeat; background-position:top center; background-size:640px 452px; width:640px; height:452px; vertical-align:top;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr><td height="223" style="height:223px; line-height:223px; font-size:1px;">&nbsp;</td></tr>
+                                <tr>
+                                    <td align="center" style="font-size:26px; line-height:30px; font-weight:bold; font-family:'Georgia','Times New Roman',serif; color:#E7C979;">
+                                        ${escapeHtml(name)}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
                 ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin-top: 15px;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
             </div>
             `;
