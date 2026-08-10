@@ -619,18 +619,13 @@ async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, i
   };
   const subject = getVal(`et-${templateKey}-subject`);
   // The certificate template's "message" is the letter shown above the
-  // certificate (send-custom-email.js's getCertificateEmailHtml) — the
-  // certificate design's own title/participation-line/signature are sent
-  // as extra fields instead, since they render into their own slots on the
-  // certificate rather than being concatenated like the plain-text templates.
+  // certificate image — the certificate design itself (title, seal,
+  // signature, date) is a fixed image baked per-recipient server-side
+  // (send-custom-email.js's generateCertificatePng), so there's nothing
+  // template-specific to send for it beyond the letter.
   const message = templateType === 'certificate'
     ? getVal(`et-${templateKey}-message`)
     : [getVal(`et-${templateKey}-body1`), getVal(`et-${templateKey}-body2`), getVal(`et-${templateKey}-closing`)].filter(Boolean).join('\n\n');
-  const certificateFields = templateType === 'certificate' ? {
-    certificateTitle: getVal(`et-${templateKey}-title`),
-    participationLine: getVal(`et-${templateKey}-body1`),
-    closingTitle: getVal(`et-${templateKey}-closing`)
-  } : {};
   if (!subject || !message) return window.showToast(`The ${label} template is empty — check Email Center first.`, 'error');
 
   const btn = document.getElementById(btnId);
@@ -661,8 +656,7 @@ async function sendBulkTemplateEmail({ templateKey, statusField, label, btnId, i
             bccEmails: [],
             attachments: [],
             includeQrForRecipients: !!includeQr,
-            templateType,
-            ...certificateFields
+            templateType
           })
         });
         const result = await response.json().catch(() => ({}));

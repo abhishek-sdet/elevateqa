@@ -1,6 +1,64 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
+import sharp from 'sharp';
+
+// Names/free text come from admin-authored fields and attendee records, not
+// trusted HTML/XML — escape before dropping them into any markup so a stray
+// "<" in someone's name can't break the layout.
+const escapeHtml = (str) => String(str || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+// Cached across warm invocations of this function so a batch of recipients
+// doesn't re-fetch the same base image over and over.
+let certificateBaseImagePromise = null;
+function getCertificateBaseImage() {
+    if (!certificateBaseImagePromise) {
+        certificateBaseImagePromise = fetch('https://elevateqa.sdettech.com/certificate.png')
+            .then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch certificate base image: ${res.status}`);
+                return res.arrayBuffer();
+            })
+            .then(buf => Buffer.from(buf))
+            .catch(err => { certificateBaseImagePromise = null; throw err; });
+    }
+    return certificateBaseImagePromise;
+}
+
+// Bakes the recipient's name directly into the certificate as real pixels —
+// deliberately NOT an HTML/CSS overlay. Three separate attempts at
+// positioning the name via CSS (position+transform, then a fixed-width
+// table, then a fluid percentage-margin) each rendered perfectly in local
+// browser testing but broke differently across real inboxes (missing
+// entirely, overflowing on narrow screens, shifted down on wide Gmail
+// desktop) because email clients apply CSS to images inconsistently.
+// Compositing server-side removes that whole class of bug: every client
+// just displays one finished, flat image via a plain <img> — nothing to
+// mis-position.
+async function generateCertificatePng(name) {
+    const baseBuffer = await getCertificateBaseImage();
+    const W = 1492, H = 1054;
+    // Blank gap sits at y≈495-615 of this 1054px-tall image (measured
+    // directly against the file) — vertical center ≈555. Font shrinks for
+    // long names (with a floor) so it never overflows the certificate's
+    // gold border.
+    const safeName = String(name || '').trim() || 'Attendee';
+    let fontSize = 70;
+    const estWidth = safeName.length * fontSize * 0.55;
+    const maxTextWidth = 1200;
+    if (estWidth > maxTextWidth) {
+        fontSize = Math.max(32, Math.floor(maxTextWidth / (safeName.length * 0.55)));
+    }
+    const baselineY = 555 + Math.round(fontSize * 0.35);
+    const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+        <text x="${W / 2}" y="${baselineY}" text-anchor="middle" font-family="Georgia, 'Times New Roman', 'Liberation Serif', serif" font-weight="bold" font-size="${fontSize}" fill="#E7C979">${escapeHtml(safeName)}</text>
+    </svg>`;
+    return sharp(baseBuffer)
+        .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+        .png()
+        .toBuffer();
+}
 
 // See verify-otp.js's mintAdminToken — this endpoint sends arbitrary
 // subject/message content to an arbitrary-sized recipient list, making it
@@ -40,7 +98,7 @@ export const handler = async (event, context) => {
     }
 
     try {
-        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients, templateType, certificateTitle, closingTitle, participationLine } = JSON.parse(event.body);
+        const { subject, message, targetEmails, ccEmails, bccEmails, attachments, includeQrForRecipients, templateType } = JSON.parse(event.body);
         const mailAttachments = Array.isArray(attachments) ? attachments : [];
 
         if (!subject || !message || !targetEmails || !Array.isArray(targetEmails) || targetEmails.length === 0) {
@@ -74,92 +132,11 @@ export const handler = async (event, context) => {
         // every paragraph break the admin typed disappears in the sent email.
         const withLineBreaks = (msgContent) => String(msgContent || '').replace(/\n/g, '<br>');
 
-        // Names/free text come from admin-authored fields and attendee records,
-        // not trusted HTML — escape before dropping them into the certificate
-        // markup so a stray "<" in someone's name can't break the layout.
-        const escapeHtml = (str) => String(str || '')
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-        // The certificate card — brand-green foil frame (never gold: this is
-        // Elevate QA's signature #d4ff3a, not a generic "certificate" color),
-        // the actual Elevate QA wordmark as the letterhead (a real <img>, not
-        // a text monogram standing in for it), and laurel branches flanking
-        // "CERTIFICATE" — the one motif that reads as "certificate" on sight.
-        // A faint diagonal hairline texture + outer glow keep it from reading
-        // as a flat HTML box. Factored out so the exact same markup can be
-        // (a) embedded inline below the thank-you letter, and (b) shipped as
-        // a standalone downloadable .html attachment (getCertificateStandaloneDoc
-        // below) — one design, no risk of the two ever drifting apart.
-        const getCertificateCardHtml = (name, certTitle, participation, signOff, certId) => {
-            // Static design (certificate.png, hosted from website/public/ — same
-            // place logo.png lives) with the recipient's name overlaid in the
-            // blank line under "THIS CERTIFICATE IS PROUDLY PRESENTED TO".
-            //
-            // Deliberately NOT position:absolute + transform — that renders
-            // perfectly in a real browser (which is all a local preview ever
-            // tests), but Gmail and Outlook both strip `position` and
-            // `transform` from inline styles when sanitizing HTML email, so
-            // the overlay silently vanished in actual inboxes even though
-            // every local/headless-browser check looked correct.
-            //
-            // Also deliberately NOT a fixed-width table+background (tried
-            // that next) — a fixed width="640" can't shrink on a narrow
-            // inbox/mobile viewport, so the whole certificate just overflowed
-            // and got clipped on both edges instead of scaling down.
-            //
-            // This version uses a real <img> (scales fluidly via width:100%
-            // in every client, including Outlook — unlike CSS backgrounds)
-            // plus a NEGATIVE margin-top expressed as a PERCENTAGE on the
-            // name div right after it. Per the CSS spec, a percentage
-            // margin-top/bottom is resolved against the containing block's
-            // WIDTH, not its height — so as the image's rendered width
-            // shrinks on a small screen, its rendered height shrinks with it
-            // (same aspect ratio), and this percentage margin shrinks in
-            // lockstep too, keeping the name pinned to the same relative spot
-            // on the certificate at any screen size. margin (unlike
-            // position/transform) is never stripped by email sanitizers.
-            //
-            // The gap sits at y≈495-615 of the 1054×1054px source image
-            // (measured directly against the file) — vertical center 52.66%
-            // of the image's HEIGHT. Converted to %-of-WIDTH via the image's
-            // own aspect ratio (1054/1492 = 0.7064): distance from the
-            // image's bottom edge up to that center = (0.7064 - 0.5266*0.7064)
-            // ≈ 33.4% of width, hence margin-top:-33.4%. A compensating
-            // spacer with +28% margin-top follows so the certificate ID
-            // caption below still lands under the actual image instead of
-            // inheriting that same upward pull.
-            return `
-            <div style="background-color:#0b0b10; padding:20px; text-align:center;">
-                <div style="max-width:640px; margin:0 auto;">
-                    <img src="https://elevateqa.sdettech.com/certificate.png" width="640" style="width:100%; max-width:640px; height:auto; display:block;" alt="Certificate of Participation" />
-                    <div style="margin-top:-33.4%; text-align:center; font-size:26px; line-height:1.3; font-weight:bold; font-family:'Georgia','Times New Roman',serif; color:#E7C979;">
-                        ${escapeHtml(name)}
-                    </div>
-                    <div style="margin-top:28%; line-height:0; font-size:0;">&nbsp;</div>
-                </div>
-                ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; margin-top: 15px;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
-            </div>
-            `;
-        };
-
-        // A self-contained HTML document wrapping the same card — this is what
-        // gets attached to the email so the attendee can download/save/print
-        // the certificate independently of the message around it.
-        const getCertificateStandaloneDoc = (name, certTitle, participation, signOff, certId) => `<!doctype html>
-<html><head><meta charset="utf-8"><title>Certificate of Participation — ${escapeHtml(name)}</title></head>
-<body style="margin:0;background:#0b0b10;">
-<div style="background-color:#0b0b10;padding:40px 20px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-    <div style="max-width:640px;margin:0 auto;">
-        ${getCertificateCardHtml(name, certTitle, participation, signOff, certId)}
-    </div>
-</div>
-</body></html>`;
-
-        // Letter (thank-you message) + certificate card in one email — the
-        // certificate is deliberately its own gold-framed block below the
-        // letter rather than folded into getHtml's plain "EVENT UPDATE" card.
-        const getCertificateEmailHtml = (name, letterMessage, certTitle, participation, signOff, certId) => `
+        // Letter (thank-you message) + the certificate image (already baked
+        // per-recipient by generateCertificatePng, referenced here purely via
+        // cid — no CSS positioning of any kind, so no client-specific
+        // rendering quirks are possible).
+        const getCertificateEmailHtml = (letterMessage, certId) => `
                 <div style="background-color: #0b0b10; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                     <div style="max-width: 640px; margin: 0 auto;">
 
@@ -178,12 +155,13 @@ export const handler = async (event, context) => {
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 24px;">
-                            ${getCertificateCardHtml(name, certTitle, participation, signOff, certId)}
+                        <div style="margin-bottom: 12px; text-align: center;">
+                            <img src="cid:certificate@elevateqa" width="640" style="width:100%; max-width:640px; height:auto; display:block; margin:0 auto; border-radius:6px;" alt="Certificate of Participation" />
                         </div>
+                        ${certId ? `<p style="color: #55555f; font-size: 10px; letter-spacing: 1px; text-align: center; margin: 0 0 24px 0;">CERTIFICATE ID: ${escapeHtml(certId)}</p>` : ''}
 
                         <p style="color: #8e8e9a; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
-                            📎 Your certificate is also attached to this email as a downloadable file — save it for your records.
+                            📎 Your certificate is also attached to this email as a downloadable image — save it for your records.
                         </p>
                         <p style="color: #555565; font-size: 12px; text-align: center; margin: 0;">
                             You are receiving this email because you are registered for Elevate QA 2026.<br><br>
@@ -298,12 +276,24 @@ export const handler = async (event, context) => {
             // a way to trace a downloaded certificate back to its recipient.
             const certId = (templateType === 'certificate' && id) ? `EQ26-CERT-${String(id).split('-')[0].toUpperCase()}` : '';
             if (templateType === 'certificate') {
-                const certDoc = getCertificateStandaloneDoc(name, certificateTitle, participationLine, closingTitle, certId);
-                const safeName = String(name || 'Certificate').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Certificate';
-                recipientAttachments = [
-                    ...mailAttachments,
-                    { filename: `ElevateQA-2026-Certificate-${safeName}.html`, content: Buffer.from(certDoc, 'utf-8'), contentType: 'text/html' }
-                ];
+                try {
+                    const certPng = await generateCertificatePng(name);
+                    const safeName = String(name || 'Certificate').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Certificate';
+                    recipientAttachments = [
+                        ...mailAttachments,
+                        // Same PNG twice on purpose: one referenced by cid so it
+                        // renders inline in the email body, one as a normal named
+                        // attachment so it also shows up as a separate downloadable
+                        // file — most clients surface both independently.
+                        { filename: 'certificate.png', content: certPng, cid: 'certificate@elevateqa' },
+                        { filename: `ElevateQA-2026-Certificate-${safeName}.png`, content: certPng }
+                    ];
+                } catch (err) {
+                    console.error('[CUSTOM EMAIL] Certificate generation failed for', email, err.message);
+                    failCount++;
+                    await sleep(SEND_DELAY_MS);
+                    continue;
+                }
             }
 
             const mailOptions = {
@@ -311,7 +301,7 @@ export const handler = async (event, context) => {
                 to: email,
                 subject: subject,
                 html: templateType === 'certificate'
-                    ? getCertificateEmailHtml(name, finalMessage, certificateTitle, participationLine, closingTitle, certId)
+                    ? getCertificateEmailHtml(finalMessage, certId)
                     : getHtml(finalMessage),
                 attachments: recipientAttachments
             };
@@ -330,16 +320,25 @@ export const handler = async (event, context) => {
             const ccMessage = message
                 .replace(/\{\{\s*first\s*name\s*\}\}|\[\s*first\s*name\s*\]/gi, 'Team')
                 .replace(/\{\{\s*name\s*\}\}|\[\s*name\s*\]/gi, 'Team');
+            let ccAttachments = mailAttachments;
+            let ccHtml = getHtml(ccMessage);
+            if (templateType === 'certificate') {
+                try {
+                    const certPng = await generateCertificatePng('Team');
+                    ccAttachments = [...mailAttachments, { filename: 'certificate.png', content: certPng, cid: 'certificate@elevateqa' }];
+                    ccHtml = getCertificateEmailHtml(ccMessage, '');
+                } catch (err) {
+                    console.error('[CUSTOM EMAIL] Certificate generation failed for CC/BCC copy', err.message);
+                }
+            }
             await transporter.sendMail({
                 from: `"Elevate QA 2026" <${process.env.EMAIL_USER}>`,
                 to: process.env.EMAIL_USER, // Send to self
                 cc: ccList,
                 bcc: extraBccList,
                 subject: `[CC/BCC Copy] ${subject}`,
-                html: templateType === 'certificate'
-                    ? getCertificateEmailHtml('Team', ccMessage, certificateTitle, participationLine, closingTitle, '')
-                    : getHtml(ccMessage),
-                attachments: mailAttachments
+                html: ccHtml,
+                attachments: ccAttachments
             });
         }
 
