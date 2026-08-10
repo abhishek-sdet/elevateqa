@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { CERT_FONT_BASE64 } from './cert-font-data.mjs';
+import { CERT_IMAGE_BASE64 } from './cert-image-data.mjs';
 
 // Names/free text come from admin-authored fields and attendee records, not
 // trusted HTML/XML — escape before dropping them into any markup so a stray
@@ -52,20 +53,17 @@ try {
     console.error('[CUSTOM EMAIL] Failed to set up bundled font for certificate rendering:', err.message);
 }
 
-// Cached across warm invocations of this function so a batch of recipients
-// doesn't re-fetch the same base image over and over.
-let certificateBaseImagePromise = null;
+// Decoded once per warm invocation and reused — no network fetch involved
+// (see cert-image-data.mjs for why: fetching the live URL at runtime was an
+// untested dependency on network reachability and global fetch availability,
+// and is the leading suspect for certificate sends 502'ing in production
+// while every other template type kept working).
+let certificateBaseImageBuffer = null;
 function getCertificateBaseImage() {
-    if (!certificateBaseImagePromise) {
-        certificateBaseImagePromise = fetch('https://elevateqa.sdettech.com/certificate.png')
-            .then(res => {
-                if (!res.ok) throw new Error(`Failed to fetch certificate base image: ${res.status}`);
-                return res.arrayBuffer();
-            })
-            .then(buf => Buffer.from(buf))
-            .catch(err => { certificateBaseImagePromise = null; throw err; });
+    if (!certificateBaseImageBuffer) {
+        certificateBaseImageBuffer = Buffer.from(CERT_IMAGE_BASE64, 'base64');
     }
-    return certificateBaseImagePromise;
+    return certificateBaseImageBuffer;
 }
 
 // Bakes the recipient's name directly into the certificate as real pixels —
