@@ -111,6 +111,7 @@
       <button class="tab-btn" id="etab-btn-location" onclick="showEmailTemplateTab('location')" style="font-size: 12px; padding: 10px 16px;">📍 Location</button>
       <button class="tab-btn" id="etab-btn-entry" onclick="showEmailTemplateTab('entry')" style="font-size: 12px; padding: 10px 16px;">🎟️ Entry / QR</button>
       <button class="tab-btn" id="etab-btn-certificate" onclick="showEmailTemplateTab('certificate')" style="font-size: 12px; padding: 10px 16px;">🏆 Certificate</button>
+      <button class="tab-btn" id="etab-btn-keynote" onclick="showEmailTemplateTab('keynote')" style="font-size: 12px; padding: 10px 16px;">🎙️ Keynote Thanks</button>
     </div>
 
     <div class="card-body" style="padding-top: 28px;">
@@ -367,6 +368,38 @@ Team ElevateQA</textarea>
         <div class="form-group" style="margin-bottom: 20px;">
           <label for="et-certificate-closing">Signature Line <span class="label-hint">Printed at the bottom of the certificate</span></label>
           <input type="text" id="et-certificate-closing" placeholder="Organizing Committee, Elevate QA 2026" value="Organizing Committee, Elevate QA 2026">
+        </div>
+      </div>
+
+      <!-- ── KEYNOTE / SPEAKER THANK YOU ── -->
+      <div id="etab-keynote" class="email-template-panel" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="background: rgba(212,255,58,0.1); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 100px; text-transform: uppercase;">Manual Blast · For Keynotes / Speakers / Panelists</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-keynote-subject">Email Subject</label>
+          <input type="text" id="et-keynote-subject" placeholder="Thank You for Shaping ElevateQA 2026" value="Thank You for Shaping ElevateQA 2026">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-keynote-body1">Main Message <span class="label-hint">[First Name] / [Name] is replaced with each speaker's own name automatically</span></label>
+          <textarea id="et-keynote-body1" rows="10" placeholder="Dear [First Name],&#10;&#10;Thank you for being part of ElevateQA Tech Summit 2026.">Dear [First Name],
+
+Thank you for being part of ElevateQA Tech Summit 2026.
+
+Your time, expertise, and perspective added real depth to the conversations that defined this year's summit. Across the keynotes, expert talks, and panel discussions, your contribution helped bring our theme — AI-Led Quality Engineering: The Proof of Value — to life.
+
+It was a genuine pleasure having you on the ElevateQA stage, and your presence was a big part of what made the third edition a success. We have exciting things planned under the ElevateQA banner, and we look forward to building on this connection in the editions ahead.</textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="et-keynote-body2">Closing / Links</label>
+          <textarea id="et-keynote-body2" rows="10" placeholder="Please follow SDET Tech and ElevateQA on LinkedIn...">Please follow <a href="https://www.linkedin.com/company/sdet-tech/" target="_blank" rel="noopener" style="color:#d4ff3a;text-decoration:underline;font-weight:600;">SDET Tech</a> and <a href="https://www.linkedin.com/company/elevate-qa/" target="_blank" rel="noopener" style="color:#d4ff3a;text-decoration:underline;font-weight:600;">ElevateQA</a> on LinkedIn to stay updated on the latest events and activities.
+
+We will share the Google Drive link with the event photos and video recordings with you tomorrow.
+
+Until we meet next time, keep learning and keep inspiring!
+
+Warm regards,
+Team ElevateQA</textarea>
         </div>
       </div>
 

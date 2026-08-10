@@ -241,7 +241,8 @@ window.renderAttendees = (registrations) => {
     const totalLocationSent = raw.filter(p => p.location_email_sent_at).length;
     const totalEntryReminderSent = raw.filter(p => p.entry_reminder_sent_at).length;
     const totalCertificateSent = raw.filter(p => p.certificate_sent_at).length;
-    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected • ${totalFoodSent} Food Sent • ${totalLocationSent} Location Sent • ${totalEntryReminderSent} Entry Reminder Sent • ${totalCertificateSent} Certificate Sent`;
+    const totalKeynoteThanksSent = raw.filter(p => p.keynote_thanks_sent_at).length;
+    const extras = ` • ${totalPassSent} Pass Sent • ${totalRejected} Rejected • ${totalFoodSent} Food Sent • ${totalLocationSent} Location Sent • ${totalEntryReminderSent} Entry Reminder Sent • ${totalCertificateSent} Certificate Sent • ${totalKeynoteThanksSent} Keynote Thanks Sent`;
 
     if (raw.length === filtered.length) {
       countBadge.textContent = `${raw.length} total${extras}`;
@@ -347,7 +348,8 @@ window.renderAttendees = (registrations) => {
       sentBadge(p.entry_reminder_sent_at, 'entry_reminder_sent_at', '🎟️ Reminder', '#3f51b5'),
       sentBadge(p.food_email_sent_at, 'food_email_sent_at', '🍔 Food', '#f57c00'),
       sentBadge(p.location_email_sent_at, 'location_email_sent_at', '📍 Location', '#009688'),
-      sentBadge(p.certificate_sent_at, 'certificate_sent_at', '🏆 Certificate', '#8e24aa')
+      sentBadge(p.certificate_sent_at, 'certificate_sent_at', '🏆 Certificate', '#8e24aa'),
+      sentBadge(p.keynote_thanks_sent_at, 'keynote_thanks_sent_at', '🎙️ Keynote Thanks', '#0288d1')
     ].filter(Boolean);
     const extraBadgesHtml = extraBadges.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">${extraBadges.join('')}</div>` : '';
 
@@ -720,6 +722,15 @@ window.sendBulkLocationGuide = () => sendBulkTemplateEmail({
 window.sendBulkCertificates = () => sendBulkTemplateEmail({
   templateKey: 'certificate', statusField: 'certificate_sent_at', label: 'Participation Certificate',
   btnId: 'btn-send-bulk-certificate', templateType: 'certificate'
+});
+
+// "Send Keynote Thanks" (Bulk Actions bar) — post-event thank-you letter for
+// keynotes/speakers/panelists, from the Email Center's Keynote Thanks
+// template. Plain letter, no certificate design attached — select just the
+// attendees whose role is Keynote/Speaker/Panelist before sending.
+window.sendBulkKeynoteThanks = () => sendBulkTemplateEmail({
+  templateKey: 'keynote', statusField: 'keynote_thanks_sent_at', label: 'Keynote Thanks',
+  btnId: 'btn-send-bulk-keynote'
 });
 
 window.openAssignRoleModal = () => {

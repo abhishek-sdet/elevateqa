@@ -820,6 +820,11 @@ export function populateUI(data) {
   fillTpl('et-certificate-title',   cert.title);
   fillTpl('et-certificate-body1',   cert.body1);
   fillTpl('et-certificate-closing', cert.closing);
+
+  const keynote = et.keynote || {};
+  fillTpl('et-keynote-subject', keynote.subject);
+  fillTpl('et-keynote-body1',   keynote.body1);
+  fillTpl('et-keynote-body2',   keynote.body2);
 }
 
 function _renderImgPreview(id, url) {
@@ -927,6 +932,11 @@ window.saveEmailTemplates = async () => {
         title:   getVal('et-certificate-title'),
         body1:   getVal('et-certificate-body1'),
         closing: getVal('et-certificate-closing'),
+      },
+      keynote: {
+        subject: getVal('et-keynote-subject'),
+        body1:   getVal('et-keynote-body1'),
+        body2:   getVal('et-keynote-body2'),
       },
     }
   };
