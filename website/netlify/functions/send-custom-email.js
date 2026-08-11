@@ -52,19 +52,20 @@ async function getCertificateBaseImage() {
 async function generateCertificatePng(name) {
     await ensureFontSetup();
     const baseBuffer = await getCertificateBaseImage();
-    const W = 1492, H = 1054;
-    // Blank gap sits at y≈495-615 of this 1054px-tall image (measured
-    // directly against the file) — vertical center ≈555. Font shrinks for
+    const W = 2000, H = 1414;
+    // New certificate template (2000×1414 px).
+    // Blank name gap sits at y≈680-855 of this 1414px-tall image (measured
+    // directly against the file) — vertical center ≈767. Font shrinks for
     // long names (with a floor) so it never overflows the certificate's
     // gold border.
     const safeName = String(name || '').trim() || 'Attendee';
-    let fontSize = 70;
+    let fontSize = 90;
     const estWidth = safeName.length * fontSize * 0.55;
-    const maxTextWidth = 1200;
+    const maxTextWidth = 1600;
     if (estWidth > maxTextWidth) {
-        fontSize = Math.max(32, Math.floor(maxTextWidth / (safeName.length * 0.55)));
+        fontSize = Math.max(40, Math.floor(maxTextWidth / (safeName.length * 0.55)));
     }
-    const baselineY = 555 + Math.round(fontSize * 0.35);
+    const baselineY = 767 + Math.round(fontSize * 0.35);
     const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
         <text x="${W / 2}" y="${baselineY}" text-anchor="middle" font-family="${CERT_FONT_FAMILY}" font-weight="bold" font-size="${fontSize}" fill="#E7C979">${escapeHtml(safeName)}</text>
     </svg>`;
