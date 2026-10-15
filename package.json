@@ -1,11 +1,14 @@
 {
   "name": "elevate-qa",
   "version": "1.0.0",
-  "description": "Elevate QA 2026 - Decoupled Local & Production Server",
+  "description": "Elevate QA 2026 - Full Stack App",
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node backend/server.js",
-    "build": "cd website && npm run build"
+    "build": "cd website && npm install && npm run build",
+    "dev": "node backend/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
