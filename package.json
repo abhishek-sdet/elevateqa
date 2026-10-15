@@ -1,0 +1,11 @@
+{
+  "name": "elevate-qa",
+  "version": "1.0.0",
+  "description": "Elevate QA 2026 - Decoupled Local & Production Server",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "build": "cd website && npm run build"
+  }
+}
