@@ -1,44 +1,41 @@
 /**
- * ELEVATE QA 2026 - MAIN SYNC MODULE (SUPABASE VERSION)
- * Handles Real-time synchronization from Supabase to Local UI.
+ * ELEVATE QA 2026 - MAIN SYNC MODULE (REST API VERSION)
+ * Handles synchronization from backend REST API to Local UI.
+ * Completely decoupled from database engine and credentials.
  */
-import { supabase } from './supabase-config.js';
 import { unpackFields } from './field-pack.js';
 
-/** Transform raw DB row (snake_case) → camelCase object for main-ui.js */
 function transformSiteContent(rows) {
   const raw = Array.isArray(rows) ? rows[0] : rows;
   if (!raw) return null;
 
   const sc = {
     heroHeadline: raw.hero_headline || '',
-    heroTagline:  raw.hero_tagline  || '',
-    heroEyebrow:  raw.hero_eyebrow  || '',
-    heroEdition:  raw.hero_edition  || '',
-    eventDate:    raw.event_date    || '',
-    eventVenue:   raw.event_venue   || '',
-    heroMeta:     raw.hero_meta     || '',
-    heroFormat:   raw.hero_format   || '',
-    heroAudience: raw.hero_audience || '',
+    heroTagline: raw.hero_tagline || '',
+    heroEyebrow: raw.hero_eyebrow || '',
+    heroEdition: raw.hero_edition || '',
+    eventDate: raw.event_date || '',
+    eventVenue: raw.event_venue || '',
+    heroMeta: raw.hero_meta || '',
+    heroFormat: raw.hero_format || '',
+    heroAudience: raw.hero_audience || ''
   };
 
-  // UNBUNDLE JSON extras packed into hero_meta
   if (sc.heroMeta && typeof sc.heroMeta === 'string' && sc.heroMeta.startsWith('{')) {
     try {
       const extra = JSON.parse(sc.heroMeta);
       Object.assign(sc, extra);
       sc.heroMeta = extra.heroMetaText || '';
-    } catch(e) {}
+    } catch (e) {}
   } else if (typeof sc.heroMeta === 'object' && sc.heroMeta !== null) {
-      const extra = sc.heroMeta;
-      Object.assign(sc, extra);
-      sc.heroMeta = extra.heroMetaText || '';
+    const extra = sc.heroMeta;
+    Object.assign(sc, extra);
+    sc.heroMeta = extra.heroMetaText || '';
   }
 
   return sc;
 }
 
-/** Transform Branding DB row → visuals object for main-ui.js */
 function transformBranding(rows) {
   const raw = Array.isArray(rows) ? rows[0] : rows;
   if (!raw) return null;
@@ -56,7 +53,6 @@ function transformBranding(rows) {
   };
 }
 
-// Global debouncer for real-time syncing
 let syncTimeout = null;
 const debouncedSyncEverything = () => {
   if (syncTimeout) clearTimeout(syncTimeout);
@@ -64,115 +60,104 @@ const debouncedSyncEverything = () => {
     if (typeof window.syncEverything === 'function') {
       window.syncEverything();
     }
-  }, 150); // 150ms debounce
+  }, 150);
 };
 
 export async function initCloudSync() {
-  console.log('[ElevateQA] ⚡ Supabase Sync Engine Starting...');
-  
-  // 1. Initial Data Fetch
-  const orderedTables   = ['speakers', 'agenda', 'maturity_stages', 'pillars'];
-  const unorderedTables = ['branding', 'site_content', 'manifesto'];
-  const allTables       = [...orderedTables, ...unorderedTables];
-  
-  const fetchPromises = allTables.map(async (table) => {
-    let query = supabase.from(table).select('*');
-    if (orderedTables.includes(table)) {
-      query = query.order('display_order', { ascending: true, nullsFirst: false });
-    }
+  console.log('[ElevateQA] ⚡ REST API Sync Engine Starting...');
 
-    const { data, error } = await query;
-    if (error) {
-      console.error(`[ElevateQA] Error fetching ${table}:`, error);
-      return { table, success: false };
-    }
+  try {
+    const [contentRes, speakersRes, agendaRes] = await Promise.all([
+      fetch('/api/site-content'),
+      fetch('/api/speakers'),
+      fetch('/api/agenda')
+    ]);
 
-    if (data) {
-      if (table === 'agenda') {
-        data.forEach(a => {
-          if (a.title) {
-            const [title, tag, desc] = unpackFields(a.title, 3);
-            a.title = title; a.tag = tag; a.desc = desc;
-          }
-        });
+    if (contentRes.ok) {
+      const { site_content, branding, manifesto, maturity_stages, pillars } = await contentRes.json();
+      if (site_content) {
+        localStorage.setItem('elevate_site_content', JSON.stringify(transformSiteContent(site_content)));
       }
-      if (table === 'speakers') {
-        data.forEach(s => {
-          if (s.title) {
-            const [title, bio, linkedin] = unpackFields(s.title, 3);
-            s.title = title; s.bio = bio; s.linkedin = linkedin;
-          }
-        });
+      if (branding) {
+        localStorage.setItem('elevate_visuals', JSON.stringify(transformBranding(branding)));
       }
-      if (table === 'site_content') {
-        const transformed = transformSiteContent(data);
-        localStorage.setItem('elevate_site_content', JSON.stringify(transformed));
-      } else if (table === 'branding') {
-        const transformed = transformBranding(data);
-        localStorage.setItem('elevate_visuals', JSON.stringify(transformed));
-      } else {
-        localStorage.setItem(`elevate_${table}`, JSON.stringify(data));
+      if (manifesto) {
+        localStorage.setItem('elevate_manifesto', JSON.stringify([{ content: manifesto.content }]));
       }
-      return { table, success: true };
+      if (maturity_stages) {
+        localStorage.setItem('elevate_maturity_stages', JSON.stringify(maturity_stages));
+      }
+      if (pillars) {
+        localStorage.setItem('elevate_experience_pillars', JSON.stringify(pillars));
+      }
     }
-    return { table, success: false };
-  });
 
-  // Wait for all initial fetches to complete
-  await Promise.allSettled(fetchPromises);
-  
-  // Only sync once after all tables are loaded
-  if (typeof window.syncEverything === 'function') window.syncEverything();
-
-  // 2. Real-time Subscriptions setup after initial cleanup
-  supabase.removeAllChannels().then(() => {
-    allTables.forEach((table) => {
-      supabase
-        .channel(`${table}-changes`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: table }, (payload) => {
-          console.log(`[ElevateQA] Real-time update for ${table}:`, payload);
-          fetchAndSync(table, orderedTables.includes(table));
-        })
-        .subscribe();
-    });
-  });
-}
-
-async function fetchAndSync(table, ordered = false) {
-  let query = supabase.from(table).select('*');
-  if (ordered) {
-    query = query.order('display_order', { ascending: true, nullsFirst: false });
-  }
-
-  const { data, error } = await query;
-
-  if (data) {
-    if (table === 'agenda') {
-      data.forEach(a => {
-        if (a.title) {
-          const [title, tag, desc] = unpackFields(a.title, 3);
-          a.title = title; a.tag = tag; a.desc = desc;
-        }
-      });
-    }
-    if (table === 'speakers') {
-      data.forEach(s => {
+    if (speakersRes.ok) {
+      const speakers = await speakersRes.json();
+      speakers.forEach((s) => {
         if (s.title) {
           const [title, bio, linkedin] = unpackFields(s.title, 3);
           s.title = title; s.bio = bio; s.linkedin = linkedin;
         }
       });
+      localStorage.setItem('elevate_speakers', JSON.stringify(speakers));
     }
-    if (table === 'site_content') {
-      const transformed = transformSiteContent(data);
-      localStorage.setItem('elevate_site_content', JSON.stringify(transformed));
-    } else if (table === 'branding') {
-      const transformed = transformBranding(data);
-      localStorage.setItem('elevate_visuals', JSON.stringify(transformed));
-    } else {
-      localStorage.setItem(`elevate_${table}`, JSON.stringify(data));
+
+    if (agendaRes.ok) {
+      const agenda = await agendaRes.json();
+      agenda.forEach((a) => {
+        if (a.title) {
+          const [title, tag, desc] = unpackFields(a.title, 3);
+          a.title = title; a.tag = tag; a.desc = desc;
+        }
+      });
+      localStorage.setItem('elevate_agenda', JSON.stringify(agenda));
     }
-    
-    debouncedSyncEverything();
+
+    if (typeof window.syncEverything === 'function') {
+      window.syncEverything();
+    }
+  } catch (err) {
+    console.warn('[ElevateQA] REST Sync error, fallback to cache:', err);
   }
+
+  // Periodic background refresh every 30 seconds
+  setInterval(async () => {
+    try {
+      const [contentRes, speakersRes, agendaRes] = await Promise.all([
+        fetch('/api/site-content'),
+        fetch('/api/speakers'),
+        fetch('/api/agenda')
+      ]);
+      if (contentRes.ok) {
+        const { site_content, branding, manifesto, maturity_stages, pillars } = await contentRes.json();
+        if (site_content) localStorage.setItem('elevate_site_content', JSON.stringify(transformSiteContent(site_content)));
+        if (branding) localStorage.setItem('elevate_visuals', JSON.stringify(transformBranding(branding)));
+        if (manifesto) localStorage.setItem('elevate_manifesto', JSON.stringify([{ content: manifesto.content }]));
+        if (maturity_stages) localStorage.setItem('elevate_maturity_stages', JSON.stringify(maturity_stages));
+        if (pillars) localStorage.setItem('elevate_experience_pillars', JSON.stringify(pillars));
+      }
+      if (speakersRes.ok) {
+        const speakers = await speakersRes.json();
+        speakers.forEach((s) => {
+          if (s.title) {
+            const [title, bio, linkedin] = unpackFields(s.title, 3);
+            s.title = title; s.bio = bio; s.linkedin = linkedin;
+          }
+        });
+        localStorage.setItem('elevate_speakers', JSON.stringify(speakers));
+      }
+      if (agendaRes.ok) {
+        const agenda = await agendaRes.json();
+        agenda.forEach((a) => {
+          if (a.title) {
+            const [title, tag, desc] = unpackFields(a.title, 3);
+            a.title = title; a.tag = tag; a.desc = desc;
+          }
+        });
+        localStorage.setItem('elevate_agenda', JSON.stringify(agenda));
+      }
+      debouncedSyncEverything();
+    } catch (e) {}
+  }, 30000);
 }

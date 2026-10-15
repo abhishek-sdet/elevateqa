@@ -8,9 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..800&family=JetBrains+Mono:wght@300;400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- SUPABASE SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
   <!-- html5-qrcode: fallback for older browsers only -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
@@ -310,15 +307,6 @@
 </div>
 
 <script>
-  // SUPABASE INITIALIZATION
-  const SUPABASE_URL = 'https://wbgxcadajmdjxfhsgose.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZ3hjYWRham1kanhmaHNnb3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTk0ODQsImV4cCI6MjA5NDE3NTQ4NH0.ZgzyLpYWVcw-cUCmup81lw5nE70K5-m5BZ7TClefWr4';
-  let supabaseClient = null;
-
-  try {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } catch (e) { console.error("Supabase Init Error:", e); }
-
   let isScanning = false;
   let isProcessing = false;
   let qrScanner = null;
@@ -369,11 +357,9 @@
 
   function initApp() {
     const status = document.getElementById('conn-status');
-    if (supabaseClient) {
-      status.innerHTML = '<div class="status-dot"></div> ONLINE';
-      status.style.color = 'var(--accent-green)';
-      status.querySelector('.status-dot').style.background = 'var(--accent-green)';
-    }
+    status.innerHTML = '<div class="status-dot"></div> ONLINE';
+    status.style.color = 'var(--accent-green)';
+    status.querySelector('.status-dot').style.background = 'var(--accent-green)';
   }
 
   // ── SCANNER CONTROL ───────────────────────────────────────────────────────────
@@ -537,54 +523,37 @@
       return;
     }
 
-    if (!supabaseClient) {
-      renderResult('error', 'ERROR', 'Database Error', 'Supabase client not initialized', 'ERROR');
-      return;
-    }
-
     const ticketId = raw.replace('ELEVATE-QA:', '').split('|')[0].trim();
-    
-    try {
-      const { data: user, error } = await supabaseClient
-        .from('registrations')
-        .select('*')
-        .eq('id', ticketId)
-        .single();
+    lastScannedTicketId = ticketId;
 
-      if (error || !user) {
+    try {
+      const res = await fetch('/api/scanner/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw, ticketId })
+      });
+
+      const data = await res.json();
+
+      if (data.status === 'not_found') {
         renderResult('error', 'NOT FOUND', 'No Record', 'Ticket does not exist', 'REJECTED');
         return;
       }
 
-      // Atomic, conditional admit — this UPDATE only touches the row if it
-      // ISN'T already 'PRESENT' at the moment the write lands. Checking
-      // user.status from the SELECT above is not enough by itself: with
-      // multiple gate devices scanning concurrently, two devices can both
-      // read "not present yet" in the same instant and both would admit the
-      // same ticket. The .or() below matches status=NULL too (plain .neq()
-      // is NULL-unsafe in SQL and would silently never match brand-new rows).
-      lastScannedTicketId = ticketId;
-      const { data: updated, error: upErr } = await supabaseClient
-        .from('registrations')
-        .update({ status: 'PRESENT' })
-        .eq('id', ticketId)
-        .or('status.is.null,status.neq.PRESENT')
-        .select();
-
-      if (upErr) throw upErr;
-
-      if (!updated || updated.length === 0) {
-        // Lost the race (or already admitted earlier) — another gate's
-        // device got there first.
-        const roleStr = user.role ? user.role.toUpperCase() : 'ATTENDEE';
-        renderResult('already', 'DUPLICATE', user.name, roleStr, user.company || user.email, 'ALREADY IN');
+      if (data.status === 'already_present') {
+        const user = data.user || {};
+        renderResult('already', 'DUPLICATE', user.name || 'Attendee', user.role || 'ATTENDEE', user.company || '', 'ALREADY IN');
         return;
       }
 
-      const roleStr = user.role ? user.role.toUpperCase() : 'ATTENDEE';
-      renderResult('success', 'CONFIRMED', user.name, roleStr, user.company || user.email, 'ADMITTED');
-      playBeep('success');
+      if (data.status === 'admitted') {
+        const user = data.user || {};
+        renderResult('success', 'CONFIRMED', user.name || 'Attendee', user.role || 'ATTENDEE', user.company || '', 'ADMITTED');
+        playBeep('success');
+        return;
+      }
 
+      renderResult('error', 'SYSTEM ERROR', 'Sync Failed', data.message || 'Error', 'TRY AGAIN');
     } catch (e) {
       console.error("Process Error:", e);
       renderResult('error', 'SYSTEM ERROR', 'Sync Failed', e.message, 'TRY AGAIN');

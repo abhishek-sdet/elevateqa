@@ -8,7 +8,6 @@
  *   - main-ui.js          → initNav(), DEFAULT_* constants
  */
 import { initCloudSync } from './main-sync.js';
-import { supabase } from './supabase-config.js';
 import { sendAttendeeEmail, sendSpeakerEmail } from './email-service.js';
 import { DEFAULT_MATURITY, DEFAULT_PILLARS, DEFAULT_AGENDA, DEFAULT_SPEAKERS, initNav } from './main-ui.js';
 import { initAnimations, initCursor } from './main-animations.js';
@@ -191,24 +190,27 @@ window.generateTicket = async function(event) {
   const originalBtnText = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending OTP...'; }
   try {
-    const { count, error } = await supabase.from('registrations').select('*', { count: 'exact', head: true });
-    const limit = window.maxAttendeeLimit || 500;
-    // Always set isWaitlisted to false since the attendee form has been reopened and everyone should receive the thank you mail
-    window.isWaitlisted = false;
+    const res = await fetch('/api/registrations/count');
+    if (res.ok) {
+      const { count } = await res.json();
+      const limit = window.maxAttendeeLimit || 500;
+      window.isWaitlisted = false;
+    }
   } catch(e) { console.warn('Registration limit check failed:', e); window.isWaitlisted = false; }
 
   try {
-    const { data: existingUser } = await supabase.from('registrations').select('id').eq('email', email).limit(1);
-    if (existingUser && existingUser.length > 0) {
-      showToast('This email is already registered. Please use a different professional email.', 'error');
-      if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
-      return;
+    const res = await fetch('/api/registrations/check?email=' + encodeURIComponent(email));
+    if (res.ok) {
+      const { exists } = await res.json();
+      if (exists) {
+        showToast('This email is already registered. Please use a different professional email.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = originalBtnText; }
+        return;
+      }
     }
   } catch(e) { console.warn('DB check failed or unavailable:', e); }
   try {
-    const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
-    const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
-    const response = await fetch(`${baseUrl}/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    const response = await fetch('/api/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Failed to send OTP');
     window.pendingRegistration = { type: 'attend', name, email, phone, org, designation, linkedin };
@@ -245,11 +247,9 @@ window.resendOTP = function() {
   }
   
   const isSpeaker = window.pendingRegistration && window.pendingRegistration.type === 'speaker';
-  const endpoint = '/send-otp'; // using same for both
-  const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
-  const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
+  const endpoint = isSpeaker ? '/api/send-speaker-otp' : '/api/send-otp';
   
-  fetch(`${baseUrl}${endpoint}`, { 
+  fetch(endpoint, { 
     method: 'POST', 
     headers: { 'Content-Type': 'application/json' }, 
     body: JSON.stringify({ email }) 
@@ -310,11 +310,9 @@ window.verifyOTP = async function() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Verifying...';
   document.getElementById('otp-error').textContent = '';
   const { type, email, name, phone, org, designation, linkedin, topic, bio } = window.pendingRegistration;
-  const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
-  const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
   
   try {
-    const response = await fetch(`${baseUrl}/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
+    const response = await fetch('/api/verify-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: code }) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Verification failed');
     
@@ -327,21 +325,24 @@ window.verifyOTP = async function() {
       apps.push(speakerData);
       localStorage.setItem('elevate_speaker_apps', JSON.stringify(apps));
 
-      // Save to Supabase speaker_applications table
+      // Save to speaker_applications table
       try {
-        await supabase.from('speaker_applications').insert([{
-          name: speakerData.name,
-          email: speakerData.email,
-          phone: speakerData.phone,
-          company: speakerData.org || speakerData.organization,
-          designation: speakerData.designation,
-          topic: speakerData.topic,
-          bio: speakerData.bio,
-          linkedin: speakerData.linkedin,
-          status: 'pending'
-        }]);
+        await fetch('/api/speaker-applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: speakerData.name,
+            email: speakerData.email,
+            phone: speakerData.phone,
+            company: speakerData.org || speakerData.organization,
+            designation: speakerData.designation,
+            topic: speakerData.topic,
+            bio: speakerData.bio,
+            linkedin: speakerData.linkedin
+          })
+        });
       } catch (dbErr) {
-        console.error('Failed to sync speaker application to Supabase:', dbErr);
+        console.error('Failed to sync speaker application:', dbErr);
       }
 
       document.getElementById('otp-view').style.display = 'none';
@@ -367,9 +368,14 @@ window.verifyOTP = async function() {
     } else {
       // Attendee flow
       let dbId = null, shortId = null;
-      const { data, error } = await supabase.from('registrations').insert([{ name, email, phone, company: org, designation, linkedin, status: 'pending' }]).select();
-      if (error) throw error;
-      if (data && data.length > 0) { dbId = data[0].id; shortId = 'EQ26-' + String(dbId).split('-')[0].toUpperCase(); }
+      const regRes = await fetch('/api/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, company: org, designation, linkedin, status: 'pending' })
+      });
+      if (!regRes.ok) throw new Error('Failed to save registration');
+      const regData = await regRes.json();
+      if (regData.data) { dbId = regData.data.id; shortId = 'EQ26-' + String(dbId).split('-')[0].toUpperCase(); }
       
       const otpViewEl = document.getElementById('otp-view');
       if (otpViewEl) otpViewEl.style.display = 'none';
@@ -605,10 +611,7 @@ window.submitSpeakerForm = async function(e) {
     window.pendingRegistration = speakerData;
 
     // Send OTP request
-    const isLocalHostOrNetwork = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
-    const baseUrl = isLocalHostOrNetwork ? '/.netlify/functions' : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'https://elevateqa.netlify.app/.netlify/functions');
-    
-    const response = await fetch(`${baseUrl}/send-otp`, { 
+    const response = await fetch('/api/send-speaker-otp', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify({ email }) 

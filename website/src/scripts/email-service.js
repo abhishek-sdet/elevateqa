@@ -1,17 +1,11 @@
 /**
  * ELEVATE QA 2026 - EMAIL SERVICE
- * Uses custom Node.js Backend for Limitless Email
+ * Uses backend REST API for reliable email delivery
  */
-
-const BACKEND_URL = 'https://elevateqa.netlify.app/.netlify/functions';
 
 export const sendAttendeeEmail = async (attendeeData) => {
   const { name, email, company, ticketId, dbId, designation, linkedin, isWaitlisted } = attendeeData;
-
-  console.log(`[ElevateQA] Sending ticket generation request to Backend for ${email}...`);
-
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const baseUrl = isLocalhost ? '/.netlify/functions' : BACKEND_URL;
+  console.log(`[ElevateQA] Sending ticket generation request for ${email}...`);
 
   try {
     const payload = {
@@ -24,31 +18,30 @@ export const sendAttendeeEmail = async (attendeeData) => {
       qrData: `ELEVATE-QA:${dbId}|${name}|${company}`
     };
 
-    const endpoint = isWaitlisted ? '/send-rejection' : '/send-ticket';
+    const endpoint = isWaitlisted ? '/api/send-rejection' : '/api/send-ticket';
 
-    const response = await fetch(`${baseUrl}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    
+
     const result = await response.json();
     if (!response.ok) {
-        throw new Error(result.error || 'Failed to send ticket email');
+      throw new Error(result.error || 'Failed to send ticket email');
     }
 
-    console.log("[ElevateQA] Ticket Email sent successfully.");
-    return response;
+    console.log('[ElevateQA] Ticket Email sent successfully.');
+    return result;
   } catch (err) {
-    console.error("[ElevateQA] Ticket delivery failed:", err);
+    console.error('[ElevateQA] Ticket delivery failed:', err);
     throw err;
   }
 };
 
 export const sendSpeakerEmail = async (speakerData) => {
   const { name, email, organization, topic, bio } = speakerData;
-
-  console.log(`[ElevateQA] Sending speaker confirmation request to Backend for ${email}...`);
+  console.log(`[ElevateQA] Sending speaker confirmation request for ${email}...`);
 
   try {
     const payload = {
@@ -59,25 +52,21 @@ export const sendSpeakerEmail = async (speakerData) => {
       bio: bio || ''
     };
 
-    // Use local Netlify functions url for testing, or production url based on environment
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const baseUrl = isLocalhost ? '/.netlify/functions' : BACKEND_URL;
-
-    const response = await fetch(`${baseUrl}/send-speaker-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch('/api/send-speaker-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    
+
     const result = await response.json();
     if (!response.ok) {
-        throw new Error(result.error || 'Failed to send speaker email');
+      throw new Error(result.error || 'Failed to send speaker email');
     }
 
-    console.log("[ElevateQA] Speaker Email sent successfully.");
-    return response;
+    console.log('[ElevateQA] Speaker Email sent successfully.');
+    return result;
   } catch (err) {
-    console.error("[ElevateQA] Speaker email delivery failed:", err);
+    console.error('[ElevateQA] Speaker email delivery failed:', err);
     throw err;
   }
 };

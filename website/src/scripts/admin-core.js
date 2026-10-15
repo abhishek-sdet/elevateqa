@@ -11,7 +11,6 @@ import { supabase } from './supabase-config.js';
 import './admin-auth.js?v=6';
 import './admin-ui.js?v=2';
 import './admin-registrations.js?v=3';
-import './admin-ai-engine.js?v=1';
 import {
   loadAllData, saveBranding, saveSiteContent, saveManifesto,
   saveSpeaker, saveAgendaItem, saveMaturityStage, savePillar,
